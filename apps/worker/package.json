@@ -1,0 +1,22 @@
+{
+  "name": "@football-app/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@football-app/database": "*",
+    "@football-app/shared-types": "*",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@football-app/config": "*",
+    "@types/node": "^22.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}

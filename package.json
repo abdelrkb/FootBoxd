@@ -1,0 +1,14 @@
+{
+  "name": "football-app",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "echo \"Use docker compose up, or run per-app dev scripts inside apps/*\""
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,51 @@
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import type { PublicUser } from '../auth/auth.service.js';
+import { ReviewsService } from './reviews.service.js';
+import { CreateReviewDto } from './dto/create-review.dto.js';
+import { ListReviewsDto } from './dto/list-reviews.dto.js';
+
+@Controller('reviews')
+export class ReviewsController {
+  constructor(private readonly reviewsService: ReviewsService) {}
+
+  @Get()
+  list(@Query() query: ListReviewsDto) {
+    return this.reviewsService.findForMatch(query.matchId);
+  }
+
+  @Get(':id')
+  detail(@Param('id', ParseUUIDPipe) id: string) {
+    return this.reviewsService.findActiveById(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  create(@Body() dto: CreateReviewDto, @CurrentUser() user: PublicUser) {
+    return this.reviewsService.create(user.id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  @HttpCode(204)
+  async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: PublicUser) {
+    await this.reviewsService.softDelete(id, user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/like')
+  @HttpCode(200)
+  async like(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: PublicUser) {
+    await this.reviewsService.like(id, user.id);
+    return { success: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/like')
+  @HttpCode(200)
+  async unlike(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: PublicUser) {
+    await this.reviewsService.unlike(id, user.id);
+    return { success: true };
+  }
+}

@@ -1,0 +1,204 @@
+generator client {
+  provider      = "prisma-client-js"
+  // "native" pour le dev en local (macOS/linux hôte) + le binaire musl/openssl3 requis par les
+  // images Docker (node:22-alpine = Alpine 3.24, qui n'a que libssl3, pas de libssl.so.1.1) —
+  // trouvé en testant `docker compose up` en réel le 2026-09-16 (erreur "libssl.so.1.1: No
+  // such file or directory" sur le moteur Prisma faute de ce binaryTarget explicite).
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthProviderType {
+  google
+  apple
+  email
+
+  @@map("auth_provider_type")
+}
+
+enum MatchStatus {
+  scheduled
+  live
+  finished
+  postponed
+  cancelled
+  suspended
+  abandoned
+
+  @@map("match_status")
+}
+
+enum NotificationType {
+  comment
+  like
+  follow
+
+  @@map("notification_type")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  displayName  String   @map("display_name")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  authProviders          AuthProvider[]
+  reviews                Review[]
+  comments               Comment[]
+  reviewLikes            ReviewLike[]
+  following              Follow[]       @relation("Follower")
+  followers              Follow[]       @relation("Following")
+  notificationsReceived  Notification[] @relation("Recipient")
+  notificationsTriggered Notification[] @relation("Actor")
+
+  @@map("users")
+}
+
+model AuthProvider {
+  id             String           @id @default(uuid()) @db.Uuid
+  userId         String           @map("user_id") @db.Uuid
+  provider       AuthProviderType
+  providerUserId String           @map("provider_user_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_providers")
+}
+
+model League {
+  id             String  @id @default(uuid()) @db.Uuid
+  externalId     String  @unique @map("external_id")
+  name           String
+  country        String?
+  logoUrl        String? @map("logo_url")
+  // Saison en cours, ex "2025-2026" (section 8 : "pas de calcul de dates fait maison" — on
+  // reprend telle quelle la valeur `strSeason` du dernier event synchronisé pour cette ligue,
+  // voir apps/worker/src/sync/upsert.ts). Ajouté le 2026-09-16 : nécessaire pour la stat
+  // "matchs vus cette saison" du profil (section 7), absent du modèle initial.
+  currentSeason  String? @map("current_season")
+
+  matches Match[]
+
+  @@map("leagues")
+}
+
+model Team {
+  id         String  @id @default(uuid()) @db.Uuid
+  externalId String  @unique @map("external_id")
+  name       String
+  logoUrl    String? @map("logo_url")
+
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+
+  @@map("teams")
+}
+
+model Match {
+  id         String      @id @default(uuid()) @db.Uuid
+  externalId String      @unique @map("external_id")
+  leagueId   String      @map("league_id") @db.Uuid
+  homeTeamId String      @map("home_team_id") @db.Uuid
+  awayTeamId String      @map("away_team_id") @db.Uuid
+  homeScore  Int?        @map("home_score")
+  awayScore  Int?        @map("away_score")
+  status     MatchStatus
+  kickoffAt  DateTime    @map("kickoff_at")
+  venue        String?
+  season       String
+  lineups      Json?
+  highlightUrl String?     @map("highlight_url")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  league   League   @relation(fields: [leagueId], references: [id])
+  homeTeam Team     @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam Team     @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  reviews  Review[]
+
+  @@map("matches")
+}
+
+model Review {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  matchId   String    @map("match_id") @db.Uuid
+  rating    Decimal   @db.Decimal(2, 1)
+  comment   String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match    Match        @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  comments Comment[]
+  likes    ReviewLike[]
+
+  // Pas de @@unique/@@index ici : la vraie contrainte est un index UNIQUE PARTIEL
+  // (WHERE deleted_at IS NULL) + un CHECK sur `rating`, tous deux ajoutés à la main
+  // dans la migration SQL (non exprimables dans schema.prisma) — voir section 6 de
+  // architecture.md et packages/database/prisma/migrations/20260916131938_init/migration.sql.
+  // Ne pas ajouter de @@index/@@unique équivalent ici : Prisma le considérerait comme
+  // "manquant" en base lors d'un futur `migrate dev` et générerait une migration corrective
+  // en doublon de celui posé à la main.
+  @@map("reviews")
+}
+
+model Comment {
+  id        String   @id @default(uuid()) @db.Uuid
+  reviewId  String   @map("review_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model ReviewLike {
+  userId    String   @map("user_id") @db.Uuid
+  reviewId  String   @map("review_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@id([userId, reviewId])
+  @@map("review_likes")
+}
+
+model Follow {
+  followerId  String   @map("follower_id") @db.Uuid
+  followingId String   @map("following_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@map("follows")
+}
+
+model Notification {
+  id          String           @id @default(uuid()) @db.Uuid
+  recipientId String           @map("recipient_id") @db.Uuid
+  actorId     String           @map("actor_id") @db.Uuid
+  type        NotificationType
+  // Polymorphe : pointe vers une review ou un commentaire selon `type`, donc pas de FK.
+  referenceId String?          @map("reference_id") @db.Uuid
+  isRead      Boolean          @default(false) @map("is_read")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  recipient User @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor     User @relation("Actor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}

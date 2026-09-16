@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Env
+.env
+.env.*.local
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Prisma
+apps/**/generated/
+packages/database/generated/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+
+# Testing
+coverage/
+
+# Turbo (if added later)
+.turbo/
+
+.claude/
