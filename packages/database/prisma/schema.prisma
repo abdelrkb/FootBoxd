@@ -57,6 +57,7 @@ model User {
   followers              Follow[]       @relation("Following")
   notificationsReceived  Notification[] @relation("Recipient")
   notificationsTriggered Notification[] @relation("Actor")
+  favoriteLeagues        FavoriteLeague[]
 
   @@map("users")
 }
@@ -85,9 +86,25 @@ model League {
   // "matchs vus cette saison" du profil (section 7), absent du modèle initial.
   currentSeason  String? @map("current_season")
 
-  matches Match[]
+  matches         Match[]
+  favoritedBy     FavoriteLeague[]
 
   @@map("leagues")
+}
+
+// Refonte accueil (2026-09-17) : l'accueil liste les ligues favorites de l'utilisateur (celles
+// ayant au moins un match à la date sélectionnée) plutôt que toutes les ligues avec filtre.
+// Une page "Toutes les ligues" séparée permet d'ajouter/retirer des favoris.
+model FavoriteLeague {
+  userId    String   @map("user_id") @db.Uuid
+  leagueId  String   @map("league_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+
+  @@id([userId, leagueId])
+  @@map("favorite_leagues")
 }
 
 model Team {

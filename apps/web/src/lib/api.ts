@@ -6,6 +6,7 @@ import type {
   Notification,
   Profile,
   UserSummary,
+  League,
 } from '@football-app/shared-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -88,3 +89,16 @@ export const unfollowUser = (userId: string) =>
 export const getFollowers = (userId: string) => apiFetch<UserSummary[]>(`/users/${userId}/followers`);
 
 export const getFollowing = (userId: string) => apiFetch<UserSummary[]>(`/users/${userId}/following`);
+
+// --- Leagues / favoris ---
+export const getAllLeagues = () => apiFetch<League[]>('/leagues');
+
+export const getLeague = (id: string) => apiFetch<League>(`/leagues/${id}`);
+
+export const getFavoriteLeagues = (userId: string) => apiFetch<League[]>(`/users/${userId}/favorite-leagues`);
+
+export const favoriteLeague = (leagueId: string) =>
+  apiFetch<{ success: boolean }>(`/leagues/${leagueId}/favorite`, { method: 'POST' });
+
+export const unfavoriteLeague = (leagueId: string) =>
+  apiFetch<{ success: boolean }>(`/leagues/${leagueId}/favorite`, { method: 'DELETE' });

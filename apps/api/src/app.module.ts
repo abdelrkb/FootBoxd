@@ -10,6 +10,7 @@ import { ReviewsModule } from './reviews/reviews.module.js';
 import { CommentsModule } from './comments/comments.module.js';
 import { FollowsModule } from './follows/follows.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
+import { LeaguesModule } from './leagues/leagues.module.js';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { NotificationsModule } from './notifications/notifications.module.js';
     CommentsModule,
     FollowsModule,
     NotificationsModule,
+    LeaguesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

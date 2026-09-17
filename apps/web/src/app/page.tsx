@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import type { Match } from '@football-app/shared-types';
+import type { Match, League } from '@football-app/shared-types';
 import * as api from '../lib/api';
+import { useAuth } from '../lib/auth-context';
 
 const CALENDAR_DAYS_AHEAD = 5; // section 7 : calendrier navigable jusqu'à +5 jours
 
@@ -22,113 +23,97 @@ function nextDays(n: number): string[] {
   return days;
 }
 
-function formatKickoff(iso: string) {
-  return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
-function scoreLabel(match: Match) {
-  if (match.status === 'scheduled') return formatKickoff(match.kickoffAt);
-  if (match.status === 'postponed') return 'Reporté';
-  if (match.status === 'cancelled') return 'Annulé';
-  if (match.status === 'abandoned') return 'Abandonné';
-  return `${match.homeScore ?? '-'} - ${match.awayScore ?? '-'}${match.status === 'live' ? ' (live)' : ''}`;
+interface LeagueRow {
+  league: League;
+  liveCount: number;
 }
 
 export default function HomePage() {
+  const { user, loading: authLoading } = useAuth();
   const days = useMemo(() => nextDays(CALENDAR_DAYS_AHEAD), []);
   const [selectedDate, setSelectedDate] = useState(days[0]);
   const [matches, setMatches] = useState<Match[] | null>(null);
-  const [selectedLeagueId, setSelectedLeagueId] = useState<string | null>(null);
+  const [favoriteLeagueIds, setFavoriteLeagueIds] = useState<Set<string> | null>(null);
 
   useEffect(() => {
     setMatches(null);
-    setSelectedLeagueId(null);
     api.getMatches(selectedDate).then(setMatches);
   }, [selectedDate]);
 
-  const leagues = useMemo(() => {
-    if (!matches) return [];
-    const seen = new Map<string, string>();
-    for (const m of matches) seen.set(m.league.id, m.league.name);
-    return Array.from(seen, ([id, name]) => ({ id, name }));
-  }, [matches]);
-
-  const groupedByLeague = useMemo(() => {
-    if (!matches) return [];
-    const filtered = selectedLeagueId ? matches.filter((m) => m.league.id === selectedLeagueId) : matches;
-    const groups = new Map<string, { leagueName: string; matches: Match[] }>();
-    for (const m of filtered) {
-      const group = groups.get(m.league.id) ?? { leagueName: m.league.name, matches: [] };
-      group.matches.push(m);
-      groups.set(m.league.id, group);
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setFavoriteLeagueIds(new Set());
+      return;
     }
-    return Array.from(groups.values());
-  }, [matches, selectedLeagueId]);
+    api.getFavoriteLeagues(user.id).then((leagues) => setFavoriteLeagueIds(new Set(leagues.map((l) => l.id))));
+  }, [user, authLoading]);
+
+  // Connecté : uniquement les ligues favorites ayant un match ce jour-là.
+  // Anonyme (pas de favoris) : toutes les ligues ayant un match ce jour-là, pour rester
+  // utile à un visiteur qui parcourt sans compte.
+  const leagueRows: LeagueRow[] = useMemo(() => {
+    if (!matches || favoriteLeagueIds === null) return [];
+    const onlyFavorites = user !== null;
+    const byLeague = new Map<string, LeagueRow>();
+    for (const m of matches) {
+      if (onlyFavorites && !favoriteLeagueIds.has(m.league.id)) continue;
+      const row = byLeague.get(m.league.id) ?? { league: m.league, liveCount: 0 };
+      if (m.status === 'live') row.liveCount += 1;
+      byLeague.set(m.league.id, row);
+    }
+    return Array.from(byLeague.values()).sort((a, b) => a.league.name.localeCompare(b.league.name));
+  }, [matches, favoriteLeagueIds, user]);
+
+  const loading = matches === null || favoriteLeagueIds === null;
 
   return (
-    <div style={{ maxWidth: 720, margin: '1.5rem auto' }}>
-      <h1>Accueil</h1>
+    <div style={{ maxWidth: 600, margin: '1.5rem auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>Accueil</h1>
+        <Link href="/leagues">Toutes les ligues</Link>
+      </div>
 
       <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
         {days.map((d) => (
-          <button
-            key={d}
-            onClick={() => setSelectedDate(d)}
-            style={{ fontWeight: d === selectedDate ? 700 : 400 }}
-          >
+          <button key={d} onClick={() => setSelectedDate(d)} style={{ fontWeight: d === selectedDate ? 700 : 400 }}>
             {new Date(d).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' })}
           </button>
         ))}
       </div>
 
-      {leagues.length > 0 && (
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: '1rem 0' }}>
-          <button onClick={() => setSelectedLeagueId(null)} style={{ fontWeight: selectedLeagueId === null ? 700 : 400 }}>
-            Toutes les ligues
-          </button>
-          {leagues.map((l) => (
-            <button
-              key={l.id}
-              onClick={() => setSelectedLeagueId(l.id)}
-              style={{ fontWeight: selectedLeagueId === l.id ? 700 : 400 }}
-            >
-              {l.name}
-            </button>
-          ))}
-        </div>
+      {user && favoriteLeagueIds?.size === 0 && (
+        <p style={{ marginTop: '1rem' }}>
+          Aucune ligue favorite. Va dans <Link href="/leagues">Toutes les ligues</Link> pour en ajouter.
+        </p>
       )}
 
-      {matches === null && <p>Chargement...</p>}
-      {matches?.length === 0 && <p>Aucun match ce jour-là.</p>}
+      {loading && <p>Chargement...</p>}
+      {!loading && leagueRows.length === 0 && (favoriteLeagueIds?.size ?? 0) > 0 && (
+        <p>Aucun de tes favoris ne joue ce jour-là.</p>
+      )}
 
-      {groupedByLeague.map((group) => (
-        <section key={group.leagueName} style={{ marginBottom: '1.5rem' }}>
-          <h3>{group.leagueName}</h3>
-          <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {group.matches.map((match) => (
-              <li key={match.id}>
-                <Link
-                  href={`/matches/${match.id}`}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    padding: '0.75rem',
-                    border: '1px solid #333',
-                    borderRadius: 8,
-                    textDecoration: 'none',
-                    color: 'inherit',
-                  }}
-                >
-                  <span>
-                    {match.homeTeam.name} — {match.awayTeam.name}
-                  </span>
-                  <span>{scoreLabel(match)}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {leagueRows.map(({ league, liveCount }) => (
+          <li key={league.id}>
+            <Link
+              href={`/leagues/${league.id}?date=${selectedDate}`}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '0.75rem 1rem',
+                border: '1px solid #333',
+                borderRadius: 8,
+                textDecoration: 'none',
+                color: 'inherit',
+              }}
+            >
+              <span>{league.name}</span>
+              {liveCount > 0 && <span>🔴 {liveCount} en direct</span>}
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
