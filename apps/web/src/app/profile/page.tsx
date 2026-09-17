@@ -49,7 +49,21 @@ export default function ProfilePage() {
         </span>
       </div>
 
-      <h2>Derniers matchs notés (saison en cours)</h2>
+      <h2>Matchs préférés (saison en cours)</h2>
+      {profile.favoriteMatches.length === 0 && <p>Aucun match noté cette saison.</p>}
+      <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {profile.favoriteMatches.map((review) => (
+          <li key={review.id} style={{ padding: '0.75rem', border: '1px solid #333', borderRadius: 8 }}>
+            <Link href={`/matches/${review.match.id}`}>
+              {review.match.homeTeam.name} {review.match.homeScore ?? '-'} - {review.match.awayScore ?? '-'}{' '}
+              {review.match.awayTeam.name}
+            </Link>{' '}
+            — note : {review.rating}/5
+          </li>
+        ))}
+      </ul>
+
+      <h2>Derniers matchs loggés (saison en cours)</h2>
       {profile.lastReviews.length === 0 && <p>Aucun match noté cette saison.</p>}
       <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {profile.lastReviews.map((review) => (

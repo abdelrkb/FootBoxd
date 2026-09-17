@@ -15,6 +15,19 @@ export class ReviewsController {
     return this.reviewsService.findForMatch(query.matchId);
   }
 
+  // Routes littérales AVANT ':id' — sinon NestJS matche "popular"/"following" comme un id
+  // (ParseUUIDPipe les rejetterait avec un 400 avant même d'atteindre les bonnes routes).
+  @Get('popular')
+  popular() {
+    return this.reviewsService.findPopular();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('following')
+  following(@CurrentUser() user: PublicUser) {
+    return this.reviewsService.findFromFollowing(user.id);
+  }
+
   @Get(':id')
   detail(@Param('id', ParseUUIDPipe) id: string) {
     return this.reviewsService.findActiveById(id);

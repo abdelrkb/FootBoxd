@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { Match, League } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
+import { ClientDate } from '../../../components/client-date';
 
 const CALENDAR_DAYS_AHEAD = 5;
 
@@ -23,12 +24,10 @@ function nextDays(n: number): string[] {
   return days;
 }
 
-function formatKickoff(iso: string) {
-  return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
 function scoreLabel(match: Match) {
-  if (match.status === 'scheduled') return formatKickoff(match.kickoffAt);
+  if (match.status === 'scheduled') {
+    return <ClientDate iso={match.kickoffAt} options={{ hour: '2-digit', minute: '2-digit' }} />;
+  }
   if (match.status === 'postponed') return 'Reporté';
   if (match.status === 'cancelled') return 'Annulé';
   if (match.status === 'abandoned') return 'Abandonné';
@@ -62,7 +61,7 @@ export default function LeagueDetailPage({ params }: PageProps<'/leagues/[id]'>)
       <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
         {days.map((d) => (
           <button key={d} onClick={() => setSelectedDate(d)} style={{ fontWeight: d === selectedDate ? 700 : 400 }}>
-            {new Date(d).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' })}
+            <ClientDate iso={d} options={{ weekday: 'short', day: 'numeric', month: 'short' }} fallback={d} />
           </button>
         ))}
       </div>

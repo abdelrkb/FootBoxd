@@ -100,6 +100,14 @@ export interface Notification {
   actor: UserSummary;
 }
 
+export interface PopularReview extends ReviewWithMatch {
+  popularityScore: number;
+}
+
+export interface PopularMatch extends Match {
+  reviewCount: number;
+}
+
 export interface Profile {
   id: string;
   displayName: string;
@@ -107,6 +115,7 @@ export interface Profile {
   totalReviewsCount: number;
   reviewsThisSeasonCount: number;
   lastReviews: ReviewWithMatch[];
+  favoriteMatches: ReviewWithMatch[];
   followersCount: number;
   followingCount: number;
 }

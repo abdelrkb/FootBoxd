@@ -19,6 +19,21 @@ const reviewInclude = {
   _count: { select: { likes: true, comments: true } },
 } as const;
 
+const reviewWithMatchInclude = {
+  ...reviewInclude,
+  match: { include: { league: true, homeTeam: true, awayTeam: true } },
+} as const;
+
+// "Populaire" = calculé sur une fenêtre glissante de 48h (décision produit du 2026-09-17) —
+// reste pertinent avec l'actualité plutôt qu'un classement absolu figé dans le temps.
+const POPULARITY_WINDOW_MS = 48 * 60 * 60_000;
+
+function popularityScore(counts: { likes: number; comments: number }): number {
+  // likes + commentaires × 2 (décision produit du 2026-09-17 : valorise l'engagement/discussion
+  // davantage qu'un like passif).
+  return counts.likes + counts.comments * 2;
+}
+
 @Injectable()
 export class ReviewsService {
   constructor(
@@ -82,5 +97,31 @@ export class ReviewsService {
 
   async unlike(reviewId: string, userId: string) {
     await this.prisma.client.reviewLike.deleteMany({ where: { reviewId, userId } });
+  }
+
+  async findPopular(limit = 10) {
+    const since = new Date(Date.now() - POPULARITY_WINDOW_MS);
+    const candidates = await this.prisma.client.review.findMany({
+      where: { deletedAt: null, createdAt: { gte: since } },
+      include: reviewWithMatchInclude,
+    });
+    return candidates
+      .map((review) => ({ ...review, popularityScore: popularityScore(review._count) }))
+      .sort((a, b) => b.popularityScore - a.popularityScore)
+      .slice(0, limit);
+  }
+
+  // "Mes amis" = les utilisateurs que je suis (section 6 : follows). Pas de fenêtre temporelle
+  // ici, juste les N plus récentes (contrairement à "populaire" qui est borné à 48h).
+  findFromFollowing(userId: string, limit = 10) {
+    return this.prisma.client.review.findMany({
+      where: {
+        deletedAt: null,
+        user: { followers: { some: { followerId: userId } } },
+      },
+      include: reviewWithMatchInclude,
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
   }
 }

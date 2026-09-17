@@ -35,4 +35,27 @@ export class MatchesService {
     if (!match) throw new NotFoundException('Match introuvable');
     return match;
   }
+
+  // "Populaire" = le plus review sur une fenêtre de 48h (décision produit du 2026-09-17,
+  // même fenêtre que les reviews populaires — voir reviews.service.ts).
+  async findPopular(limit = 10) {
+    const since = new Date(Date.now() - 48 * 60 * 60_000);
+    const grouped = await this.prisma.client.review.groupBy({
+      by: ['matchId'],
+      where: { deletedAt: null, createdAt: { gte: since } },
+      _count: { matchId: true },
+      orderBy: { _count: { matchId: 'desc' } },
+      take: limit,
+    });
+    if (grouped.length === 0) return [];
+
+    const matches = await this.prisma.client.match.findMany({
+      where: { id: { in: grouped.map((g) => g.matchId) } },
+      include: matchInclude,
+    });
+    const rank = new Map(grouped.map((g, i) => [g.matchId, i]));
+    return matches
+      .map((match) => ({ ...match, reviewCount: grouped.find((g) => g.matchId === match.id)?._count.matchId ?? 0 }))
+      .sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
+  }
 }

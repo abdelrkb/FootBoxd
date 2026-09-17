@@ -11,6 +11,12 @@ export class MatchesController {
     return this.matchesService.findByDate(query.date, query.leagueId);
   }
 
+  // Route littérale AVANT ':id' — sinon NestJS matche "popular" comme un id.
+  @Get('popular')
+  popular() {
+    return this.matchesService.findPopular();
+  }
+
   @Get(':id')
   detail(@Param('id', ParseUUIDPipe) id: string) {
     return this.matchesService.findById(id);

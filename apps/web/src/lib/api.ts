@@ -7,6 +7,9 @@ import type {
   Profile,
   UserSummary,
   League,
+  PopularReview,
+  PopularMatch,
+  ReviewWithMatch,
 } from '@football-app/shared-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -52,6 +55,8 @@ export const getMatches = (date: string, leagueId?: string) =>
 
 export const getMatch = (id: string) => apiFetch<Match>(`/matches/${id}`);
 
+export const getPopularMatches = () => apiFetch<PopularMatch[]>('/matches/popular');
+
 // --- Reviews ---
 export const getReviewsForMatch = (matchId: string) => apiFetch<Review[]>(`/reviews?matchId=${matchId}`);
 
@@ -65,6 +70,10 @@ export const deleteReview = (id: string) => apiFetch<void>(`/reviews/${id}`, { m
 export const likeReview = (id: string) => apiFetch<{ success: boolean }>(`/reviews/${id}/like`, { method: 'POST' });
 
 export const unlikeReview = (id: string) => apiFetch<{ success: boolean }>(`/reviews/${id}/like`, { method: 'DELETE' });
+
+export const getPopularReviews = () => apiFetch<PopularReview[]>('/reviews/popular');
+
+export const getFollowingReviews = () => apiFetch<ReviewWithMatch[]>('/reviews/following');
 
 // --- Comments ---
 export const getComments = (reviewId: string) => apiFetch<Comment[]>(`/reviews/${reviewId}/comments`);

@@ -5,16 +5,13 @@ import type { Match, Review } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import { ReviewCard } from './review-card';
+import { ClientDate } from '../../../components/client-date';
 
 interface LineupRow {
   idPlayer: string;
   strPlayer: string;
   strPosition: string | null;
   strHome: 'Yes' | 'No';
-}
-
-function formatKickoff(iso: string) {
-  return new Date(iso).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) {
@@ -58,7 +55,8 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
         {match.homeTeam.name} {match.homeScore ?? '-'} - {match.awayScore ?? '-'} {match.awayTeam.name}
       </h1>
       <p>
-        {formatKickoff(match.kickoffAt)} {match.venue ? `— ${match.venue}` : ''} — statut : {match.status}
+        <ClientDate iso={match.kickoffAt} options={{ dateStyle: 'medium', timeStyle: 'short' }} />{' '}
+        {match.venue ? `— ${match.venue}` : ''} — statut : {match.status}
       </p>
       {match.highlightUrl && (
         <p>
