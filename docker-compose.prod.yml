@@ -1,74 +1,69 @@
-# Compose de production — fichier AUTONOME, pas un override de docker-compose.yml (dev).
-# Volontairement séparé : la fusion de listes de Docker Compose (`ports`, notamment) est
-# additive entre fichiers -f, donc un override ne peut pas "retirer" les ports publiés par la
-# base — la seule façon fiable de ne PAS exposer postgres/redis est un fichier complet à part.
-# Usage sur le VPS (voir architecture.md section 9 et README) :
-#   docker compose -f docker-compose.prod.yml pull
-#   docker compose -f docker-compose.prod.yml up -d postgres redis
-#   docker compose -f docker-compose.prod.yml run --rm api npm run migrate:deploy --workspace=@football-app/database
-#   docker compose -f docker-compose.prod.yml up -d
-#
-# Diffère du docker-compose.yml de dev sur 3 points :
-# - images ghcr.io pré-buildées par la CI (pas de `build:` sur le VPS — lent et gourmand en RAM
-#   pour un Next.js sur un CX23 2 vCPU/4 Go)
-# - postgres/redis n'exposent AUCUN port sur l'hôte (accessibles seulement via le réseau interne
-#   de ce projet Compose) — ports publics ouverts sur le VPS : seulement 80/443 (Caddy)
-# - un service `caddy` en reverse-proxy TLS, routage par chemin (/api/* -> api, le reste -> web),
-#   ce qui règle le point ouvert sur le cookie httpOnly cross-domain (tout reste same-origin)
+name: football-app
+
+# Remplace abdelrkb par ton user/organisation GitHub EN MINUSCULES (exigence de ghcr.io).
+# Aucun "ports:" ici : seul Caddy (dans /opt/proxy) est exposé sur Internet.
 
 services:
   postgres:
     image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-football_app}
+      POSTGRES_DB: football_app
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d football_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    networks: [internal]
 
   api:
-    image: ghcr.io/${GHCR_OWNER}/football-app-api:${IMAGE_TAG:-latest}
+    image: ghcr.io/abdelrkb/football-app-api:${TAG:-latest}
     restart: unless-stopped
-    depends_on:
-      - postgres
-      - redis
     env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      internal:
+      proxy:
+        aliases: [football-api]
 
   worker:
-    image: ghcr.io/${GHCR_OWNER}/football-app-worker:${IMAGE_TAG:-latest}
+    image: ghcr.io/abdelrkb/football-app-worker:${TAG:-latest}
     restart: unless-stopped
-    depends_on:
-      - postgres
-      - redis
     env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks: [internal]
 
   web:
-    image: ghcr.io/${GHCR_OWNER}/football-app-web:${IMAGE_TAG:-latest}
+    image: ghcr.io/abdelrkb/football-app-web:${TAG:-latest}
     restart: unless-stopped
-    depends_on:
-      - api
     env_file: .env
-
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - api
-      - web
+    depends_on: [api]
+    networks:
+      internal:
+      proxy:
+        aliases: [football-web]
 
 volumes:
   pgdata:
-  caddy_data:
-  caddy_config:
+
+networks:
+  internal:
+  proxy:
+    external: true
