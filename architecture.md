@@ -90,7 +90,7 @@ Champs réels de `lookup/event_timeline` : `idTimeline` (id stable, sert de clé
 - **Frontend mobile** : React Native (plus tard) — code/logique métier partagés avec le web (types, hooks)
 - **Backend** : Node.js + NestJS — structure modulaire (`matches`, `reviews`, `users`, `follows`, `comments`, `notifications`, `polling`)
   - **Note d'implémentation (2026-09-16)** : `@nestjs/cli` générait par défaut du NestJS **v12** (sorti très récemment). Une partie de l'écosystème (`@nestjs/throttler`, entre autres) n'a pas encore de version compatible (peerDependencies limitées à `^11.0.0` max), et un vrai bug de résolution de dépendances est apparu avec `@nestjs/passport@12` (`LocalAuthGuard`/`AuthGuard()` ne se résolvait pas via l'injection de dépendances). **Toutes les briques `@nestjs/*` sont donc pinnées sur la dernière v11 stable**, testée et fonctionnelle de bout en bout (voir module auth). À réévaluer une fois que l'écosystème aura rattrapé la v12.
-- **Base de données** : PostgreSQL — hébergé sur **Neon** (scaling auto, database branching pour dev/staging, tier gratuit généreux au départ). Alternative : Supabase si on veut déléguer aussi auth/storage/realtime.
+- **Base de données** : PostgreSQL — **tranché le 2026-09-20 : conteneur Docker sur le VPS** (pas de service managé), avec backups pg_dump quotidiens vers Cloudflare R2, voir section 9. L'option initialement envisagée ici, **Neon** (scaling auto, database branching, tier gratuit), reste une alternative si la charge de gestion des backups devient gênante. Supabase reste une option si on veut déléguer aussi auth/storage/realtime.
 - **Cache / temps réel** : Redis — pub/sub pour push aux clients
 - **Communication temps réel** : WebSocket (Socket.io ou NestJS Gateway) pour push scores live ET notifications, sans polling côté client
   - ⚠️ **Non implémenté à ce jour (2026-09-20)** : le worker publie déjà les mises à jour de score live sur un canal Redis (`match:live-update`, voir `apps/worker/src/redis.ts` et `live-sync.ts`), mais **rien ne s'y abonne** — pas de `WebSocketGateway` côté API, pas de client Socket.io côté web. En pratique, aujourd'hui, le front récupère l'état d'un match (score, minute, faits de match) uniquement via un `fetch` REST au chargement de la page, **sans rafraîchissement automatique ni polling côté client** (vérifié : aucun `setInterval` dans `apps/web/src`). Un utilisateur qui reste sur une page de match live doit la recharger pour voir le score évoluer. À trancher avant/après le lancement VPS (voir section 11) : brancher le WebSocket promis ici, ou accepter un polling REST simple côté client comme premier palier.
@@ -437,85 +437,59 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 ⚠️ Les callback URLs OAuth (`GOOGLE_CALLBACK_URL`, `APPLE_CALLBACK_URL`) et `NEXT_PUBLIC_API_URL` sont **spécifiques au domaine** : ceux ci-dessus sont les valeurs de dev local, à remplacer par les URLs publiques du VPS avant de builder/déployer en prod (et à déclarer côté Google Cloud Console / Apple Developer pour les deux premières).
 
 ### Sécurité basique de l'API interne
-- **Rate-limiting** sur les endpoints NestJS eux-mêmes (module `@nestjs/throttler`), indépendant du rate-limit de l'API externe
-- **CORS** configuré explicitement pour autoriser web + mobile (origines à whitelister, pas de wildcard `*` en prod)
+- **Rate-limiting** sur les endpoints NestJS eux-mêmes (module `@nestjs/throttler`, `100 req/min` — voir `apps/api/src/app.module.ts`), indépendant du rate-limit de l'API externe
+- **CORS** configuré explicitement pour autoriser web + mobile (origines à whitelister, pas de wildcard `*` en prod) — voir `apps/api/src/main.ts`
 - **Validation des inputs** via `class-validator` + `class-transformer` (natif NestJS, DTO validés automatiquement sur chaque endpoint)
+
+⚠️ **`docker-compose.yml` (dev) contient des identifiants Postgres en dur** (`user`/`password`) et publie les ports 5432/6379 sur l'hôte — sans conséquence en local, mais à ne **jamais** reproduire tel quel en prod. `docker-compose.prod.yml` (section 9) corrige les deux : identifiants via variables d'env (`.env`, jamais commité), et postgres/redis sans aucun port publié.
+
+Durcissement du **serveur** lui-même (SSH, pare-feu, mises à jour, rotation des logs) : voir la check-list dans la section 9 (Hébergement) — distincte de la sécurité applicative ci-dessus.
 
 ## 9. Hébergement (VPS)
 
-**Hetzner Cloud — instance CX22** : 2 vCPU / 4 GB RAM / 40 GB NVMe, ~5-8€/mois, 20 TB de bande passante inclus, DDoS protection et firewall inclus. Meilleur rapport prix/perf du marché pour ce type de charge (API Node.js + worker). Datacenters en Europe (Falkenstein/Nuremberg/Helsinki) — bonne latence pour un lancement en France.
+**Décisions prises le 2026-09-20** (revue du plan initial avant premier déploiement — voir aussi section 11) :
 
-Scaling : monter en gamme sur la même famille (CX32, CX42...) tant qu'une seule machine suffit. Ne pas anticiper le multi-serveur/Kubernetes avant que le trafic le justifie réellement.
+**Hetzner Cloud — instance CX23** (renommée depuis CX22 le 15/06/2026, mêmes specs) : 2 vCPU / 4 GB RAM / 40 GB NVMe, **5,49 €/mois** (Allemagne/Finlande, tarif post-15/06/2026, +38% par rapport à l'ancien prix), 20 TB de bande passante inclus, DDoS protection et firewall inclus. Rester sur la gamme **CX** (vCPU partagés) — les gammes CPX/CCX (vCPU dédiés) ont beaucoup plus augmenté et ne se justifient pas pour <100 utilisateurs. 4 Go de RAM suffisent pour faire tourner postgres + redis + api + worker + web ensemble.
 
-Alternative si besoin de support/facturation français : **OVH** (VPS équivalent, un peu plus cher).
+Scaling : monter en gamme sur la même famille (CX33, CX43...) tant qu'une seule machine suffit. Ne pas anticiper le multi-serveur/Kubernetes avant que le trafic le justifie réellement.
 
-⚠️ **Point ouvert découvert en implémentant le frontend (2026-09-16)** : le cookie httpOnly d'auth (décision section 3) est posé par l'API sur son propre domaine. En local, `web` (3001) et `api` (3000) partagent le même host `localhost` donc le cookie circule naturellement entre les deux ports — testé et fonctionnel. **En prod, ce n'est pas garanti** : si `api` et `web` finissent sur des sous-domaines différents (ex: `api.example.com` / `app.example.com`), le cookie ne traversera pas sans un `domain` explicite sur le cookie (ex: `.example.com`) — alors qu'avec un reverse-proxy unique routant par chemin (`example.com/` → web, `example.com/api/*` → api), tout reste same-origin sans rien à changer. **Aucun choix de topologie DNS/reverse-proxy n'est fait dans ce document** — à trancher avant le déploiement en prod (section 9), ça détermine si `auth.controller.ts` doit fixer `domain` sur le cookie.
+Alternatives si besoin de support/facturation français : **OVH** ou **Scaleway** (VPS équivalents, un peu plus chers).
 
-⚠️ **État réel (2026-09-20) : ce pipeline n'existe pas encore.** Aucun fichier sous `.github/workflows/` dans le repo — tout ce qui suit est le plan initial, jamais implémenté. Le déploiement sur le VPS devra, pour un premier lancement, être fait manuellement (SSH + `docker compose up -d --build` avec le `.env` de prod) le temps de mettre en place la CI, ou bien construire le pipeline avant de lancer.
+**Postgres : conteneur Docker sur le VPS, pas Neon.** Zéro coût supplémentaire ; en contrepartie les backups sont à notre charge — voir `scripts/backup-postgres.sh` (pg_dump quotidien vers Cloudflare R2, à planifier via crontab sur le VPS, pas dans un conteneur). Le plan initial de la section 3 mentionnait Neon : tranché en faveur du conteneur pour un MVP solo, sans dépendance externe ni latence réseau supplémentaire. Neon reste une option de repli si la charge de gestion des backups devient gênante.
 
-Pipeline déclenché sur chaque push sur `main` :
+**Reverse-proxy et cookie d'auth — point ouvert résolu.** Le plan initial notait qu'un cookie httpOnly sans `domain` explicite ne traverse pas des sous-domaines différents (`api.example.com` / `app.example.com`). Décision : un **reverse-proxy Caddy unique** devant tout, routage par chemin sur un seul domaine (`example.com/` → `web`, `example.com/api/*` → `api`, via `handle_path` qui retire le préfixe `/api` avant de transmettre à NestJS — donc **aucun changement de code côté `apps/api`**, ses routes restent exactes telles quelles). Tout reste same-origin côté navigateur : le cookie httpOnly (déjà `secure` en prod, `sameSite: 'lax'`, sans `domain` — voir `apps/api/src/auth/auth.controller.ts`) fonctionne sans modification. Caddy gère aussi le TLS Let's Encrypt automatiquement. Seuls les ports **80 et 443** doivent être ouverts publiquement sur le VPS (postgres/redis ne publient plus aucun port, même en interne au conteneur — accessibles seulement via le réseau Docker Compose).
 
-1. Install dépendances + lint + tests (par app du monorepo)
-2. Build des images Docker (`api`, `worker`, `web`)
-3. Push des images sur **GitHub Container Registry** (ghcr.io — gratuit, déjà lié au repo GitHub)
-4. Connexion SSH au VPS → `docker compose pull && docker compose up -d` pour redéployer avec les nouvelles images
+Fichiers réels du dépôt pour ce plan (plus un simple exemple dans ce document — à tenir synchronisés s'ils évoluent) :
+- [`docker-compose.prod.yml`](./docker-compose.prod.yml) — fichier **autonome** (pas un override de `docker-compose.yml`, voir le commentaire en tête de fichier sur la fusion additive des listes Compose) : images `ghcr.io/...` au lieu de `build:`, postgres/redis sans port publié, service `caddy` en point d'entrée unique (80/443)
+- [`Caddyfile`](./Caddyfile) — ⚠️ contient un domaine placeholder `example.com` à remplacer avant le premier déploiement réel (aucun nom de domaine choisi à ce jour) ; le DNS doit pointer vers l'IP du VPS **avant** de démarrer Caddy, sinon la demande de certificat Let's Encrypt échoue
+- [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml) — pipeline CI/CD, corrigé le 2026-09-20 (voir points 1/2/5 ci-dessous)
+- [`scripts/backup-postgres.sh`](./scripts/backup-postgres.sh) — pg_dump quotidien vers R2
 
-Exemple de workflow (`.github/workflows/deploy.yml`) :
+**Corrections apportées au pipeline CI/CD initial (2026-09-20)**, avant même sa première implémentation :
+1. **Contexte de build cassé** : le plan initial utilisait `context: ./apps/${{ matrix.app }}`, incompatible avec les npm workspaces (section 5 — chaque Dockerfile fait `COPY packages ./packages`, invisible depuis un sous-dossier). Corrigé en `context: .` + `file: apps/${{ matrix.app }}/Dockerfile`.
+2. **Tags d'image** : `:latest` seul ne permet pas de rollback ciblé. Chaque build est maintenant taggé à la fois `:${{ github.sha }}` et `:latest`.
+3. **Build vs pull en prod** : rebuilder Next.js sur un CX23 (2 vCPU/4 Go) à chaque déploiement serait lent et gourmand — la CI build une fois dans GitHub Actions, le VPS ne fait que `pull` les images déjà construites (`docker-compose.prod.yml`).
+4. **Migrations Prisma absentes du pipeline** : ajout de `docker compose -f docker-compose.prod.yml run --rm api npm run migrate:deploy --workspace=@football-app/database` entre le `pull` et le `up -d` final (voir le script SSH dans `deploy.yml`).
 
-```yaml
-name: Deploy
+⚠️ **État réel (2026-09-20)** : ce pipeline n'a encore jamais tourné en conditions réelles (pas de VPS provisionné à ce jour). Prévoir un **premier déploiement manuel** (SSH direct, en suivant l'ordre décrit dans `deploy.yml`) pour valider la chaîne avant d'activer le déclenchement automatique sur push `main`.
 
-on:
-  push:
-    branches: [main]
+**Durcissement de base du VPS (à faire une fois, avant tout déploiement)** :
+- Utilisateur non-root avec authentification par clé SSH uniquement, connexion par mot de passe désactivée (`PasswordAuthentication no`)
+- Pare-feu (firewall Hetzner, ou `ufw`) limité aux ports 22, 80, 443
+- `unattended-upgrades` (mises à jour de sécurité automatiques) et `fail2ban` (protection brute-force SSH)
+- Rotation des logs Docker (`max-size`/`max-file` dans `/etc/docker/daemon.json`) — sans ça, le disque de 40 Go finit par se remplir
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    strategy:
-      matrix:
-        app: [api, worker, web]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: ./apps/${{ matrix.app }}
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/football-app-${{ matrix.app }}:latest
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy on VPS via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /opt/football-app
-            docker compose pull
-            docker compose up -d
-```
-
-**Secrets GitHub à configurer** (`Settings → Secrets and variables → Actions`) : `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` (clé privée SSH dédiée au déploiement, sans passphrase). Le `docker-compose.yml` de prod sur le VPS référence les images `ghcr.io/...` plutôt que de rebuild localement à chaque déploiement.
-
-Étape préalable côté VPS : cloner le repo une fois dans `/opt/football-app` (juste pour avoir le `docker-compose.yml` + `.env` de prod), configurer `docker login ghcr.io` avec un token en lecture seule, et laisser le pipeline gérer le reste ensuite.
+Étape préalable côté VPS : cloner le repo une fois dans `/opt/football-app` (pour disposer de `docker-compose.prod.yml`, `Caddyfile` et `.env` de prod), configurer `docker login ghcr.io` avec un token en lecture seule, et laisser le pipeline gérer le reste ensuite.
 
 **Tests avant déploiement** : pour l'instant pas de suite de tests définie — à mettre en place en même temps que le dev démarre (tests unitaires NestJS a minima sur les services critiques : `reviews`, `follows`, `auth`). Le job `build-and-push` peut inclure un step `npm test` qui bloque le déploiement si les tests échouent, dès qu'il y en a.
+
+**Ordre de mise en place recommandé** :
+1. Créer le serveur (CX23), le durcir, installer Docker + Docker Compose
+2. Choisir un nom de domaine et pointer son DNS vers l'IP du VPS
+3. Remplacer `example.com` dans `Caddyfile`, compléter `.env` de prod (voir `.env.example`, section "Prod uniquement")
+4. Cloner le repo dans `/opt/football-app`, premier déploiement manuel pour valider
+5. Configurer les secrets GitHub (`VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` — clé privée SSH dédiée, sans passphrase) et activer le déclenchement automatique sur push `main`
+6. Planifier `scripts/backup-postgres.sh` en cron quotidien
 
 ## 10. ORM
 
@@ -529,14 +503,16 @@ Corrigé par : `binaryTargets = ["native", "linux-musl-openssl-3.0.x"]` dans `sc
 
 ## 11. Points restés ouverts (à trancher en cours de dev)
 
-**À trancher avant/pendant le déploiement VPS (2026-09-20)** :
-- **Topologie DNS/reverse-proxy et cookie d'auth** — voir section 9 : sous-domaines séparés (`api.`/`app.`) nécessitent un `domain` explicite sur le cookie httpOnly ; un reverse-proxy unique par chemin l'évite. Détermine aussi la valeur de `NEXT_PUBLIC_API_URL` à builder dans l'image `web` (section 8) et les callback URLs OAuth à déclarer chez Google/Apple.
-- **Pipeline CI/CD** — n'existe pas dans le repo (section 9) : soit le construire avant de lancer, soit déployer manuellement en premier (`docker compose up -d --build` sur le VPS via SSH) et automatiser après.
+**Restant à faire avant le déploiement VPS (2026-09-20)** — tout le reste du plan (VPS, Postgres, reverse-proxy, pipeline, durcissement) est tranché, voir section 9 :
+- **Nom de domaine** — aucun choisi à ce jour. `Caddyfile` contient un placeholder `example.com` à remplacer, et le DNS doit pointer vers l'IP du VPS avant de démarrer Caddy (sinon échec de la demande de certificat TLS).
+- **Premier déploiement** — le pipeline CI/CD (`.github/workflows/deploy.yml`) et `docker-compose.prod.yml` existent et sont corrigés (section 9) mais n'ont **jamais tourné en conditions réelles** (pas de VPS provisionné à ce jour) — prévoir un premier déploiement manuel de validation avant d'activer le déclenchement automatique.
 - **Temps réel (WebSocket)** — annoncé section 3 mais jamais branché : le worker publie déjà sur Redis, personne ne consomme. Le produit fonctionne aujourd'hui en pur REST sans rafraîchissement automatique des scores live. Décider si c'est un prérequis au lancement ou un palier suivant.
-- **Upload d'avatar / Cloudflare R2** — variables d'env prévues (section 8) mais aucune intégration ni endpoint d'upload ; avatars figés sur un placeholder Dicebear. Pas bloquant pour lancer, mais à assumer explicitement comme limitation connue.
+- **Upload d'avatar / Cloudflare R2** — variables d'env prévues (section 8) mais aucune intégration ni endpoint d'upload (R2 n'est utilisé, pour l'instant, que par `scripts/backup-postgres.sh`) ; avatars figés sur un placeholder Dicebear. Pas bloquant pour lancer, mais à assumer explicitement comme limitation connue.
 - Modération des commentaires/signalement de contenu — pas traité pour le MVP
 - Développement complet de la recherche de **match** (la recherche d'**utilisateur**, elle, est implémentée depuis le 2026-09-20 — voir section 7)
+- Suite de tests (unitaires/e2e) — toujours pas construite à ce jour ; le job `build-and-push` de `deploy.yml` n'en bloque donc encore aucun
 - ~~Noms exacts des champs JSON retournés par les endpoints TheSportsDB~~ — ✅ vérifié par appels réels le 2026-09-16, voir section 2 (mapping mis à jour)
 - ~~Mapping des statuts `strStatus` hors du triptyque `scheduled`/`live`/`finished`~~ — ✅ tranché le 2026-09-16 : enum `matches.status` étendu à 7 valeurs, voir section 6 et section 2 pour la table de correspondance complète
-- Suite de tests (unitaires/e2e) — toujours pas construite à ce jour, à brancher dans le futur pipeline CI/CD
+- ~~Topologie DNS/reverse-proxy et cookie d'auth~~ — ✅ tranché le 2026-09-20 : Caddy en reverse-proxy unique, routage par chemin, same-origin (voir section 9)
+- ~~Postgres managé (Neon) ou conteneur~~ — ✅ tranché le 2026-09-20 : conteneur sur le VPS + backups pg_dump vers R2 (voir section 3 et 9)
 

@@ -1,0 +1,58 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        app: [api, worker, web]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          # Contexte = racine du repo, PAS ./apps/${{ matrix.app }} : chaque Dockerfile fait
+          # `COPY packages ./packages` (npm workspaces, voir architecture.md section 5) et
+          # n'aurait pas accès à packages/database ni packages/shared-types autrement.
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/football-app-${{ matrix.app }}:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/football-app-${{ matrix.app }}:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy on VPS via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/football-app
+            export IMAGE_TAG=${{ github.sha }}
+            docker compose -f docker-compose.prod.yml pull
+            # Postgres/redis d'abord, pour que la migration ait une base prête (`run` ne
+            # respecte pas depends_on de la même façon que `up`).
+            docker compose -f docker-compose.prod.yml up -d postgres redis
+            docker compose -f docker-compose.prod.yml run --rm api npm run migrate:deploy --workspace=@football-app/database
+            docker compose -f docker-compose.prod.yml up -d

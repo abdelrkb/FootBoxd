@@ -71,6 +71,17 @@ docker compose down                  # tout arrêter (les données Postgres rest
 docker compose down -v               # tout arrêter ET supprimer les données
 ```
 
+## Déploiement en production
+
+Voir [architecture.md](./architecture.md) section 9 pour le plan complet (Hetzner CX23, Postgres en conteneur + backups R2, reverse-proxy Caddy, CI/CD). Fichiers dédiés à la prod, distincts de tout ce qui précède (qui est pour le dev local uniquement) :
+
+- [`docker-compose.prod.yml`](./docker-compose.prod.yml) — autonome, à utiliser seul (`docker compose -f docker-compose.prod.yml ...`), jamais combiné avec `docker-compose.yml`
+- [`Caddyfile`](./Caddyfile) — domaine à renseigner avant le premier déploiement
+- [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml) — build + push ghcr.io + déploiement SSH sur push `main`
+- [`scripts/backup-postgres.sh`](./scripts/backup-postgres.sh) — à planifier en cron sur le VPS
+
+⚠️ Jamais testé en conditions réelles à ce jour (pas de VPS provisionné) — prévoir un premier déploiement manuel de validation avant d'activer le déclenchement automatique.
+
 ## Structure du monorepo
 
 ```
