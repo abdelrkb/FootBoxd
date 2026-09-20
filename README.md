@@ -29,12 +29,12 @@ Si ces ports sont déjà pris par autre chose sur ta machine, édite `docker-com
 
 ## Comptes de test
 
-| Email | Mot de passe |
-|---|---|
-| `alice@test.com` | `password123` |
-| `bob@test.com` | `password123` |
+| Email | Mot de passe | Pseudo (`username`) |
+|---|---|---|
+| `alice@test.com` | `password123` | `alice_7f379a` |
+| `bob@test.com` | `password123` | `bob_c07e0b` |
 
-Les deux ont les 7 ligues principales (5 grands championnats + Ligue des Champions + Europa League) en favori.
+Les deux ont les 7 ligues principales (5 grands championnats + Ligue des Champions + Europa League) en favori. Les pseudos ci-dessus ont été générés automatiquement lors de l'ajout de la colonne `username` (2026-09-20, migration de backfill) — pratiques pour tester la recherche d'utilisateur (`/search`).
 
 ## Développement au quotidien
 
@@ -56,9 +56,11 @@ docker compose restart api web
 - Changement du schéma Prisma (`packages/database/prisma/schema.prisma`) → soit un rebuild complet, soit plus rapide :
   ```bash
   docker exec appfoot-api-1 sh -c "cd /repo/packages/database && npx prisma generate"
-  docker compose restart api worker
+  docker exec appfoot-worker-1 sh -c "cd /repo/packages/database && npx prisma generate"
+  docker compose restart api worker web
   ```
-  (le client Prisma généré est packagé dans l'image, pas monté en volume — donc `prisma generate` lancé sur ta machine ne suffit pas, il faut le refaire dans le conteneur)
+  (le client Prisma généré est packagé dans **chaque** image — `api` ET `worker`, pas seulement `api` — et n'est pas monté en volume : `prisma generate` lancé sur ta machine ne suffit pas, il faut le refaire dans **les deux** conteneurs, sinon celui qu'on a oublié plante au premier accès à un champ/modèle ajouté. `web` n'a pas de client Prisma mais mérite un restart aussi si tu as ajouté un fichier frontend qui n'apparaît pas — voir juste au-dessus.)
+- Nouvelle route/fichier ajouté au **worker** (pas juste une modif d'un fichier existant) → le watch mode ne le détecte pas toujours à travers le montage Docker : `docker compose restart worker` pour être sûr (vécu le 2026-09-20 avec l'ajout du sync des faits de match, resté silencieux 3 jours avant un restart manuel).
 
 ## Commandes utiles
 
