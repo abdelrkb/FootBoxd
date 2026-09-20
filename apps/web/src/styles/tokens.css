@@ -1,0 +1,200 @@
+:root {
+  /* ——— Couleurs · mode sombre (mode de référence) ——— */
+  --fb-bg: #0A0C11;              /* fond de page */
+  --fb-surface: #121620;         /* cartes, panneaux */
+  --fb-surface-2: #1A1F2B;       /* afficheur de score, champs, hover */
+  --fb-surface-3: #161B25;       /* hover de carte cliquable */
+  --fb-surface-unread: #141924;  /* ligne de notification non lue */
+  --fb-border: #262D3B;          /* trait 1px par défaut */
+  --fb-border-strong: #3B4557;   /* hover, pointillés d'état vide */
+  --fb-border-soft: #1A1F2B;     /* séparateur interne de liste */
+  --fb-text: #F2F4F8;            /* 15:1 sur --fb-bg */
+  --fb-text-2: #A6AEBF;          /* 7.8:1 */
+  --fb-text-3: #8A93A6;          /* 5.4:1 — méta, libellés mono */
+  --fb-text-strong-2: #D4D9E3;   /* corps de commentaire */
+  --fb-disabled-fg: #6B7488;
+  --fb-star-empty: #2B3444;      /* étoile éteinte */
+
+  --fb-live: #FF3B2F;            /* direct — clignote */
+  --fb-live-text: #FF5C52;       /* libellé « En direct » sur fond sombre */
+  --fb-action: #A8E63A;          /* action principale, score en direct, lien actif */
+  --fb-action-hover: #C4F06E;
+  --fb-action-pressed: #86BA2E;
+  --fb-rating: #F5B841;          /* la note, l'étoile favori, le statut suspendu */
+  --fb-social: #FF7BB0;          /* aimé, suivi, badge de notification */
+  --fb-nav: #5B8CFF;             /* liens textuels */
+  --fb-nav-hover: #8FB0FF;
+
+  /* teintes alpha (fond d'état actif) */
+  --fb-rating-bg: rgba(245, 184, 65, 0.14);
+  --fb-social-bg: rgba(255, 123, 176, 0.14);
+  --fb-live-bg: rgba(255, 59, 47, 0.14);
+  --fb-action-bg: rgba(168, 230, 58, 0.12);
+
+  /* ——— Teintes de compétition (filet 3–4px uniquement, jamais en fond) ——— */
+  --fb-league-ligue1: #2B4CE0;
+  --fb-league-premier: #8E3BE0;
+  --fb-league-liga: #E0452B;
+  --fb-league-bundesliga: #E02B4C;
+  --fb-league-seriea: #2B86E0;
+  --fb-league-ucl: #6B7BE0;
+  --fb-league-uel: #E07C2B;
+  --fb-league-default: #3B4252;
+
+  /* ——— Typographie ——— */
+  --fb-font-sans: Archivo, system-ui, sans-serif;   /* variable, axe wdth 62–125 */
+  --fb-font-mono: 'Martian Mono', monospace;        /* tous les chiffres */
+
+  /* largeurs Archivo utilisées (font-stretch) */
+  --fb-width-display: 125%;   /* titres d'écran, « flocage » */
+  --fb-width-card: 112%;      /* titres de carte */
+  --fb-width-body: 100%;      /* texte courant */
+  --fb-width-label: 75%;      /* libellés, statuts, boutons (capitales) */
+
+  /* ——— Espacement · base 4 ——— */
+  --fb-space-1: 4px;
+  --fb-space-2: 8px;
+  --fb-space-3: 12px;
+  --fb-space-4: 16px;
+  --fb-space-5: 20px;   /* padding de carte */
+  --fb-space-6: 24px;
+  --fb-space-8: 32px;   /* entre cartes */
+  --fb-space-10: 40px;  /* gouttière entre colonnes */
+  --fb-space-16: 64px;  /* entre sections */
+
+  /* ——— Rayons ——— */
+  --fb-radius-card: 16px;
+  --fb-radius-row: 12px;
+  --fb-radius-chip: 7px;   /* afficheur de score */
+  --fb-radius-pill: 999px;
+
+  /* ——— Hauteurs de contrôle ——— */
+  --fb-control-lg: 50px;
+  --fb-control: 44px;      /* minimum tactile */
+  --fb-control-sm: 40px;
+  --fb-control-xs: 36px;
+
+  /* ——— Hachure « craie » : emplacement vide, slot d'image, état vide ——— */
+  --fb-hatch: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px);
+  --fb-hatch-avatar: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px);
+}
+
+/* ——— Mode clair : minimum viable, mêmes rôles ——— */
+@media (prefers-color-scheme: light) {
+  :root {
+    --fb-bg: #F7F6F3;
+    --fb-surface: #FFFFFF;
+    --fb-surface-2: #EFEEEA;
+    --fb-surface-3: #F2F1ED;
+    --fb-surface-unread: #FDF4F8;
+    --fb-border: #E4E2DC;
+    --fb-border-strong: #C9C6BE;
+    --fb-border-soft: #EFEEEA;
+    --fb-text: #17181C;
+    --fb-text-2: #5D626D;
+    --fb-text-3: #6E7480;
+    --fb-text-strong-2: #2A2C33;
+    --fb-disabled-fg: #9A9EA8;
+    --fb-star-empty: #D8D6D0;
+
+    --fb-live: #D32316;
+    --fb-live-text: #B81E12;
+    --fb-action: #5E8C10;
+    --fb-action-hover: #6FA214;
+    --fb-action-pressed: #4E750D;
+    --fb-rating: #8A6210;
+    --fb-social: #B8296B;
+    --fb-nav: #2C5BD8;
+    --fb-nav-hover: #1E45AD;
+
+    --fb-hatch: repeating-linear-gradient(115deg, #EFEEEA 0 9px, #F7F6F3 9px 18px);
+    --fb-hatch-avatar: repeating-linear-gradient(115deg, #E7E5E0 0 5px, #F2F1ED 5px 10px);
+  }
+}
+
+/* ——— Animations ——— */
+@keyframes fb-blink {          /* point rouge du direct */
+  0%, 55% { opacity: 1; }
+  70%, 100% { opacity: 0.18; }
+}
+@keyframes fb-halo {           /* badge live circulaire */
+  0% { box-shadow: 0 0 0 0 rgba(255, 59, 47, 0.55); }
+  70%, 100% { box-shadow: 0 0 0 10px rgba(255, 59, 47, 0); }
+}
+@keyframes fb-skel {           /* squelette de chargement */
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.9; }
+}
+
+/* ——— Échelle typographique ——— */
+.fb-display {                  /* titre d'écran : « PARIS SG », « MES LIGUES » */
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-display);
+  font-weight: 900;
+  font-size: 44px;
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+.fb-card-title {               /* « PARIS SG — MARSEILLE » dans une carte */
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-card);
+  font-weight: 800;
+  font-size: 15.5px;
+  text-transform: uppercase;
+}
+.fb-section {                  /* « REVIEWS POPULAIRES » */
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-label);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.fb-label {                    /* libellé de champ, nom de ligue dans une carte */
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-label);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.fb-body {
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-body);
+  font-weight: 400;
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+.fb-body-sm {
+  font-family: var(--fb-font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.fb-num {                      /* TOUT chiffre : score, heure, note, compteur */
+  font-family: var(--fb-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+.fb-meta {
+  font-family: var(--fb-font-mono);
+  font-size: 11.5px;
+  color: var(--fb-text-3);
+}
+
+/* ——— Statuts de match : le libellé est TOUJOURS écrit, la couleur ne porte jamais seule l'information ——— */
+.fb-status {
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-label);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.fb-status--live { color: var(--fb-live-text); }                          /* + point qui clignote, score en --fb-action */
+.fb-status--finished { color: var(--fb-text-3); }
+.fb-status--postponed { color: var(--fb-text-strong-2); letter-spacing: 0.2em; }  /* + heure barrée */
+.fb-status--cancelled { color: var(--fb-text-2); letter-spacing: 0.2em; }         /* + nom du match barré */
+.fb-status--suspended { color: var(--fb-rating); letter-spacing: 0.2em; }         /* + carré or */
+.fb-status--abandoned { color: var(--fb-text-strong-2); letter-spacing: 0.2em; }  /* + score barré */

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,400..700&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #0A0C11; }
+  a { color: #5B8CFF; text-decoration: none; }
+  a:hover { color: #8FB0FF; }
+</style>
+</helmet>
+
+<div data-screen-label="Recherche" style="font-family: Archivo, system-ui, sans-serif; background: #0A0C11; color: #F2F4F8; min-height: 100vh; display: flex; flex-direction: column">
+
+  <div style="border-bottom: 1px solid #262D3B; background: #0A0C11">
+    <div style="max-width: 760px; margin: 0 auto; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap">
+      <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap">
+        <span style="width: 34px; height: 34px; border-radius: 9px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px); margin-right: 14px; flex-shrink: 0"></span>
+        <a href="Accueil.dc.html" style="padding: 9px 14px 7px; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Accueil</a>
+        <span style="padding: 9px 14px 7px; border-bottom: 2px solid #A8E63A; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase">Recherche</span>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center">
+        <a href="Notifications.dc.html" style="position: relative; width: 40px; height: 40px; border-radius: 999px; border: 1px solid #262D3B; display: inline-flex; align-items: center; justify-content: center">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 4-1.5 5.5-1.5 5.5h15S18 13 18 9Z"></path><path d="M10.2 18a2 2 0 0 0 3.6 0"></path></svg>
+          <span style="position: absolute; top: -3px; right: -3px; display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: #FF7BB0; color: #0A0C11; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 10.5px; font-weight: 600; border: 2px solid #0A0C11">3</span>
+        </a>
+        <a href="Profil.dc.html" style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 999px; border: 1px solid #262D3B; color: inherit"><span style="width: 28px; height: 28px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span><span style="font-weight: 600; font-size: 14.5px">salim.k</span></a>
+        <span style="padding: 8px 14px; border-radius: 999px; border: 1px solid #262D3B; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #A6AEBF; cursor: pointer">Déconnexion</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex: 1; width: 100%; max-width: 760px; margin: 0 auto; box-sizing: border-box; padding: 56px 24px 80px; display: flex; flex-direction: column; gap: 26px">
+    <h1 style="font-family: Archivo; font-stretch: 125%; font-weight: 900; font-size: 42px; line-height: 0.96; letter-spacing: -0.02em; text-transform: uppercase; margin: 0">Recherche</h1>
+
+    <div style="display: flex; gap: 12px; align-items: center; opacity: 0.55">
+      <input disabled="" placeholder="Un match, un club, quelqu'un à suivre…" style="flex: 1; min-width: 0; height: 50px; box-sizing: border-box; padding: 0 16px; border: 1px dashed #3B4557; border-radius: 999px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); color: #A6AEBF; font-family: Archivo; font-size: 15px; cursor: not-allowed" />
+      <button disabled="" style="height: 50px; padding: 0 20px; border: none; border-radius: 999px; background: #1A1F2B; color: #6B7488; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: not-allowed; white-space: nowrap">Chercher</button>
+    </div>
+
+    <div style="padding: 40px 24px; border: 1px dashed #3B4557; border-radius: 16px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); display: flex; flex-direction: column; gap: 10px; align-items: flex-start">
+      <span style="display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; border: 1px solid #262D3B; background: #121620; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Bientôt disponible</span>
+      <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 22px; text-transform: uppercase">On y travaille</span>
+      <p style="margin: 0; max-width: 52ch; font-size: 15px; line-height: 1.55; color: #A6AEBF">La recherche arrivera après le MVP. Elle permettra de retrouver un match précis et de trouver des gens à suivre.</p>
+      <a href="Toutes les ligues.dc.html" style="margin-top: 6px; height: 44px; padding: 0 18px; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12.5px; letter-spacing: 0.12em; text-transform: uppercase; display: inline-flex; align-items: center">Parcourir les ligues</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:840}}"></script>
+</body>
+</html>

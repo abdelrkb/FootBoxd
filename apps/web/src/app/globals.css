@@ -1,17 +1,14 @@
+/* Alias de migration progressive vers les tokens FootBoxd (design_handoff_footboxd, 2026-09-20) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: var(--fb-bg);
+  --foreground: var(--fb-text);
+  --text-primary: var(--fb-text);
+  --text-secondary: var(--fb-text-2);
 }
 
 html {
   height: 100%;
+  color-scheme: dark;
 }
 
 html,
@@ -24,9 +21,9 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--fb-text);
+  background: var(--fb-bg);
+  font-family: var(--fb-font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -42,8 +39,100 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
   }
+}
+
+/* ——— Échelle typographique (copiée de design_handoff_footboxd/tokens.css) ——— */
+.fb-display {
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-display);
+  font-weight: 900;
+  font-size: 44px;
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+.fb-card-title {
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-card);
+  font-weight: 800;
+  font-size: 15.5px;
+  text-transform: uppercase;
+}
+.fb-section {
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-label);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.fb-label {
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-label);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.fb-body {
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-body);
+  font-weight: 400;
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+.fb-body-sm {
+  font-family: var(--fb-font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.fb-num {
+  font-family: var(--fb-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+.fb-meta {
+  font-family: var(--fb-font-mono);
+  font-size: 11.5px;
+  color: var(--fb-text-3);
+}
+
+/* ——— Statuts de match ——— */
+.fb-status {
+  font-family: var(--fb-font-sans);
+  font-stretch: var(--fb-width-label);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.fb-status--live { color: var(--fb-live-text); }
+.fb-status--finished { color: var(--fb-text-3); }
+.fb-status--postponed { color: var(--fb-text-strong-2); letter-spacing: 0.2em; }
+.fb-status--cancelled { color: var(--fb-text-2); letter-spacing: 0.2em; }
+.fb-status--suspended { color: var(--fb-rating); letter-spacing: 0.2em; }
+.fb-status--abandoned { color: var(--fb-text-strong-2); letter-spacing: 0.2em; }
+
+/* ——— Carte unique : hover (voir design_handoff_footboxd/README.md "Composants") ——— */
+.fb-card:hover {
+  border-color: var(--fb-border-strong);
+  background: var(--fb-surface-3);
 }

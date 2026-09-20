@@ -15,7 +15,7 @@ function assertValidRating(rating: number) {
 }
 
 const reviewInclude = {
-  user: { select: { id: true, displayName: true, avatarUrl: true } },
+  user: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
   _count: { select: { likes: true, comments: true } },
 } as const;
 
@@ -80,6 +80,20 @@ export class ReviewsService {
     if (review.userId !== userId) throw new ForbiddenException("Cette review n'est pas la vôtre");
 
     await this.prisma.client.review.update({ where: { id }, data: { deletedAt: new Date() } });
+  }
+
+  // "Modifier ma note" (handoff design du 2026-09-20, menu ··· sur sa propre review).
+  async update(id: string, userId: string, data: { rating?: number; comment?: string }) {
+    const review = await this.prisma.client.review.findUnique({ where: { id } });
+    if (!review || review.deletedAt) throw new NotFoundException('Review introuvable');
+    if (review.userId !== userId) throw new ForbiddenException("Cette review n'est pas la vôtre");
+    if (data.rating !== undefined) assertValidRating(data.rating);
+
+    return this.prisma.client.review.update({
+      where: { id },
+      data: { rating: data.rating, comment: data.comment },
+      include: reviewInclude,
+    });
   }
 
   async like(reviewId: string, userId: string) {

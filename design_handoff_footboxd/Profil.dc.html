@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,400..700&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #0A0C11; }
+  a { color: #5B8CFF; text-decoration: none; }
+  a:hover { color: #8FB0FF; }
+  @keyframes fb-skel { 0%, 100% { opacity: 0.45 } 50% { opacity: 0.9 } }
+</style>
+</helmet>
+
+<div data-screen-label="Profil" style="font-family: Archivo, system-ui, sans-serif; background: #0A0C11; color: #F2F4F8; min-height: 100vh; display: flex; flex-direction: column">
+
+  <div style="position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 24px; background: #121620; border-bottom: 1px solid #262D3B">
+    <span style="font-family: 'Martian Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #8A93A6; margin-right: 8px">État de l'écran</span>
+    <sc-for list="{{ viewTabs }}" as="t" hint-placeholder-count="3">
+      <button onClick="{{ t.pick }}" style="height: 30px; padding: 0 13px; border-radius: 999px; cursor: pointer; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; border: 1px solid {{ t.border }}; background: {{ t.bg }}; color: {{ t.color }}">{{ t.label }}</button>
+    </sc-for>
+  </div>
+
+  <div style="border-bottom: 1px solid #262D3B; background: #0A0C11">
+    <div style="max-width: 1060px; margin: 0 auto; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap">
+      <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap">
+        <span style="width: 34px; height: 34px; border-radius: 9px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px); margin-right: 14px; flex-shrink: 0"></span>
+        <a href="Accueil.dc.html" style="padding: 9px 14px 7px; border-bottom: 2px solid transparent; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Accueil</a>
+        <span style="padding: 9px 14px 7px; border-bottom: 2px solid transparent; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF; cursor: pointer">Recherche</span>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center">
+        <span style="position: relative; width: 40px; height: 40px; border-radius: 999px; border: 1px solid #262D3B; display: inline-flex; align-items: center; justify-content: center; cursor: pointer" style-hover="background: #1A1F2B">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 4-1.5 5.5-1.5 5.5h15S18 13 18 9Z"></path><path d="M10.2 18a2 2 0 0 0 3.6 0"></path></svg>
+          <span style="position: absolute; top: -3px; right: -3px; display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: #FF7BB0; color: #0A0C11; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 10.5px; font-weight: 600; border: 2px solid #0A0C11">3</span>
+        </span>
+        <span style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 999px; border: 1px solid #A8E63A; cursor: pointer"><span style="width: 28px; height: 28px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span><span style="font-weight: 600; font-size: 14.5px">salim.k</span></span>
+        <span style="padding: 8px 14px; border-radius: 999px; border: 1px solid #262D3B; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #A6AEBF; cursor: pointer">Déconnexion</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex: 1; width: 100%; max-width: 1060px; margin: 0 auto; box-sizing: border-box; padding: 40px 24px 80px; display: flex; flex-direction: column; gap: 44px">
+
+    <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 28px">
+        <div style="height: 130px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; animation: fb-skel 1.4s ease-in-out infinite"></div>
+        <div style="height: 86px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; animation: fb-skel 1.4s ease-in-out 0.12s infinite"></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px">
+          <div style="height: 92px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; animation: fb-skel 1.4s ease-in-out 0.2s infinite"></div>
+          <div style="height: 92px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; animation: fb-skel 1.4s ease-in-out 0.3s infinite"></div>
+          <div style="height: 92px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; animation: fb-skel 1.4s ease-in-out 0.4s infinite"></div>
+          <div style="height: 92px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; animation: fb-skel 1.4s ease-in-out 0.5s infinite"></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isLoaded }}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 44px">
+
+        <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap">
+          <span style="width: 96px; height: 96px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 7px, #121620 7px 14px); flex-shrink: 0"></span>
+          <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+            <h1 style="font-family: Archivo; font-stretch: 125%; font-weight: 900; font-size: 46px; line-height: 0.94; letter-spacing: -0.02em; text-transform: uppercase; margin: 0">salim.k</h1>
+            <span style="font-family: 'Martian Mono', monospace; font-size: 12px; color: #8A93A6">membre depuis mars 2026 · saison 2026-27</span>
+          </div>
+          <button style="margin-left: auto; height: 42px; padding: 0 17px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #F2F4F8; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; white-space: nowrap" style-hover="background: #1A1F2B">Modifier le profil</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1px; background: #262D3B; border: 1px solid #262D3B; border-radius: 16px; overflow: hidden">
+          <div style="background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 5px">
+            <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 30px; line-height: 1">{{ followers }}</span>
+            <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A93A6">Followers</span>
+          </div>
+          <div style="background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 5px">
+            <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 30px; line-height: 1">{{ following }}</span>
+            <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A93A6">Suivis</span>
+          </div>
+          <div style="background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 5px">
+            <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 30px; line-height: 1">{{ totalLogged }}</span>
+            <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A93A6">Matchs notés</span>
+          </div>
+          <div style="background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 5px">
+            <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 30px; line-height: 1; color: #A8E63A">{{ seasonLogged }}</span>
+            <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A93A6">Vus cette saison</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid #F2F4F8; padding-bottom: 10px; flex-wrap: wrap">
+            <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Matchs préférés</h2>
+            <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">saison en cours · 4 mieux notés</span>
+          </div>
+          <sc-if value="{{ hasFavs }}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+              <sc-for list="{{ favs }}" as="m" hint-placeholder-count="4">
+                <a href="Match.dc.html" style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 16px 18px 14px; display: flex; flex-direction: column; gap: 13px; color: inherit; text-decoration: none; cursor: pointer" style-hover="border-color: #3B4557; background: #161B25">
+                  <div style="display: flex; align-items: center; gap: 8px; min-width: 0">
+                    <span style="width: 3px; height: 12px; border-radius: 999px; background: {{ m.hue }}; flex-shrink: 0"></span>
+                    <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ m.league }}</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 9px">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0">
+                      <span style="width: 24px; height: 24px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 6px; color: #8A93A6; flex-shrink: 0">{{ m.homeShort }}</span>
+                      <span style="flex: 1; min-width: 0; font-size: 14.5px; font-weight: {{ m.homeWeight }}; color: {{ m.homeColor }}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ m.home }}</span>
+                      <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 15px; color: {{ m.homeColor }}; flex-shrink: 0">{{ m.homeGoals }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0">
+                      <span style="width: 24px; height: 24px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 6px; color: #8A93A6; flex-shrink: 0">{{ m.awayShort }}</span>
+                      <span style="flex: 1; min-width: 0; font-size: 14.5px; font-weight: {{ m.awayWeight }}; color: {{ m.awayColor }}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ m.away }}</span>
+                      <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 15px; color: {{ m.awayColor }}; flex-shrink: 0">{{ m.awayGoals }}</span>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 10px; border-top: 1px solid #1F2531; padding-top: 11px; flex-wrap: wrap">
+                    <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 11px; color: #8A93A6">{{ m.date }}</span>
+                    <span style="display: flex; align-items: center; gap: 6px; margin-left: auto"><span style="position: relative; display: inline-block; white-space: nowrap; font-size: 12px; letter-spacing: 0.06em; color: #2B3444">★★★★★<span style="position: absolute; left: 0; top: 0; overflow: hidden; color: #F5B841; width: {{ m.pct }}">★★★★★</span></span><span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12.5px; color: #F5B841">{{ m.rating }}</span></span>
+                  </div>
+                </a>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noFavs }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 30px 22px; border: 1px solid #262D3B; border-radius: 16px; background: #0A0C11; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+              <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 18px; text-transform: uppercase">Ta saison commence ici</span>
+              <span style="font-size: 14.5px; line-height: 1.5; color: #A6AEBF">Tu n'as encore rien noté cette saison. Tes meilleures notes s'afficheront ici.</span>
+              <a href="Accueil.dc.html" style="height: 40px; padding: 0 17px; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; display: inline-flex; align-items: center">Voir les matchs du jour</a>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid #F2F4F8; padding-bottom: 10px; flex-wrap: wrap">
+            <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Derniers matchs loggés</h2>
+            <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">saison en cours · 4 plus récents</span>
+          </div>
+          <sc-if value="{{ hasRecent }}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+              <sc-for list="{{ recent }}" as="m" hint-placeholder-count="4">
+                <a href="Match.dc.html" style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 16px 18px 14px; display: flex; flex-direction: column; gap: 13px; color: inherit; text-decoration: none; cursor: pointer" style-hover="border-color: #3B4557; background: #161B25">
+                  <div style="display: flex; align-items: center; gap: 8px; min-width: 0">
+                    <span style="width: 3px; height: 12px; border-radius: 999px; background: {{ m.hue }}; flex-shrink: 0"></span>
+                    <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ m.league }}</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 9px">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0">
+                      <span style="width: 24px; height: 24px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 6px; color: #8A93A6; flex-shrink: 0">{{ m.homeShort }}</span>
+                      <span style="flex: 1; min-width: 0; font-size: 14.5px; font-weight: {{ m.homeWeight }}; color: {{ m.homeColor }}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ m.home }}</span>
+                      <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 15px; color: {{ m.homeColor }}; flex-shrink: 0">{{ m.homeGoals }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0">
+                      <span style="width: 24px; height: 24px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 6px; color: #8A93A6; flex-shrink: 0">{{ m.awayShort }}</span>
+                      <span style="flex: 1; min-width: 0; font-size: 14.5px; font-weight: {{ m.awayWeight }}; color: {{ m.awayColor }}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ m.away }}</span>
+                      <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 15px; color: {{ m.awayColor }}; flex-shrink: 0">{{ m.awayGoals }}</span>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 10px; border-top: 1px solid #1F2531; padding-top: 11px; flex-wrap: wrap">
+                    <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 11px; color: #8A93A6">{{ m.date }}</span>
+                    <span style="display: flex; align-items: center; gap: 6px; margin-left: auto"><span style="position: relative; display: inline-block; white-space: nowrap; font-size: 12px; letter-spacing: 0.06em; color: #2B3444">★★★★★<span style="position: absolute; left: 0; top: 0; overflow: hidden; color: #F5B841; width: {{ m.pct }}">★★★★★</span></span><span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12.5px; color: #F5B841">{{ m.rating }}</span></span>
+                  </div>
+                </a>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noRecent }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 30px 22px; border: 1px dashed #3B4557; border-radius: 16px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); display: flex; flex-direction: column; gap: 7px">
+              <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 18px; text-transform: uppercase">Aucun match loggé cette saison</span>
+              <span style="font-size: 14.5px; color: #A6AEBF">Note un match et il apparaîtra ici.</span>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1120}}">
+const HUE = {
+  'Ligue 1': '#2B4CE0',
+  'Premier League': '#8E3BE0',
+  Liga: '#E0452B',
+  Bundesliga: '#E02B4C',
+  'Serie A': '#2B86E0',
+  'Ligue des Champions': '#6B7BE0',
+  'Europa League': '#E07C2B',
+};
+
+const FAVS = [
+  { league: 'Liga', home: 'Real Madrid', away: 'Barcelone', homeShort: 'RMA', awayShort: 'FCB', score: '3—2', date: 'dim. 31/08', rating: 5 },
+  { league: 'Premier League', home: 'Arsenal', away: 'Man City', homeShort: 'ARS', awayShort: 'MCI', score: '2—2', date: 'sam. 13/09', rating: 4.5 },
+  { league: 'Serie A', home: 'Inter', away: 'Napoli', homeShort: 'INT', awayShort: 'NAP', score: '1—1', date: 'dim. 14/09', rating: 4.5 },
+  { league: 'Bundesliga', home: 'Dortmund', away: 'Bayern', homeShort: 'BVB', awayShort: 'FCB', score: '2—1', date: 'dim. 24/08', rating: 4 },
+];
+
+const RECENT = [
+  { league: 'Ligue 1', home: 'Paris SG', away: 'Marseille', homeShort: 'PSG', awayShort: 'OM', score: '3—1', date: 'dim. 14/09', rating: 4 },
+  { league: 'Serie A', home: 'Inter', away: 'Napoli', homeShort: 'INT', awayShort: 'NAP', score: '1—1', date: 'dim. 14/09', rating: 4.5 },
+  { league: 'Premier League', home: 'Arsenal', away: 'Man City', homeShort: 'ARS', awayShort: 'MCI', score: '2—2', date: 'sam. 13/09', rating: 4.5 },
+  { league: 'Ligue des Champions', home: 'Atlético', away: 'Villarreal', homeShort: 'ATM', awayShort: 'VIL', score: '0—2', date: 'ven. 12/09', rating: 2.5 },
+];
+
+class Component extends DCLogic {
+  state = { view: 'full' };
+
+  stars(rating) {
+    return {
+      pct: (rating / 5) * 100 + '%',
+      rating: rating.toFixed(1),
+    };
+  }
+
+  renderVals() {
+    const view = this.state.view;
+    const isLoading = view === 'loading';
+    const empty = view === 'empty';
+
+    const tabs = [
+      { k: 'full', label: 'Saison remplie' },
+      { k: 'empty', label: 'Rien noté cette saison' },
+      { k: 'loading', label: 'Chargement' },
+    ].map((t) => {
+      const on = t.k === view;
+      return {
+        label: t.label,
+        pick: () => this.setState({ view: t.k }),
+        bg: on ? '#A8E63A' : 'transparent',
+        color: on ? '#0A0C11' : '#A6AEBF',
+        border: on ? '#A8E63A' : '#262D3B',
+      };
+    });
+
+    const deco = (list) =>
+      list.map((m) => {
+        const g = m.score.split('—');
+        const hg = Number(g[0]);
+        const ag = Number(g[1]);
+        return Object.assign({}, m, this.stars(m.rating), {
+          hue: HUE[m.league] || '#3B4252',
+          homeGoals: g[0],
+          awayGoals: g[1],
+          homeWeight: hg >= ag ? 700 : 500,
+          awayWeight: ag >= hg ? 700 : 500,
+          homeColor: hg >= ag ? '#F2F4F8' : '#A6AEBF',
+          awayColor: ag >= hg ? '#F2F4F8' : '#A6AEBF',
+        });
+      });
+
+    return {
+      viewTabs: tabs,
+      isLoading,
+      isLoaded: !isLoading,
+      followers: empty ? 4 : 128,
+      following: empty ? 11 : 96,
+      totalLogged: empty ? 37 : 214,
+      seasonLogged: empty ? 0 : 31,
+      favs: empty ? [] : deco(FAVS),
+      recent: empty ? [] : deco(RECENT),
+      hasFavs: !empty,
+      noFavs: empty,
+      hasRecent: !empty,
+      noRecent: empty,
+    };
+  }
+}
+</script>
+</body>
+</html>

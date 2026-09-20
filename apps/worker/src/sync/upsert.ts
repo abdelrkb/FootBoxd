@@ -8,6 +8,22 @@ function parseScore(raw: string | null): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
+// `strTimestamp` (UTC) manque parfois en réel sur des ligues mineures (ex. idEvent 2608123,
+// FA Cup Oman, 2026-09-20 : strTimestamp null alors que dateEvent/strTime sont renseignés).
+// Repli sur dateEvent+strTime en les traitant comme UTC, faute de mieux — même hypothèse que
+// pour strTimestamp, pas de fuseau fourni par l'API sur ces fixtures.
+function parseKickoff(event: SportsDbEvent): Date | null {
+  if (event.strTimestamp) {
+    const fromTimestamp = new Date(event.strTimestamp + 'Z');
+    if (!Number.isNaN(fromTimestamp.getTime())) return fromTimestamp;
+  }
+  if (event.dateEvent && event.strTime) {
+    const fromDateTime = new Date(`${event.dateEvent}T${event.strTime}Z`);
+    if (!Number.isNaN(fromDateTime.getTime())) return fromDateTime;
+  }
+  return null;
+}
+
 async function upsertLeagueStub(event: SportsDbEvent) {
   // currentSeason mis à jour avec la valeur du dernier event VALIDE vu pour cette ligue (le
   // schedule-sync ne portant que sur les +5 prochains jours, c'est de facto la saison en cours
@@ -59,6 +75,12 @@ export async function upsertMatchFromScheduleEvent(event: SportsDbEvent): Promis
     return;
   }
 
+  const kickoffAt = parseKickoff(event);
+  if (!kickoffAt) {
+    console.warn(`[upsert] date de coup d'envoi introuvable pour le match ${event.idEvent} — ignoré pour l'instant`);
+    return;
+  }
+
   const [league, homeTeam, awayTeam] = await Promise.all([
     upsertLeagueStub(event),
     upsertTeamStub(event.idHomeTeam, event.strHomeTeam, event.strHomeTeamBadge),
@@ -74,7 +96,7 @@ export async function upsertMatchFromScheduleEvent(event: SportsDbEvent): Promis
       homeScore: parseScore(event.intHomeScore),
       awayScore: parseScore(event.intAwayScore),
       status,
-      kickoffAt: new Date(event.strTimestamp + 'Z'), // strTimestamp est en UTC sans suffixe (voir section 8)
+      kickoffAt,
       venue: event.strVenue,
       season: event.strSeason,
       highlightUrl: event.strVideo || null,
@@ -87,7 +109,7 @@ export async function upsertMatchFromScheduleEvent(event: SportsDbEvent): Promis
       homeScore: parseScore(event.intHomeScore),
       awayScore: parseScore(event.intAwayScore),
       status,
-      kickoffAt: new Date(event.strTimestamp + 'Z'),
+      kickoffAt,
       venue: event.strVenue,
       season: event.strSeason,
       highlightUrl: event.strVideo || null,

@@ -1,27 +1,26 @@
 import Link from 'next/link';
 import type { PopularMatch } from '@football-app/shared-types';
+import { CrestPair } from './ui/crest';
+import { cardShellStyle, LeagueStripe } from './ui/card-shell';
 
 export function MatchMiniCard({ match }: { match: PopularMatch }) {
   return (
-    <Link
-      href={`/matches/${match.id}`}
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '0.75rem',
-        border: '1px solid #333',
-        borderRadius: 8,
-        textDecoration: 'none',
-        color: 'inherit',
-      }}
-    >
-      <span>
-        {match.homeTeam.name} {match.homeScore ?? '-'} - {match.awayScore ?? '-'} {match.awayTeam.name}
-      </span>
-      <span style={{ fontSize: '0.8rem', opacity: 0.7, whiteSpace: 'nowrap', marginLeft: '0.5rem' }}>
-        {match.reviewCount} review{match.reviewCount > 1 ? 's' : ''}
-      </span>
+    <Link href={`/matches/${match.id}`} style={{ ...cardShellStyle(), alignItems: 'center' }} className="fb-card">
+      <CrestPair home={match.homeTeam} away={match.awayTeam} size={36} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0, flex: 1 }}>
+        <LeagueStripe league={match.league} />
+        <span className="fb-card-title">
+          {match.homeTeam.name} — {match.awayTeam.name}
+        </span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
+        <span className="fb-num" style={{ fontWeight: 600, fontSize: 19 }}>
+          {match.reviewCount}
+        </span>
+        <span className="fb-label" style={{ fontSize: 10.5, color: 'var(--fb-text-3)' }}>
+          reviews
+        </span>
+      </div>
     </Link>
   );
 }

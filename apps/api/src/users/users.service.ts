@@ -16,6 +16,36 @@ export class UsersService {
     return this.prisma.client.user.findUnique({ where: { email } });
   }
 
+  findByUsername(username: string) {
+    return this.prisma.client.user.findUnique({ where: { username } });
+  }
+
+  // Recherche par pseudo (prioritaire) ou nom affiché — un utilisateur qui a oublié le pseudo
+  // exact d'un ami mais se souvient de son nom doit quand même pouvoir le retrouver.
+  search(query: string) {
+    const q = query.trim();
+    if (q.length < 2) return [];
+    return this.prisma.client.user.findMany({
+      where: {
+        OR: [{ username: { contains: q, mode: 'insensitive' } }, { displayName: { contains: q, mode: 'insensitive' } }],
+      },
+      select: { id: true, username: true, displayName: true, avatarUrl: true },
+      take: 20,
+      orderBy: { username: 'asc' },
+    });
+  }
+
+  // Repli pour les comptes créés par OAuth (Google/Apple), qui ne passent pas par RegisterDto
+  // et n'ont donc jamais saisi de pseudo — `username` est NOT NULL en base, il en faut un.
+  private async generateUniqueUsername(seed: string): Promise<string> {
+    const base = seed.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 15) || 'user';
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const candidate = attempt === 0 ? base : `${base}${Math.floor(1000 + Math.random() * 9000)}`;
+      if (!(await this.findByUsername(candidate))) return candidate;
+    }
+    throw new Error('Impossible de générer un pseudo unique');
+  }
+
   findById(id: string) {
     return this.prisma.client.user.findUnique({ where: { id } });
   }
@@ -26,11 +56,12 @@ export class UsersService {
       .then((row) => row?.user ?? null);
   }
 
-  createWithPassword(email: string, passwordHash: string, displayName: string) {
+  createWithPassword(email: string, passwordHash: string, displayName: string, username: string) {
     return this.prisma.client.user.create({
       data: {
         email,
         passwordHash,
+        username,
         displayName,
         avatarUrl: DEFAULT_AVATAR_URL,
         authProviders: {
@@ -65,9 +96,11 @@ export class UsersService {
       return existingUser;
     }
 
+    const username = await this.generateUniqueUsername(params.displayName);
     return this.prisma.client.user.create({
       data: {
         email: params.email,
+        username,
         displayName: params.displayName,
         avatarUrl: params.avatarUrl ?? DEFAULT_AVATAR_URL,
         authProviders: {
@@ -109,6 +142,7 @@ export class UsersService {
 
     return {
       id: user.id,
+      username: user.username,
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
       totalReviewsCount: activeReviews.length,
@@ -118,5 +152,30 @@ export class UsersService {
       followersCount,
       followingCount,
     };
+  }
+
+  // "Club de cœur" (handoff design du 2026-09-20) : une seule équipe favorite, épinglée en
+  // haut de l'accueil. `teamId: null` retire le club de cœur.
+  setFavoriteTeam(userId: string, teamId: string | null) {
+    return this.prisma.client.user.update({ where: { id: userId }, data: { favoriteTeamId: teamId } });
+  }
+
+  // Réglages de notification (onboarding, écran "Réglages", 2026-09-20). Décision produit :
+  // stockées mais seule hideScoresUntilClick a un effet réel pour l'instant (voir schema.prisma).
+  updatePreferences(
+    userId: string,
+    prefs: Partial<{
+      notifyOnLike: boolean;
+      notifyOnComment: boolean;
+      notifyOnNewFollower: boolean;
+      notifyKickoffReminder: boolean;
+      hideScoresUntilClick: boolean;
+    }>,
+  ) {
+    return this.prisma.client.user.update({ where: { id: userId }, data: prefs });
+  }
+
+  completeOnboarding(userId: string) {
+    return this.prisma.client.user.update({ where: { id: userId }, data: { hasCompletedOnboarding: true } });
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseUUIDPipe, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { PublicUser } from '../auth/auth.service.js';
@@ -12,6 +12,14 @@ export class NotificationsController {
   @Get()
   list(@CurrentUser() user: PublicUser) {
     return this.notificationsService.findForUser(user.id);
+  }
+
+  // Route littérale AVANT ':id/read' — "read-all" ne doit pas être capturé par ParseUUIDPipe.
+  @Patch('read-all')
+  @HttpCode(200)
+  async markAllAsRead(@CurrentUser() user: PublicUser) {
+    await this.notificationsService.markAllAsRead(user.id);
+    return { success: true };
   }
 
   @Patch(':id/read')

@@ -20,13 +20,17 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(email: string, password: string, displayName: string): Promise<PublicUser> {
-    const existing = await this.usersService.findByEmail(email);
-    if (existing) {
+  async register(email: string, password: string, displayName: string, username: string): Promise<PublicUser> {
+    const existingEmail = await this.usersService.findByEmail(email);
+    if (existingEmail) {
       throw new ConflictException('Un compte existe déjà avec cet email');
     }
+    const existingUsername = await this.usersService.findByUsername(username);
+    if (existingUsername) {
+      throw new ConflictException('Ce pseudo est déjà pris');
+    }
     const passwordHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
-    const user = await this.usersService.createWithPassword(email, passwordHash, displayName);
+    const user = await this.usersService.createWithPassword(email, passwordHash, displayName, username);
     return toPublicUser(user);
   }
 

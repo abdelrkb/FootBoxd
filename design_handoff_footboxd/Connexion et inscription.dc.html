@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,400..700&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #0A0C11; }
+  a { color: #5B8CFF; text-decoration: none; }
+  a:hover { color: #8FB0FF; }
+</style>
+</helmet>
+
+<div data-screen-label="Connexion et inscription" style="font-family: Archivo, system-ui, sans-serif; background: #0A0C11; color: #F2F4F8; min-height: 100vh; display: flex; flex-direction: column">
+
+  <div style="position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 24px; background: #121620; border-bottom: 1px solid #262D3B">
+    <span style="font-family: 'Martian Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #8A93A6; margin-right: 8px">Étape</span>
+    <sc-for list="{{ viewTabs }}" as="t" hint-placeholder-count="6">
+      <button onClick="{{ t.pick }}" style="height: 30px; padding: 0 13px; border-radius: 999px; cursor: pointer; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; border: 1px solid {{ t.border }}; background: {{ t.bg }}; color: {{ t.color }}">{{ t.label }}</button>
+    </sc-for>
+  </div>
+
+  <div style="flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 56px 24px 80px">
+
+    <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 26px">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <span style="width: 44px; height: 44px; border-radius: 11px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px)"></span>
+          <h1 style="font-family: Archivo; font-stretch: 125%; font-weight: 900; font-size: 38px; line-height: 0.96; letter-spacing: -0.02em; text-transform: uppercase; margin: 0">Content de<br />te revoir</h1>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; flex-direction: column; gap: 7px">
+            <label style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Email</label>
+            <input value="salim.k@gmail.com" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; color: #F2F4F8; font-family: Archivo; font-size: 15px" style-focus="border-color: #A8E63A; outline: none" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 7px">
+            <label style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: {{ errLabel }}">Mot de passe</label>
+            <input type="password" value="motdepasse" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 1px solid {{ errBorder }}; border-radius: 12px; background: #121620; color: #F2F4F8; font-family: Archivo; font-size: 15px" style-focus="border-color: #A8E63A; outline: none" />
+            <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
+              <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #FF5C52"><span style="width: 7px; height: 7px; border-radius: 999px; background: #FF3B2F; flex-shrink: 0"></span>Email ou mot de passe incorrect.</span>
+            </sc-if>
+          </div>
+        </div>
+        <button style="height: 50px; border: none; border-radius: 999px; background: {{ ctaBg }}; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 13.5px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">{{ loginCta }}</button>
+        <div style="display: flex; align-items: center; gap: 14px">
+          <span style="flex: 1; height: 1px; background: #262D3B"></span>
+          <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">ou</span>
+          <span style="flex: 1; height: 1px; background: #262D3B"></span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <button style="height: 48px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; color: #F2F4F8; font-family: Archivo; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px" style-hover="background: #1A1F2B"><span style="width: 20px; height: 20px; border-radius: 4px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px); flex-shrink: 0"></span>Continuer avec Google</button>
+          <button style="height: 48px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; color: #F2F4F8; font-family: Archivo; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px" style-hover="background: #1A1F2B"><span style="width: 20px; height: 20px; border-radius: 4px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px); flex-shrink: 0"></span>Continuer avec Apple</button>
+        </div>
+        <span style="font-size: 14.5px; color: #A6AEBF">Pas encore de compte ? <span onClick="{{ goSignup }}" style="color: #5B8CFF; cursor: pointer; font-weight: 600">Inscris-toi</span></span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+      <div style="width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 26px">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <span style="width: 44px; height: 44px; border-radius: 11px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px)"></span>
+          <h1 style="font-family: Archivo; font-stretch: 125%; font-weight: 900; font-size: 38px; line-height: 0.96; letter-spacing: -0.02em; text-transform: uppercase; margin: 0">Commence<br />ton carnet</h1>
+          <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #A6AEBF">Note les matchs que tu regardes, garde-les, et vois ce que les autres en ont pensé.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; flex-direction: column; gap: 7px">
+            <label style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Pseudo</label>
+            <input value="salim.k" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; color: #F2F4F8; font-family: Archivo; font-size: 15px" style-focus="border-color: #A8E63A; outline: none" />
+            <span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #8A93A6">c'est ce que les autres verront sur tes notes</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 7px">
+            <label style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Email</label>
+            <input value="salim.k@gmail.com" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; color: #F2F4F8; font-family: Archivo; font-size: 15px" style-focus="border-color: #A8E63A; outline: none" />
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 7px">
+            <label style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Mot de passe</label>
+            <input type="password" value="motdepasse" style="height: 48px; box-sizing: border-box; padding: 0 14px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; color: #F2F4F8; font-family: Archivo; font-size: 15px" style-focus="border-color: #A8E63A; outline: none" />
+            <span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #8A93A6">8 caractères minimum</span>
+          </div>
+        </div>
+        <button onClick="{{ goLeagues }}" style="height: 50px; border: none; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 13.5px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">Créer mon compte</button>
+        <span style="font-size: 14.5px; color: #A6AEBF">Déjà inscrit ? <span onClick="{{ goLogin }}" style="color: #5B8CFF; cursor: pointer; font-weight: 600">Connecte-toi</span></span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ false }}">
+      <div style="width: 100%; max-width: 880px; display: flex; flex-direction: column; gap: 30px">
+
+        <div style="display: flex; gap: 10px; align-items: center">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 7px">
+              <span style="height: 4px; border-radius: 999px; background: {{ s.bar }}"></span>
+              <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: {{ s.color }}">{{ s.label }}</span>
+            </span>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ stepLeagues }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 22px">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <h1 style="font-family: Archivo; font-stretch: 125%; font-weight: 900; font-size: 34px; line-height: 0.98; letter-spacing: -0.02em; text-transform: uppercase; margin: 0">Choisis tes ligues</h1>
+              <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #A6AEBF">Elles remonteront en premier sur ton accueil. Tu pourras en ajouter d'autres à tout moment.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 10px">
+              <sc-for list="{{ leagues }}" as="l" hint-placeholder-count="8">
+                <button onClick="{{ l.toggle }}" style="display: flex; align-items: center; gap: 11px; padding: 13px 15px; border-radius: 12px; cursor: pointer; text-align: left; border: 1px solid {{ l.border }}; background: {{ l.bg }}">
+                  <span style="width: 3px; height: 22px; border-radius: 999px; background: {{ l.hue }}; flex-shrink: 0"></span>
+                  <span style="width: 26px; height: 26px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); flex-shrink: 0"></span>
+                  <span style="flex: 1; min-width: 0; font-family: Archivo; font-weight: 600; font-size: 14.5px; color: #F2F4F8; text-wrap: pretty">{{ l.name }}</span>
+                  <span style="font-size: 15px; color: {{ l.starColor }}; flex-shrink: 0">{{ l.star }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; border-top: 1px solid #262D3B; padding-top: 20px">
+              <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12.5px; color: {{ countColor }}">{{ favCount }} sélectionnée(s)</span>
+              <button onClick="{{ goSettings }}" disabled="{{ noFav }}" style="margin-left: auto; height: 46px; padding: 0 22px; border: none; border-radius: 999px; background: {{ nextBg }}; color: {{ nextColor }}; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: {{ nextCursor }}">Continuer</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ stepSettings }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 22px">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <h1 style="font-family: Archivo; font-stretch: 125%; font-weight: 900; font-size: 34px; line-height: 0.98; letter-spacing: -0.02em; text-transform: uppercase; margin: 0">Règle deux choses</h1>
+              <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #A6AEBF">Rien d'irréversible : tout se change dans ton profil.</p>
+            </div>
+
+            <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+              <span style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12.5px; letter-spacing: 0.16em; text-transform: uppercase">Ton club</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <sc-for list="{{ clubs }}" as="c" hint-placeholder-count="6">
+                  <button onClick="{{ c.pick }}" style="display: inline-flex; align-items: center; gap: 9px; padding: 9px 14px 9px 9px; border-radius: 999px; cursor: pointer; border: 1px solid {{ c.border }}; background: {{ c.bg }}; color: {{ c.color }}; font-family: Archivo; font-weight: 600; font-size: 14px; white-space: nowrap">
+                    <span style="width: 24px; height: 24px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); flex-shrink: 0"></span>{{ c.name }}
+                  </button>
+                </sc-for>
+              </div>
+              <span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #8A93A6">optionnel · ses matchs seront épinglés en haut de ton accueil</span>
+            </div>
+
+            <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; overflow: hidden">
+              <div style="padding: 16px 20px; border-bottom: 1px solid #262D3B; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12.5px; letter-spacing: 0.16em; text-transform: uppercase">Préférences</div>
+              <sc-for list="{{ prefs }}" as="p" hint-placeholder-count="5">
+                <div style="padding: 16px 20px; border-bottom: 1px solid #1A1F2B; display: flex; align-items: center; gap: 18px">
+                  <span style="display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0">
+                    <span style="font-weight: 600; font-size: 15px">{{ p.label }}</span>
+                    <span style="font-size: 13.5px; line-height: 1.45; color: #8A93A6">{{ p.hint }}</span>
+                  </span>
+                  <button onClick="{{ p.toggle }}" style="width: 50px; height: 28px; border-radius: 999px; border: 1px solid {{ p.trackBorder }}; background: {{ p.track }}; cursor: pointer; padding: 0 3px; display: flex; align-items: center; justify-content: {{ p.justify }}; flex-shrink: 0">
+                    <span style="width: 20px; height: 20px; border-radius: 999px; background: {{ p.knob }}; display: block"></span>
+                  </button>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+              <button onClick="{{ goLeagues }}" style="height: 46px; padding: 0 18px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #A6AEBF; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">Retour</button>
+              <a href="Accueil.dc.html" style="margin-left: auto; height: 46px; padding: 0 22px; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; display: inline-flex; align-items: center">Aller à l'accueil</a>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900}}">
+const LEAGUES = [
+  { name: 'Ligue 1', hue: '#2B4CE0' },
+  { name: 'Premier League', hue: '#8E3BE0' },
+  { name: 'Liga', hue: '#E0452B' },
+  { name: 'Bundesliga', hue: '#E02B4C' },
+  { name: 'Serie A', hue: '#2B86E0' },
+  { name: 'Ligue des Champions', hue: '#6B7BE0' },
+  { name: 'Europa League', hue: '#E07C2B' },
+  { name: 'Eredivisie', hue: '#E09B2B' },
+  { name: 'Liga Portugal', hue: '#2BA36B' },
+  { name: 'Championship', hue: '#7B5BE0' },
+];
+
+const CLUBS = ['Paris SG', 'Marseille', 'Arsenal', 'Real Madrid', 'Inter', 'Dortmund'];
+
+const PREFS = [
+  { k: 'likes', label: "Quand on aime ma note", hint: 'Notification dans la cloche.', on: true },
+  { k: 'comments', label: 'Quand on répond à ma note', hint: 'Notification dans la cloche.', on: true },
+  { k: 'follows', label: 'Quand quelqu\u2019un me suit', hint: 'Notification dans la cloche.', on: true },
+  { k: 'kickoff', label: "Rappel au coup d'envoi", hint: 'Pour les matchs de tes ligues favorites uniquement.', on: false },
+  { k: 'spoilers', label: 'Masquer les scores', hint: "Les scores des matchs que tu n'as pas encore loggés restent cachés jusqu'à ce que tu cliques.", on: false },
+];
+
+class Component extends DCLogic {
+  state = {
+    view: 'login',
+    error: false,
+    favs: { 'Ligue 1': true, 'Premier League': true, 'Ligue des Champions': true },
+    club: 'Paris SG',
+    prefs: PREFS.reduce((a, p) => Object.assign(a, { [p.k]: p.on }), {}),
+  };
+
+  renderVals() {
+    const view = this.state.view;
+    const tabs = [
+      { k: 'login', label: 'Connexion' },
+      { k: 'loginError', label: 'Connexion · erreur' },
+      { k: 'loginLoading', label: 'Connexion · envoi' },
+      { k: 'signup', label: 'Inscription' },
+      { k: 'leagues', label: 'Après inscription · ligues' },
+      { k: 'settings', label: 'Après inscription · réglages' },
+    ].map((t) => {
+      const on = t.k === view;
+      return {
+        label: t.label,
+        pick: () => this.setState({ view: t.k }),
+        bg: on ? '#A8E63A' : 'transparent',
+        color: on ? '#0A0C11' : '#A6AEBF',
+        border: on ? '#A8E63A' : '#262D3B',
+      };
+    });
+
+    const isLogin = view === 'login' || view === 'loginError' || view === 'loginLoading';
+    const hasError = view === 'loginError';
+    const loading = view === 'loginLoading';
+    const favCount = Object.keys(this.state.favs).filter((k) => this.state.favs[k]).length;
+    const stepLeagues = view === 'leagues';
+    const stepSettings = view === 'settings';
+
+    const steps = [
+      { label: 'Compte', done: true },
+      { label: 'Tes ligues', done: true },
+      { label: 'Réglages', done: stepSettings },
+    ].map((s) => ({
+      label: s.label,
+      bar: s.done ? '#A8E63A' : '#262D3B',
+      color: s.done ? '#F2F4F8' : '#8A93A6',
+    }));
+
+    return {
+      viewTabs: tabs,
+      isLogin,
+      isSignup: view === 'signup',
+      isOnboarding: stepLeagues || stepSettings,
+      stepLeagues,
+      stepSettings,
+      steps,
+      hasError,
+      errLabel: hasError ? '#FF5C52' : '#A6AEBF',
+      errBorder: hasError ? '#FF3B2F' : '#262D3B',
+      loginCta: loading ? 'Connexion…' : 'Se connecter',
+      ctaBg: loading ? '#86BA2E' : '#A8E63A',
+      goLogin: () => this.setState({ view: 'login' }),
+      goSignup: () => this.setState({ view: 'signup' }),
+      goLeagues: () => this.setState({ view: 'leagues' }),
+      goSettings: () => favCount > 0 && this.setState({ view: 'settings' }),
+      leagues: LEAGUES.map((l) => {
+        const on = !!this.state.favs[l.name];
+        return {
+          name: l.name,
+          hue: l.hue,
+          star: on ? '★' : '☆',
+          starColor: on ? '#F5B841' : '#8A93A6',
+          border: on ? '#F5B841' : '#262D3B',
+          bg: on ? 'rgba(245,184,65,0.10)' : '#121620',
+          toggle: () =>
+            this.setState((s) => ({ favs: Object.assign({}, s.favs, { [l.name]: !s.favs[l.name] }) })),
+        };
+      }),
+      favCount,
+      noFav: favCount === 0,
+      countColor: favCount === 0 ? '#FF5C52' : '#A6AEBF',
+      nextBg: favCount === 0 ? '#1A1F2B' : '#A8E63A',
+      nextColor: favCount === 0 ? '#6B7488' : '#0A0C11',
+      nextCursor: favCount === 0 ? 'not-allowed' : 'pointer',
+      clubs: CLUBS.map((name) => {
+        const on = this.state.club === name;
+        return {
+          name,
+          pick: () => this.setState((s) => ({ club: s.club === name ? '' : name })),
+          border: on ? '#A8E63A' : '#262D3B',
+          bg: on ? 'rgba(168,230,58,0.12)' : 'transparent',
+          color: on ? '#F2F4F8' : '#A6AEBF',
+        };
+      }),
+      prefs: PREFS.map((p) => {
+        const on = !!this.state.prefs[p.k];
+        return {
+          label: p.label,
+          hint: p.hint,
+          track: on ? '#A8E63A' : '#1A1F2B',
+          trackBorder: on ? '#A8E63A' : '#262D3B',
+          knob: on ? '#0A0C11' : '#8A93A6',
+          justify: on ? 'flex-end' : 'flex-start',
+          toggle: () =>
+            this.setState((s) => ({ prefs: Object.assign({}, s.prefs, { [p.k]: !s.prefs[p.k] }) })),
+        };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>

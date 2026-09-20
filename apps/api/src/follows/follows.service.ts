@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 
 const PRISMA_UNIQUE_VIOLATION = 'P2002';
-const userSummarySelect = { id: true, displayName: true, avatarUrl: true } as const;
+const userSummarySelect = { id: true, username: true, displayName: true, avatarUrl: true } as const;
 
 @Injectable()
 export class FollowsService {
@@ -54,5 +54,12 @@ export class FollowsService {
 
   countFollowing(userId: string) {
     return this.prisma.client.follow.count({ where: { followerId: userId } });
+  }
+
+  async isFollowing(followerId: string, followingId: string): Promise<boolean> {
+    const link = await this.prisma.client.follow.findUnique({
+      where: { followerId_followingId: { followerId, followingId } },
+    });
+    return link !== null;
   }
 }

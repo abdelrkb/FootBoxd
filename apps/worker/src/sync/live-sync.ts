@@ -43,6 +43,7 @@ export async function syncLiveScores(): Promise<void> {
         homeScore: parseScore(event.intHomeScore),
         awayScore: parseScore(event.intAwayScore),
         status,
+        liveMinute: status === 'live' ? event.strProgress || null : null,
       },
     });
 

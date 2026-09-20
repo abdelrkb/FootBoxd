@@ -5,9 +5,15 @@ import Link from 'next/link';
 import type { Match, League, PopularReview, PopularMatch, ReviewWithMatch } from '@football-app/shared-types';
 import * as api from '../lib/api';
 import { useAuth } from '../lib/auth-context';
-import { ClientDate } from '../components/client-date';
 import { ReviewMiniCard } from '../components/review-mini-card';
 import { MatchMiniCard } from '../components/match-mini-card';
+import { DateSelector } from '../components/ui/date-selector';
+import { Crest } from '../components/ui/crest';
+import { LiveCountBadge } from '../components/ui/badges';
+import { EmptyContent, EmptySocial } from '../components/ui/empty-state';
+import { SkeletonList } from '../components/ui/skeleton';
+import { Button } from '../components/ui/button';
+import { leagueAccentColor } from '../components/ui/card-shell';
 
 const CALENDAR_DAYS_AHEAD = 5; // section 7 : calendrier navigable jusqu'à +5 jours
 
@@ -47,40 +53,75 @@ function Sidebar({ user }: { user: { id: string } | null }) {
   }, [user]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      <section>
-        <h2 style={{ fontSize: '1.1rem' }}>Reviews populaires</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {popularReviews === null && <p>Chargement...</p>}
-          {popularReviews?.length === 0 && <p>Rien de populaire pour l'instant.</p>}
-          {popularReviews?.map((r) => <ReviewMiniCard key={r.id} review={r} />)}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 64 }}>
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <h2 className="fb-section" style={{ margin: 0 }}>
+          Reviews populaires
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {popularReviews === null && <SkeletonList />}
+          {popularReviews?.length === 0 && (
+            <EmptyContent title="Rien de populaire pour l'instant" subtitle="Les 48 dernières heures sont calmes." />
+          )}
+          {popularReviews?.map((r) => (
+            <ReviewMiniCard key={r.id} review={r} />
+          ))}
         </div>
       </section>
 
-      <section>
-        <h2 style={{ fontSize: '1.1rem' }}>Reviews de mes amis</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <h2 className="fb-section" style={{ margin: 0 }}>
+          Reviews de mes amis
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {!user && (
-            <p>
-              <Link href="/login">Connecte-toi</Link> et suis des utilisateurs pour voir leurs reviews ici.
-            </p>
+            <EmptySocial
+              title="Connecte-toi pour voir tes amis"
+              subtitle="Les notes des gens que tu suis s'affichent ici."
+              action={
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <Link href="/login">
+                    <Button size="sm">Connexion</Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button size="sm" variant="secondary">
+                      Inscription
+                    </Button>
+                  </Link>
+                </div>
+              }
+            />
           )}
-          {user && followingReviews === null && <p>Chargement...</p>}
+          {user && followingReviews === null && <SkeletonList />}
           {user && followingReviews?.length === 0 && (
-            <p>
-              Aucune review pour l'instant. <Link href="/search">Suis des utilisateurs</Link> pour en voir ici.
-            </p>
+            <EmptySocial
+              title="Suis des gens, remplis ton fil"
+              subtitle="Tu ne suis personne pour l'instant — leurs notes apparaîtront ici dès que ce sera le cas."
+              action={
+                <Link href="/search">
+                  <Button size="sm">Trouver des gens</Button>
+                </Link>
+              }
+            />
           )}
-          {followingReviews?.map((r) => <ReviewMiniCard key={r.id} review={r} />)}
+          {followingReviews?.map((r) => (
+            <ReviewMiniCard key={r.id} review={r} />
+          ))}
         </div>
       </section>
 
-      <section>
-        <h2 style={{ fontSize: '1.1rem' }}>Matchs populaires</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {popularMatches === null && <p>Chargement...</p>}
-          {popularMatches?.length === 0 && <p>Rien de populaire pour l'instant.</p>}
-          {popularMatches?.map((m) => <MatchMiniCard key={m.id} match={m} />)}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <h2 className="fb-section" style={{ margin: 0 }}>
+          Matchs populaires
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {popularMatches === null && <SkeletonList />}
+          {popularMatches?.length === 0 && (
+            <EmptyContent title="Rien de populaire pour l'instant" subtitle="Les 48 dernières heures sont calmes." />
+          )}
+          {popularMatches?.map((m) => (
+            <MatchMiniCard key={m.id} match={m} />
+          ))}
         </div>
       </section>
     </div>
@@ -131,73 +172,71 @@ export default function HomePage() {
   const loading = matches === null || favoriteLeagueIds === null;
 
   return (
-    <div style={{ maxWidth: 960, margin: '2rem auto', display: 'flex', gap: '2.5rem', alignItems: 'flex-start' }}>
-      <div style={{ flex: '1 1 480px', minWidth: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h1 style={{ margin: 0 }}>Mes ligues</h1>
-          <Link href="/leagues">Toutes les ligues</Link>
+    <div
+      style={{
+        maxWidth: 1240,
+        margin: '0 auto',
+        padding: '32px 24px 80px',
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1.35fr) minmax(0, 1fr)',
+        gap: 40,
+        alignItems: 'start',
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1 className="fb-display" style={{ margin: 0, fontSize: 34 }}>
+            Mes ligues
+          </h1>
+          <Link href="/leagues" style={{ color: 'var(--fb-nav)', fontSize: 13 }}>
+            Toutes les ligues
+          </Link>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
-          {days.map((d) => (
-            <button key={d} onClick={() => setSelectedDate(d)} style={{ fontWeight: d === selectedDate ? 700 : 400 }}>
-              <ClientDate iso={d} options={{ weekday: 'short', day: 'numeric', month: 'short' }} fallback={d} />
-            </button>
-          ))}
-        </div>
+        <DateSelector days={days} selected={selectedDate} onSelect={setSelectedDate} />
 
-        {loading && <p>Chargement...</p>}
-        {!loading && leagueRows.length === 0 && <p>Aucun match ce jour-là.</p>}
+        {loading && <SkeletonList />}
+        {!loading && leagueRows.length === 0 && (
+          <EmptyContent title="Aucun match ce jour-là" subtitle="Essaie un autre jour du sélecteur." />
+        )}
 
-        <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {leagueRows.map(({ league, liveCount, isFavorite }) => (
-            <li key={league.id}>
-              <Link
-                href={`/leagues/${league.id}?date=${selectedDate}`}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.9rem 1.1rem',
-                  border: '1px solid #333',
-                  borderRadius: 10,
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  fontWeight: 500,
-                }}
-              >
-                <span>
-                  {isFavorite && <span style={{ marginRight: '0.5rem' }}>★</span>}
-                  {league.name}
-                </span>
-                {liveCount > 0 && (
-                  <span
-                    style={{
-                      background: '#e11d1d',
-                      color: 'white',
-                      borderRadius: 999,
-                      minWidth: 24,
-                      height: 24,
-                      padding: '0 8px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '0.85rem',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {liveCount}
+            <Link
+              key={league.id}
+              href={`/leagues/${league.id}?date=${selectedDate}`}
+              className="fb-card"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '14px 18px',
+                border: '1px solid var(--fb-border)',
+                borderRadius: 12,
+                textDecoration: 'none',
+                color: 'inherit',
+                gap: 12,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                <span style={{ width: 3, height: 20, borderRadius: 999, background: leagueAccentColor(league), flexShrink: 0 }} />
+                <Crest src={league.logoUrl} alt={league.name} size={24} />
+                {isFavorite && (
+                  <span style={{ color: 'var(--fb-rating)', fontSize: 15, flexShrink: 0 }} aria-label="Favori">
+                    ★
                   </span>
                 )}
-              </Link>
-            </li>
+                <span style={{ fontWeight: 600, fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {league.name}
+                </span>
+              </div>
+              {liveCount > 0 && <LiveCountBadge count={liveCount} />}
+            </Link>
           ))}
-        </ul>
+        </div>
       </div>
 
-      <div style={{ flex: '1 1 320px', minWidth: 280 }}>
-        <Sidebar user={user} />
-      </div>
+      <Sidebar user={user} />
     </div>
   );
 }

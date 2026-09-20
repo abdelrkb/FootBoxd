@@ -33,4 +33,10 @@ export class FollowsController {
   following(@Param('id', ParseUUIDPipe) id: string) {
     return this.followsService.findFollowing(id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('am-i-following')
+  async amIFollowing(@Param('id', ParseUUIDPipe) targetId: string, @CurrentUser() user: PublicUser) {
+    return { following: await this.followsService.isFollowing(user.id, targetId) };
+  }
 }

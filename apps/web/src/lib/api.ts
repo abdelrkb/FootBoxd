@@ -10,6 +10,9 @@ import type {
   PopularReview,
   PopularMatch,
   ReviewWithMatch,
+  MatchEvent,
+  RatingDistribution,
+  Team,
 } from '@football-app/shared-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -36,8 +39,11 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 // --- Auth ---
-export const register = (email: string, password: string, displayName: string) =>
-  apiFetch<PublicUser>('/auth/register', { method: 'POST', body: JSON.stringify({ email, password, displayName }) });
+export const register = (email: string, password: string, displayName: string, username: string) =>
+  apiFetch<PublicUser>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, displayName, username }),
+  });
 
 export const login = (email: string, password: string) =>
   apiFetch<PublicUser>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
@@ -57,6 +63,11 @@ export const getMatch = (id: string) => apiFetch<Match>(`/matches/${id}`);
 
 export const getPopularMatches = () => apiFetch<PopularMatch[]>('/matches/popular');
 
+export const getMatchEvents = (matchId: string) => apiFetch<MatchEvent[]>(`/matches/${matchId}/events`);
+
+export const getRatingDistribution = (matchId: string) =>
+  apiFetch<RatingDistribution>(`/matches/${matchId}/rating-distribution`);
+
 // --- Reviews ---
 export const getReviewsForMatch = (matchId: string) => apiFetch<Review[]>(`/reviews?matchId=${matchId}`);
 
@@ -66,6 +77,9 @@ export const createReview = (matchId: string, rating: number, comment?: string) 
   apiFetch<Review>('/reviews', { method: 'POST', body: JSON.stringify({ matchId, rating, comment }) });
 
 export const deleteReview = (id: string) => apiFetch<void>(`/reviews/${id}`, { method: 'DELETE' });
+
+export const updateReview = (id: string, data: { rating?: number; comment?: string }) =>
+  apiFetch<Review>(`/reviews/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
 export const likeReview = (id: string) => apiFetch<{ success: boolean }>(`/reviews/${id}/like`, { method: 'POST' });
 
@@ -87,6 +101,9 @@ export const getNotifications = () => apiFetch<Notification[]>('/notifications')
 export const markNotificationRead = (id: string) =>
   apiFetch<Notification>(`/notifications/${id}/read`, { method: 'PATCH' });
 
+export const markAllNotificationsRead = () =>
+  apiFetch<{ success: boolean }>('/notifications/read-all', { method: 'PATCH' });
+
 // --- Users / Follows ---
 export const getProfile = (userId: string) => apiFetch<Profile>(`/users/${userId}/profile`);
 
@@ -98,6 +115,12 @@ export const unfollowUser = (userId: string) =>
 export const getFollowers = (userId: string) => apiFetch<UserSummary[]>(`/users/${userId}/followers`);
 
 export const getFollowing = (userId: string) => apiFetch<UserSummary[]>(`/users/${userId}/following`);
+
+export const amIFollowing = (userId: string) =>
+  apiFetch<{ following: boolean }>(`/users/${userId}/am-i-following`).then((r) => r.following);
+
+export const searchUsers = (query: string) =>
+  apiFetch<UserSummary[]>(`/users/search?q=${encodeURIComponent(query)}`);
 
 // --- Leagues / favoris ---
 export const getAllLeagues = () => apiFetch<League[]>('/leagues');
@@ -111,3 +134,21 @@ export const favoriteLeague = (leagueId: string) =>
 
 export const unfavoriteLeague = (leagueId: string) =>
   apiFetch<{ success: boolean }>(`/leagues/${leagueId}/favorite`, { method: 'DELETE' });
+
+export const getTeamsForLeague = (leagueId: string) => apiFetch<Team[]>(`/leagues/${leagueId}/teams`);
+
+// --- Club de cœur / préférences (onboarding, handoff design 2026-09-20) ---
+export const setFavoriteTeam = (teamId: string | null) =>
+  apiFetch<PublicUser>('/users/me/favorite-team', { method: 'PATCH', body: JSON.stringify({ teamId }) });
+
+export const updatePreferences = (
+  prefs: Partial<
+    Pick<
+      PublicUser,
+      'notifyOnLike' | 'notifyOnComment' | 'notifyOnNewFollower' | 'notifyKickoffReminder' | 'hideScoresUntilClick'
+    >
+  >,
+) => apiFetch<PublicUser>('/users/me/preferences', { method: 'PATCH', body: JSON.stringify(prefs) });
+
+export const completeOnboarding = () =>
+  apiFetch<PublicUser>('/users/me/complete-onboarding', { method: 'POST' });

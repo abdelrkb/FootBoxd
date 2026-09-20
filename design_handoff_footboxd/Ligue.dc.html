@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,400..700&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #0A0C11; }
+  a { color: #5B8CFF; text-decoration: none; }
+  a:hover { color: #8FB0FF; }
+  @keyframes fb-blink { 0%, 55% { opacity: 1 } 70%, 100% { opacity: 0.18 } }
+  @keyframes fb-skel { 0%, 100% { opacity: 0.45 } 50% { opacity: 0.9 } }
+</style>
+</helmet>
+
+<div data-screen-label="Détail d'une ligue" style="font-family: Archivo, system-ui, sans-serif; background: #0A0C11; color: #F2F4F8; min-height: 100vh; display: flex; flex-direction: column">
+
+  <div style="position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 24px; background: #121620; border-bottom: 1px solid #262D3B">
+    <span style="font-family: 'Martian Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #8A93A6; margin-right: 8px">État de l'écran</span>
+    <sc-for list="{{ viewTabs }}" as="t" hint-placeholder-count="4">
+      <button onClick="{{ t.pick }}" style="height: 30px; padding: 0 13px; border-radius: 999px; cursor: pointer; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; border: 1px solid {{ t.border }}; background: {{ t.bg }}; color: {{ t.color }}">{{ t.label }}</button>
+    </sc-for>
+  </div>
+
+  <div style="border-bottom: 1px solid #262D3B; background: #0A0C11">
+    <div style="max-width: 1000px; margin: 0 auto; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap">
+      <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap">
+        <span style="width: 34px; height: 34px; border-radius: 9px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px); margin-right: 14px; flex-shrink: 0"></span>
+        <span style="padding: 9px 14px 7px; border-bottom: 2px solid transparent; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF; cursor: pointer">Accueil</span>
+        <span style="padding: 9px 14px 7px; border-bottom: 2px solid transparent; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF; cursor: pointer">Recherche</span>
+      </div>
+      <sc-if value="{{ isAuth }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; gap: 12px; align-items: center">
+          <span style="position: relative; width: 40px; height: 40px; border-radius: 999px; border: 1px solid #262D3B; display: inline-flex; align-items: center; justify-content: center; cursor: pointer" style-hover="background: #1A1F2B">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 4-1.5 5.5-1.5 5.5h15S18 13 18 9Z"></path><path d="M10.2 18a2 2 0 0 0 3.6 0"></path></svg>
+            <span style="position: absolute; top: -3px; right: -3px; display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: #FF7BB0; color: #0A0C11; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 10.5px; font-weight: 600; border: 2px solid #0A0C11">3</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 999px; border: 1px solid #262D3B; cursor: pointer" style-hover="background: #1A1F2B"><span style="width: 28px; height: 28px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span><span style="font-weight: 600; font-size: 14.5px">salim.k</span></span>
+          <span style="padding: 8px 14px; border-radius: 999px; border: 1px solid #262D3B; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #A6AEBF; cursor: pointer">Déconnexion</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isAnon }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; gap: 10px; align-items: center">
+          <span style="padding: 9px 16px; border-radius: 999px; border: 1px solid #262D3B; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #F2F4F8; cursor: pointer">Connexion</span>
+          <span style="padding: 9px 16px; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">Inscription</span>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; box-sizing: border-box; padding: 24px 24px 80px; display: flex; flex-direction: column; gap: 28px">
+
+    <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF; cursor: pointer">← Accueil</span>
+
+    <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap">
+      <span style="width: 56px; height: 56px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 6px, #121620 6px 12px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 9px; color: #8A93A6; flex-shrink: 0">L1</span>
+      <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="width: 4px; height: 13px; border-radius: 999px; background: #2B4CE0"></span>
+          <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #A6AEBF">France · Championnat</span>
+        </div>
+        <h1 style="font-family: Archivo; font-stretch: 125%; font-weight: 900; font-size: 44px; line-height: 0.94; letter-spacing: -0.02em; text-transform: uppercase; margin: 0">Ligue 1</h1>
+      </div>
+      <sc-if value="{{ isAuth }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ toggleFav }}" style="margin-left: auto; height: 42px; padding: 0 17px; border-radius: 999px; cursor: pointer; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; border: 1px solid {{ favBorder }}; background: {{ favBg }}; color: {{ favColor }}">{{ favIcon }} {{ favLabel }}</button>
+      </sc-if>
+    </div>
+
+    <div style="display: flex; gap: 7px; flex-wrap: wrap">
+      <sc-for list="{{ days }}" as="d" hint-placeholder-count="5">
+        <button onClick="{{ d.pick }}" style="padding: 11px 15px; border-radius: 999px; cursor: pointer; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; border: 1px solid {{ d.border }}; background: {{ d.bg }}; color: {{ d.color }}">{{ d.label }}</button>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="height: 66px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; animation: fb-skel 1.4s ease-in-out infinite"></div>
+        <div style="height: 66px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; animation: fb-skel 1.4s ease-in-out 0.12s infinite"></div>
+        <div style="height: 66px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; animation: fb-skel 1.4s ease-in-out 0.24s infinite"></div>
+        <div style="height: 66px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; animation: fb-skel 1.4s ease-in-out 0.36s infinite"></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 44px 24px; border: 1px dashed #3B4557; border-radius: 16px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); display: flex; flex-direction: column; gap: 8px">
+        <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 20px; text-transform: uppercase">Aucun match ce jour-là</span>
+        <span style="font-size: 15px; color: #A6AEBF">Essaie un autre jour du sélecteur.</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasMatches }}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <sc-for list="{{ matches }}" as="m" hint-placeholder-count="6">
+          <a href="Match.dc.html" style="border: 1px solid #262D3B; border-radius: 12px; background: #121620; padding: 16px 20px; display: flex; align-items: center; gap: 18px; cursor: pointer; flex-wrap: wrap; color: inherit; text-decoration: none" style-hover="border-color: #3B4557; background: #161B25">
+            <div style="display: flex; flex-shrink: 0">
+              <span style="width: 34px; height: 34px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7px; color: #8A93A6">{{ m.homeShort }}</span>
+              <span style="width: 34px; height: 34px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7px; color: #8A93A6; margin-left: -11px">{{ m.awayShort }}</span>
+            </div>
+            <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 16px; text-transform: uppercase; flex: 1; min-width: 180px; color: {{ m.titleColor }}; text-decoration: {{ m.titleDecoration }}">{{ m.home }} — {{ m.away }}</span>
+            <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+              <sc-if value="{{ m.statusLabel }}" hint-placeholder-val="{{ true }}">
+                <span style="display: inline-flex; align-items: center; gap: 7px; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: {{ m.statusTracking }}; text-transform: uppercase; color: {{ m.statusColor }}; white-space: nowrap">
+                  <sc-if value="{{ m.isLive }}" hint-placeholder-val="{{ false }}">
+                    <span style="width: 8px; height: 8px; border-radius: 999px; background: #FF3B2F; animation: fb-blink 1.1s steps(1, end) infinite"></span>
+                  </sc-if>
+                  <sc-if value="{{ m.isSuspended }}" hint-placeholder-val="{{ false }}">
+                    <span style="width: 8px; height: 8px; background: #F5B841"></span>
+                  </sc-if>
+                  {{ m.statusLabel }}
+                </span>
+              </sc-if>
+              <sc-if value="{{ m.hasScore }}" hint-placeholder-val="{{ true }}">
+                <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 15px; background: #1A1F2B; border: 1px solid #262D3B; border-radius: 7px; padding: 3px 9px; white-space: nowrap; color: {{ m.scoreColor }}; text-decoration: {{ m.scoreDecoration }}">{{ m.score }}</span>
+              </sc-if>
+              <sc-if value="{{ m.hasTime }}" hint-placeholder-val="{{ false }}">
+                <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 15px; white-space: nowrap; color: {{ m.timeColor }}; text-decoration: {{ m.timeDecoration }}">{{ m.time }}</span>
+              </sc-if>
+            </div>
+          </a>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1080}}">
+const DAYS = ['ven. 18/09', 'sam. 19/09', 'dim. 20/09', 'lun. 21/09', 'mar. 22/09'];
+
+const MATCHES = [
+  { home: 'Paris SG', away: 'Marseille', homeShort: 'PSG', awayShort: 'OM', status: 'live', score: '2—1', minute: "67'" },
+  { home: 'Monaco', away: 'Lille', homeShort: 'ASM', awayShort: 'LOSC', status: 'live', score: '0—0', minute: "23'" },
+  { home: 'Lyon', away: 'Nice', homeShort: 'OL', awayShort: 'OGCN', status: 'finished', score: '3—2' },
+  { home: 'Lens', away: 'Rennes', homeShort: 'RCL', awayShort: 'SRFC', status: 'scheduled', time: '19:00' },
+  { home: 'Strasbourg', away: 'Nantes', homeShort: 'RCSA', awayShort: 'FCN', status: 'scheduled', time: '21:05' },
+  { home: 'Toulouse', away: 'Brest', homeShort: 'TFC', awayShort: 'SB29', status: 'postponed', time: '17:00' },
+  { home: 'Auxerre', away: 'Le Havre', homeShort: 'AJA', awayShort: 'HAC', status: 'cancelled' },
+  { home: 'Angers', away: 'Metz', homeShort: 'SCO', awayShort: 'FCM', status: 'suspended', score: '1—0' },
+  { home: 'Paris FC', away: 'Lorient', homeShort: 'PFC', awayShort: 'FCL', status: 'abandoned', score: '0—1' },
+];
+
+class Component extends DCLogic {
+  state = { view: 'default', day: 0, fav: true };
+
+  row(m) {
+    const base = {
+      home: m.home,
+      away: m.away,
+      homeShort: m.homeShort,
+      awayShort: m.awayShort,
+      titleColor: '#F2F4F8',
+      titleDecoration: 'none',
+      statusLabel: '',
+      statusColor: '#8A93A6',
+      statusTracking: '0.14em',
+      isLive: false,
+      isSuspended: false,
+      hasScore: false,
+      score: m.score,
+      scoreColor: '#F2F4F8',
+      scoreDecoration: 'none',
+      hasTime: false,
+      time: m.time,
+      timeColor: '#A6AEBF',
+      timeDecoration: 'none',
+    };
+    if (m.status === 'scheduled') return Object.assign(base, { hasTime: true });
+    if (m.status === 'live')
+      return Object.assign(base, {
+        isLive: true,
+        statusLabel: 'En direct ' + m.minute,
+        statusColor: '#FF5C52',
+        hasScore: true,
+        scoreColor: '#A8E63A',
+      });
+    if (m.status === 'finished')
+      return Object.assign(base, { statusLabel: 'Terminé', hasScore: true });
+    if (m.status === 'postponed')
+      return Object.assign(base, {
+        titleColor: '#A6AEBF',
+        statusLabel: 'Reporté',
+        statusColor: '#D4D9E3',
+        statusTracking: '0.2em',
+        hasTime: true,
+        timeColor: '#8A93A6',
+        timeDecoration: 'line-through',
+      });
+    if (m.status === 'cancelled')
+      return Object.assign(base, {
+        titleColor: '#8A93A6',
+        titleDecoration: 'line-through',
+        statusLabel: 'Annulé',
+        statusColor: '#A6AEBF',
+        statusTracking: '0.2em',
+      });
+    if (m.status === 'suspended')
+      return Object.assign(base, {
+        isSuspended: true,
+        statusLabel: 'Suspendu',
+        statusColor: '#F5B841',
+        statusTracking: '0.2em',
+        hasScore: true,
+      });
+    return Object.assign(base, {
+      titleColor: '#A6AEBF',
+      statusLabel: 'Abandonné',
+      statusColor: '#D4D9E3',
+      statusTracking: '0.2em',
+      hasScore: true,
+      scoreColor: '#8A93A6',
+      scoreDecoration: 'line-through',
+    });
+  }
+
+  renderVals() {
+    const view = this.state.view;
+    const isAnon = view === 'anon';
+    const isEmpty = view === 'empty';
+    const isLoading = view === 'loading';
+
+    const tabs = [
+      { k: 'default', label: 'Connecté' },
+      { k: 'anon', label: 'Non connecté' },
+      { k: 'empty', label: 'Aucun match' },
+      { k: 'loading', label: 'Chargement' },
+    ].map((t) => {
+      const on = t.k === view;
+      return {
+        label: t.label,
+        pick: () => this.setState({ view: t.k }),
+        bg: on ? '#A8E63A' : 'transparent',
+        color: on ? '#0A0C11' : '#A6AEBF',
+        border: on ? '#A8E63A' : '#262D3B',
+      };
+    });
+
+    const fav = this.state.fav;
+
+    return {
+      viewTabs: tabs,
+      isAuth: !isAnon,
+      isAnon,
+      isLoading,
+      isEmpty: isEmpty && !isLoading,
+      hasMatches: !isEmpty && !isLoading,
+      matches: MATCHES.map((m) => this.row(m)),
+      days: DAYS.map((label, i) => {
+        const on = i === this.state.day;
+        return {
+          label,
+          pick: () => this.setState({ day: i }),
+          bg: on ? '#A8E63A' : 'transparent',
+          color: on ? '#0A0C11' : '#A6AEBF',
+          border: on ? '#A8E63A' : '#262D3B',
+        };
+      }),
+      favIcon: fav ? '★' : '☆',
+      favLabel: fav ? 'Favori' : 'Ajouter',
+      favColor: fav ? '#F5B841' : '#A6AEBF',
+      favBorder: fav ? '#F5B841' : '#262D3B',
+      favBg: fav ? 'rgba(245,184,65,0.14)' : 'transparent',
+      toggleFav: () => this.setState((s) => ({ fav: !s.fav })),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -21,4 +21,14 @@ export class MatchesController {
   detail(@Param('id', ParseUUIDPipe) id: string) {
     return this.matchesService.findById(id);
   }
+
+  @Get(':id/events')
+  events(@Param('id', ParseUUIDPipe) id: string) {
+    return this.matchesService.findEvents(id);
+  }
+
+  @Get(':id/rating-distribution')
+  ratingDistribution(@Param('id', ParseUUIDPipe) id: string) {
+    return this.matchesService.findRatingDistribution(id);
+  }
 }

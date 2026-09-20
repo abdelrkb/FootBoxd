@@ -14,7 +14,7 @@ export class CommentsService {
   findForReview(reviewId: string) {
     return this.prisma.client.comment.findMany({
       where: { reviewId },
-      include: { user: { select: { id: true, displayName: true, avatarUrl: true } } },
+      include: { user: { select: { id: true, username: true, displayName: true, avatarUrl: true } } },
       orderBy: { createdAt: 'asc' },
     });
   }
@@ -23,7 +23,7 @@ export class CommentsService {
     const review = await this.reviewsService.findActiveById(reviewId);
     const comment = await this.prisma.client.comment.create({
       data: { reviewId, userId, content },
-      include: { user: { select: { id: true, displayName: true, avatarUrl: true } } },
+      include: { user: { select: { id: true, username: true, displayName: true, avatarUrl: true } } },
     });
     await this.notificationsService.create(review.user.id, userId, 'comment', reviewId);
     return comment;

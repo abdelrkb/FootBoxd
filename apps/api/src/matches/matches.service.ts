@@ -58,4 +58,37 @@ export class MatchesService {
       .map((match) => ({ ...match, reviewCount: grouped.find((g) => g.matchId === match.id)?._count.matchId ?? 0 }))
       .sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
   }
+
+  // "Faits de match" (handoff design du 2026-09-20) — alimenté par le worker via
+  // event_timeline. Ordre chronologique (minute croissante), comme une timeline se lit.
+  findEvents(matchId: string) {
+    return this.prisma.client.matchEvent.findMany({
+      where: { matchId },
+      include: { team: true },
+      orderBy: { minute: 'asc' },
+    });
+  }
+
+  // Distribution des notes (handoff design du 2026-09-20) : histogramme 5→1. Les notes vont
+  // par pas de 0.5 mais l'histogramme n'a que 5 barres — décision d'implémentation : chaque
+  // barre regroupe deux valeurs (ex: la barre "4" compte les notes 3.5 ET 4), via Math.ceil.
+  async findRatingDistribution(matchId: string) {
+    const reviews = await this.prisma.client.review.findMany({
+      where: { matchId, deletedAt: null },
+      select: { rating: true },
+    });
+    const buckets = [1, 2, 3, 4, 5].map((star) => ({ star, count: 0 }));
+    let sum = 0;
+    for (const { rating } of reviews) {
+      const value = Number(rating);
+      sum += value;
+      const bucketIndex = Math.min(5, Math.max(1, Math.ceil(value))) - 1;
+      buckets[bucketIndex].count += 1;
+    }
+    return {
+      average: reviews.length > 0 ? sum / reviews.length : 0,
+      totalCount: reviews.length,
+      buckets,
+    };
+  }
 }

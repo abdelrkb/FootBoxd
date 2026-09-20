@@ -5,11 +5,16 @@ import Link from 'next/link';
 import type { Notification } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
+import { Crest } from '../../components/ui/crest';
+import { EmptyContent, EmptySocial } from '../../components/ui/empty-state';
+import { Button } from '../../components/ui/button';
+import { SkeletonList } from '../../components/ui/skeleton';
+import { ClientDate } from '../../components/client-date';
 
 const LABELS: Record<Notification['type'], string> = {
-  comment: 'a commenté votre review',
-  like: 'a aimé votre review',
-  follow: "a commencé à vous suivre",
+  comment: 'a commenté ta review',
+  like: 'a aimé ta review',
+  follow: 'a commencé à te suivre',
 };
 
 export default function NotificationsPage() {
@@ -23,9 +28,17 @@ export default function NotificationsPage() {
   if (authLoading) return null;
   if (!user) {
     return (
-      <p style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <Link href="/login">Connectez-vous</Link> pour voir vos notifications.
-      </p>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 24px 80px' }}>
+        <EmptySocial
+          title="Connecte-toi pour voir tes notifications"
+          subtitle="Les likes, commentaires et nouveaux abonnés apparaissent ici."
+          action={
+            <Link href="/login">
+              <Button size="sm">Connexion</Button>
+            </Link>
+          }
+        />
+      </div>
     );
   }
 
@@ -34,28 +47,97 @@ export default function NotificationsPage() {
     setNotifications((prev) => prev?.map((n) => (n.id === id ? { ...n, isRead: true } : n)) ?? null);
   }
 
+  async function markAllRead() {
+    await api.markAllNotificationsRead();
+    setNotifications((prev) => prev?.map((n) => ({ ...n, isRead: true })) ?? null);
+  }
+
+  async function followBack(actorId: string, notifId: string) {
+    await api.followUser(actorId);
+    setNotifications((prev) => prev?.map((n) => (n.id === notifId ? { ...n, isFollowingActor: true } : n)) ?? null);
+  }
+
+  const hasUnread = notifications?.some((n) => !n.isRead) ?? false;
+
   return (
-    <div style={{ maxWidth: 480, margin: '2rem auto' }}>
-      <h1>Notifications</h1>
-      {notifications === null && <p>Chargement...</p>}
-      {notifications?.length === 0 && <p>Aucune notification.</p>}
-      <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+    <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 24px 80px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1 className="fb-display" style={{ fontSize: 34, margin: 0 }}>
+          Notifications
+        </h1>
+        {hasUnread && (
+          <button
+            onClick={markAllRead}
+            className="fb-label"
+            style={{ fontSize: 12, color: 'var(--fb-nav)', background: 'none', border: 'none' }}
+          >
+            Tout marquer comme lu
+          </button>
+        )}
+      </div>
+
+      {notifications === null && <SkeletonList />}
+      {notifications?.length === 0 && <EmptyContent title="Aucune notification" />}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {notifications?.map((n) => (
-          <li
+          <div
             key={n.id}
             onClick={() => !n.isRead && markRead(n.id)}
             style={{
-              padding: '0.75rem',
-              border: '1px solid #333',
-              borderRadius: 8,
-              fontWeight: n.isRead ? 400 : 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '14px 12px',
+              borderRadius: 10,
+              background: n.isRead ? 'transparent' : 'var(--fb-surface-unread)',
               cursor: n.isRead ? 'default' : 'pointer',
             }}
           >
-            <strong>{n.actor.displayName}</strong> {LABELS[n.type]}
-          </li>
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: 999,
+                background: n.isRead ? 'transparent' : 'var(--fb-social)',
+                flexShrink: 0,
+              }}
+            />
+            <Link href={`/profile/${n.actorId}`} onClick={(e) => e.stopPropagation()}>
+              <Crest src={n.actor.avatarUrl} alt={n.actor.displayName} size={38} />
+            </Link>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span
+                style={{
+                  fontSize: 14.5,
+                  fontWeight: n.isRead ? 400 : 700,
+                  color: n.isRead ? 'var(--fb-text-2)' : 'var(--fb-text)',
+                }}
+              >
+                <Link href={`/profile/${n.actorId}`} onClick={(e) => e.stopPropagation()} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  <strong>{n.actor.displayName}</strong>
+                </Link>{' '}
+                {LABELS[n.type]}
+              </span>
+            </div>
+            {n.type === 'follow' && !n.isFollowingActor && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  followBack(n.actorId, n.id);
+                }}
+              >
+                Suivre
+              </Button>
+            )}
+            <span className="fb-meta" style={{ flexShrink: 0 }}>
+              <ClientDate iso={n.createdAt} options={{ dateStyle: 'short', timeStyle: 'short' }} fallback="" />
+            </span>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

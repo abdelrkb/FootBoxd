@@ -16,14 +16,24 @@ export type NotificationType = 'comment' | 'like' | 'follow';
 export interface PublicUser {
   id: string;
   email: string;
+  username: string;
   displayName: string;
   avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
+  // Club de cœur + réglages (handoff design du 2026-09-20).
+  favoriteTeamId: string | null;
+  notifyOnLike: boolean;
+  notifyOnComment: boolean;
+  notifyOnNewFollower: boolean;
+  notifyKickoffReminder: boolean;
+  hideScoresUntilClick: boolean;
+  hasCompletedOnboarding: boolean;
 }
 
 export interface UserSummary {
   id: string;
+  username: string;
   displayName: string;
   avatarUrl: string | null;
 }
@@ -54,6 +64,7 @@ export interface Match {
   awayScore: number | null;
   status: MatchStatus;
   kickoffAt: string;
+  liveMinute: string | null;
   venue: string | null;
   season: string;
   lineups: unknown | null;
@@ -98,6 +109,29 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
   actor: UserSummary;
+  // Uniquement pour type "follow" (handoff design : bouton "Suivre" en retour).
+  isFollowingActor?: boolean;
+}
+
+export type MatchEventType = 'goal' | 'card' | 'substitution';
+
+export interface MatchEvent {
+  id: string;
+  matchId: string;
+  type: MatchEventType;
+  detail: string | null;
+  minute: number;
+  isHome: boolean;
+  teamId: string;
+  playerName: string | null;
+  assistName: string | null;
+  team: Team;
+}
+
+export interface RatingDistribution {
+  average: number;
+  totalCount: number;
+  buckets: { star: number; count: number }[];
 }
 
 export interface PopularReview extends ReviewWithMatch {
@@ -110,6 +144,7 @@ export interface PopularMatch extends Match {
 
 export interface Profile {
   id: string;
+  username: string;
   displayName: string;
   avatarUrl: string | null;
   totalReviewsCount: number;

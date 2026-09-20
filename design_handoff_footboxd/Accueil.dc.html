@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,400..700&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #0A0C11; }
+  a { color: #5B8CFF; text-decoration: none; }
+  a:hover { color: #8FB0FF; }
+  @keyframes fb-blink { 0%, 55% { opacity: 1 } 70%, 100% { opacity: 0.18 } }
+  @keyframes fb-halo { 0% { box-shadow: 0 0 0 0 rgba(255,59,47,0.55) } 70%, 100% { box-shadow: 0 0 0 10px rgba(255,59,47,0) } }
+  @keyframes fb-skel { 0%, 100% { opacity: 0.45 } 50% { opacity: 0.9 } }
+</style>
+</helmet>
+
+<div data-screen-label="Accueil" style="font-family: Archivo, system-ui, sans-serif; background: #0A0C11; color: #F2F4F8; min-height: 100vh; display: flex; flex-direction: column">
+
+  <div style="position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 24px; background: #121620; border-bottom: 1px solid #262D3B">
+    <span style="font-family: 'Martian Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #8A93A6; margin-right: 8px">État de l'écran</span>
+    <sc-for list="{{ viewTabs }}" as="t" hint-placeholder-count="4">
+      <button onClick="{{ t.pick }}" style="height: 30px; padding: 0 13px; border-radius: 999px; cursor: pointer; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; border: 1px solid {{ t.border }}; background: {{ t.bg }}; color: {{ t.color }}">{{ t.label }}</button>
+    </sc-for>
+  </div>
+
+  <div style="border-bottom: 1px solid #262D3B; background: #0A0C11">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap">
+      <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap">
+        <span style="width: 34px; height: 34px; border-radius: 9px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px); margin-right: 14px; flex-shrink: 0"></span>
+        <span style="padding: 9px 14px 7px; border-bottom: 2px solid #A8E63A; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase">Accueil</span>
+        <span style="padding: 9px 14px 7px; border-bottom: 2px solid transparent; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Recherche</span>
+      </div>
+      <sc-if value="{{ isAuth }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; gap: 12px; align-items: center">
+          <span style="position: relative; width: 40px; height: 40px; border-radius: 999px; border: 1px solid #262D3B; display: inline-flex; align-items: center; justify-content: center; cursor: pointer" style-hover="background: #1A1F2B">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 4-1.5 5.5-1.5 5.5h15S18 13 18 9Z"></path><path d="M10.2 18a2 2 0 0 0 3.6 0"></path></svg>
+            <span style="position: absolute; top: -3px; right: -3px; display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: #FF7BB0; color: #0A0C11; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 10.5px; font-weight: 600; border: 2px solid #0A0C11">3</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 999px; border: 1px solid #262D3B; cursor: pointer" style-hover="background: #1A1F2B"><span style="width: 28px; height: 28px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span><span style="font-weight: 600; font-size: 14.5px">salim.k</span></span>
+          <span style="padding: 8px 14px; border-radius: 999px; border: 1px solid #262D3B; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #A6AEBF; cursor: pointer">Déconnexion</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isAnon }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; gap: 10px; align-items: center">
+          <span style="padding: 9px 16px; border-radius: 999px; border: 1px solid #262D3B; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #F2F4F8; cursor: pointer">Connexion</span>
+          <span style="padding: 9px 16px; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">Inscription</span>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="flex: 1; width: 100%; max-width: 1240px; margin: 0 auto; box-sizing: border-box; padding: 32px 24px 80px; display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 40px; align-items: start">
+
+    <div style="display: flex; flex-direction: column; gap: 20px; min-width: 0">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap">
+        <h1 style="font-family: Archivo; font-stretch: 125%; font-weight: 900; font-size: 42px; line-height: 0.96; letter-spacing: -0.02em; text-transform: uppercase; margin: 0">{{ leftTitle }}</h1>
+        <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #5B8CFF; cursor: pointer; padding-bottom: 6px">Toutes les ligues →</span>
+      </div>
+
+      <div style="display: flex; gap: 7px; flex-wrap: wrap">
+        <sc-for list="{{ days }}" as="d" hint-placeholder-count="5">
+          <button onClick="{{ d.pick }}" style="padding: 11px 15px; border-radius: 999px; cursor: pointer; font-family: Archivo; font-stretch: 75%; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; border: 1px solid {{ d.border }}; background: {{ d.bg }}; color: {{ d.color }}; font-weight: {{ d.weight }}">{{ d.label }}</button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <sc-for list="{{ skeletonRows }}" as="s" hint-placeholder-count="6">
+            <div style="display: flex; align-items: center; gap: 14px; padding: 15px 16px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; animation: fb-skel 1.4s ease-in-out infinite; animation-delay: {{ s.delay }}">
+              <span style="width: 3px; height: 20px; border-radius: 999px; background: #1A1F2B; flex-shrink: 0"></span>
+              <span style="width: 24px; height: 24px; border-radius: 999px; background: #1A1F2B; flex-shrink: 0"></span>
+              <span style="height: 11px; border-radius: 999px; background: #1A1F2B; width: {{ s.width }}"></span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isEmptyDay }}" hint-placeholder-val="{{ false }}">
+        <div style="padding: 40px 22px; border: 1px dashed #3B4557; border-radius: 16px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); display: flex; flex-direction: column; gap: 8px; align-items: flex-start">
+          <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 20px; text-transform: uppercase">Aucun match ce jour-là</span>
+          <span style="font-size: 15px; color: #A6AEBF">Essaie un autre jour du sélecteur.</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showLeagues }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 22px">
+          <sc-if value="{{ isAuth }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: center; gap: 12px">
+                <span style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #F5B841">★ Mes favoris</span>
+                <span style="flex: 1; height: 1px; background: #262D3B"></span>
+              </div>
+              <sc-for list="{{ favLeagues }}" as="l" hint-placeholder-count="5">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 15px 16px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; cursor: pointer" style-hover="border-color: #3B4557; background: #151A24">
+                  <span style="display: flex; align-items: center; gap: 13px; min-width: 0">
+                    <span style="width: 3px; height: 22px; border-radius: 999px; flex-shrink: 0; background: {{ l.hue }}"></span>
+                    <span style="color: #F5B841; font-size: 13px">★</span>
+                    <span style="width: 26px; height: 26px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); flex-shrink: 0"></span>
+                    <span style="font-weight: 600; font-size: 15.5px">{{ l.name }}</span>
+                    <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 11.5px; color: #8A93A6; white-space: nowrap">{{ l.count }}</span>
+                  </span>
+                  <sc-if value="{{ l.live }}" hint-placeholder-val="{{ 0 }}">
+                    <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 24px; padding: 0 8px; border-radius: 999px; background: #FF3B2F; color: #fff; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12.5px; flex-shrink: 0; animation: fb-halo 1.8s ease-out infinite">{{ l.live }}</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A93A6">{{ otherLabel }}</span>
+              <span style="flex: 1; height: 1px; background: #262D3B"></span>
+            </div>
+            <sc-for list="{{ otherLeagues }}" as="l" hint-placeholder-count="6">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 15px 16px; border: 1px solid #262D3B; border-radius: 12px; background: #121620; cursor: pointer" style-hover="border-color: #3B4557; background: #151A24">
+                <span style="display: flex; align-items: center; gap: 13px; min-width: 0">
+                  <span style="width: 3px; height: 22px; border-radius: 999px; flex-shrink: 0; background: {{ l.hue }}"></span>
+                  <span style="width: 26px; height: 26px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); flex-shrink: 0"></span>
+                  <span style="font-weight: 600; font-size: 15.5px; color: #E6EAF1">{{ l.name }}</span>
+                  <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 11.5px; color: #8A93A6; white-space: nowrap">{{ l.count }}</span>
+                </span>
+                <sc-if value="{{ l.live }}" hint-placeholder-val="{{ 0 }}">
+                  <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 24px; padding: 0 8px; border-radius: 999px; background: #FF3B2F; color: #fff; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12.5px; flex-shrink: 0; animation: fb-halo 1.8s ease-out infinite">{{ l.live }}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 40px; min-width: 0">
+
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid #F2F4F8; padding-bottom: 9px">
+          <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Reviews populaires</h2>
+          <span style="font-family: 'Martian Mono', monospace; font-size: 10px; color: #8A93A6">48 h</span>
+        </div>
+
+        <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <sc-for list="{{ skeletonCards }}" as="s" hint-placeholder-count="3">
+              <div style="display: flex; gap: 14px; padding: 18px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; animation: fb-skel 1.4s ease-in-out infinite; animation-delay: {{ s.delay }}">
+                <span style="width: 36px; height: 36px; border-radius: 999px; background: #1A1F2B; flex-shrink: 0"></span>
+                <span style="display: flex; flex-direction: column; gap: 8px; flex: 1"><span style="height: 10px; width: 40%; border-radius: 999px; background: #1A1F2B"></span><span style="height: 13px; width: 78%; border-radius: 999px; background: #1A1F2B"></span><span style="height: 10px; width: 92%; border-radius: 999px; background: #161B25"></span><span style="height: 10px; width: 64%; border-radius: 999px; background: #161B25"></span></span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ popularEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 30px 20px; border: 1px dashed #3B4557; border-radius: 16px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); display: flex; flex-direction: column; gap: 7px">
+            <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 17px; text-transform: uppercase">Rien de populaire pour l'instant</span>
+            <span style="font-size: 14px; color: #A6AEBF">Les 48 dernières heures sont calmes.</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hasContent }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <sc-for list="{{ popularReviews }}" as="r" hint-placeholder-count="3">
+              <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 18px; display: flex; gap: 14px; cursor: pointer" style-hover="border-color: #3B4557; background: #151A24">
+                <div style="display: flex; flex-shrink: 0">
+                  <span style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7.5px; color: #8A93A6">{{ r.a }}</span>
+                  <span style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7.5px; color: #8A93A6; margin-left: -12px">{{ r.b }}</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1">
+                  <div style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="width: 3px; height: 12px; border-radius: 999px; flex-shrink: 0; background: {{ r.hue }}"></span><span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">{{ r.league }}</span></div>
+                  <div style="display: flex; align-items: center; gap: 9px; flex-wrap: wrap"><span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 15.5px; text-transform: uppercase">{{ r.teams }}</span><span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; background: #1A1F2B; border: 1px solid #262D3B; border-radius: 7px; padding: 2px 8px; white-space: nowrap; color: {{ r.scoreColor }}">{{ r.score }}</span></div>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="position: relative; display: inline-block; white-space: nowrap; font-size: 14px; letter-spacing: 0.06em; color: #2B3444">★★★★★<span style="position: absolute; left: 0; top: 0; overflow: hidden; color: #F5B841; width: {{ r.pct }}">★★★★★</span></span><span style="font-family: 'Martian Mono', monospace; font-size: 12.5px; color: #F5B841">{{ r.rating }}</span><span style="width: 20px; height: 20px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span><span style="font-size: 13.5px; font-weight: 600">{{ r.author }}</span></div>
+                  <p style="margin: 2px 0 0; font-size: 14px; line-height: 1.5; color: #D4D9E3">{{ r.excerpt }}</p>
+                  <div style="display: flex; gap: 14px; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12px; color: #A6AEBF; margin-top: 4px; white-space: nowrap"><span><span style="color: #FF7BB0">♥</span> {{ r.likes }}</span><span>💬 {{ r.comments }}</span></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid #F2F4F8; padding-bottom: 9px">
+          <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Reviews de mes amis</h2>
+          <span style="font-family: 'Martian Mono', monospace; font-size: 10px; color: #8A93A6">les plus récentes</span>
+        </div>
+
+        <sc-if value="{{ isAnon }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 22px 18px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+            <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 17px; text-transform: uppercase">Connecte-toi pour voir tes amis</span>
+            <span style="font-size: 14px; line-height: 1.5; color: #A6AEBF">Les notes des gens que tu suis s'affichent ici.</span>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap">
+              <button style="height: 40px; padding: 0 16px; border: none; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">Connexion</button>
+              <button style="height: 40px; padding: 0 16px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #F2F4F8; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">Inscription</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <sc-for list="{{ skeletonCards }}" as="s" hint-placeholder-count="2">
+              <div style="display: flex; gap: 14px; padding: 18px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; animation: fb-skel 1.4s ease-in-out infinite; animation-delay: {{ s.delay }}">
+                <span style="width: 36px; height: 36px; border-radius: 999px; background: #1A1F2B; flex-shrink: 0"></span>
+                <span style="display: flex; flex-direction: column; gap: 8px; flex: 1"><span style="height: 10px; width: 40%; border-radius: 999px; background: #1A1F2B"></span><span style="height: 13px; width: 70%; border-radius: 999px; background: #1A1F2B"></span></span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ friendsEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 22px 18px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+            <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 17px; text-transform: uppercase">Suis des gens, remplis ton fil</span>
+            <span style="font-size: 14px; line-height: 1.5; color: #A6AEBF">Tu ne suis personne pour l'instant — leurs notes apparaîtront ici dès que ce sera le cas.</span>
+            <button style="height: 40px; padding: 0 16px; border: none; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">Trouver des gens</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showFriends }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <sc-for list="{{ friendReviews }}" as="r" hint-placeholder-count="3">
+              <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 18px; display: flex; gap: 14px; cursor: pointer" style-hover="border-color: #3B4557; background: #151A24">
+                <div style="display: flex; flex-shrink: 0">
+                  <span style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7.5px; color: #8A93A6">{{ r.a }}</span>
+                  <span style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7.5px; color: #8A93A6; margin-left: -12px">{{ r.b }}</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1">
+                  <div style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="width: 3px; height: 12px; border-radius: 999px; flex-shrink: 0; background: {{ r.hue }}"></span><span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">{{ r.league }}</span></div>
+                  <div style="display: flex; align-items: center; gap: 9px; flex-wrap: wrap"><span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 15.5px; text-transform: uppercase">{{ r.teams }}</span><span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; background: #1A1F2B; border: 1px solid #262D3B; border-radius: 7px; padding: 2px 8px; white-space: nowrap; color: {{ r.scoreColor }}">{{ r.score }}</span></div>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="position: relative; display: inline-block; white-space: nowrap; font-size: 14px; letter-spacing: 0.06em; color: #2B3444">★★★★★<span style="position: absolute; left: 0; top: 0; overflow: hidden; color: #F5B841; width: {{ r.pct }}">★★★★★</span></span><span style="font-family: 'Martian Mono', monospace; font-size: 12.5px; color: #F5B841">{{ r.rating }}</span><span style="width: 20px; height: 20px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span><span style="font-size: 13.5px; font-weight: 600">{{ r.author }}</span><span style="font-family: 'Martian Mono', monospace; font-size: 11.5px; color: #8A93A6">{{ r.when }}</span></div>
+                  <p style="margin: 2px 0 0; font-size: 14px; line-height: 1.5; color: #D4D9E3">{{ r.excerpt }}</p>
+                  <div style="display: flex; gap: 14px; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12px; color: #A6AEBF; margin-top: 4px; white-space: nowrap"><span><span style="color: #FF7BB0">♥</span> {{ r.likes }}</span><span>💬 {{ r.comments }}</span></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: baseline; gap: 12px; border-bottom: 2px solid #F2F4F8; padding-bottom: 9px">
+          <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Matchs populaires</h2>
+          <span style="font-family: 'Martian Mono', monospace; font-size: 10px; color: #8A93A6">48 h</span>
+        </div>
+
+        <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <sc-for list="{{ skeletonCards }}" as="s" hint-placeholder-count="3">
+              <div style="display: flex; gap: 14px; align-items: center; padding: 16px 18px; border: 1px solid #262D3B; border-radius: 16px; background: #121620; animation: fb-skel 1.4s ease-in-out infinite; animation-delay: {{ s.delay }}">
+                <span style="width: 32px; height: 32px; border-radius: 999px; background: #1A1F2B; flex-shrink: 0"></span>
+                <span style="height: 13px; border-radius: 999px; background: #1A1F2B; width: {{ s.width }}"></span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ popularEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 30px 20px; border: 1px dashed #3B4557; border-radius: 16px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); display: flex; flex-direction: column; gap: 7px">
+            <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 17px; text-transform: uppercase">Rien de populaire pour l'instant</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hasContent }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <sc-for list="{{ popularMatches }}" as="m" hint-placeholder-count="4">
+              <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 16px 18px; display: flex; gap: 14px; align-items: center; cursor: pointer" style-hover="border-color: #3B4557; background: #151A24">
+                <div style="display: flex; flex-shrink: 0">
+                  <span style="width: 32px; height: 32px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7px; color: #8A93A6">{{ m.a }}</span>
+                  <span style="width: 32px; height: 32px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7px; color: #8A93A6; margin-left: -11px">{{ m.b }}</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px; min-width: 0; flex: 1">
+                  <div style="display: flex; align-items: center; gap: 8px; min-width: 0"><span style="width: 3px; height: 11px; border-radius: 999px; flex-shrink: 0; background: {{ m.hue }}"></span><span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">{{ m.league }}</span></div>
+                  <div style="display: flex; align-items: center; gap: 9px; flex-wrap: wrap"><span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 14.5px; text-transform: uppercase">{{ m.teams }}</span><span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12.5px; background: #1A1F2B; border: 1px solid #262D3B; border-radius: 7px; padding: 2px 8px; white-space: nowrap; color: {{ m.scoreColor }}">{{ m.score }}</span></div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0">
+                  <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 18px">{{ m.reviews }}</span>
+                  <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">reviews</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320}}">
+const HUE = {
+  'Ligue 1': '#2B4CE0',
+  'Premier League': '#8E3BE0',
+  'Liga': '#E0452B',
+  'Bundesliga': '#E02B4C',
+  'Serie A': '#2B86E0',
+  'Ligue des Champions': '#6B7BE0',
+  'Europa League': '#E07C2B',
+};
+const NEUTRAL = '#2E3748';
+
+const FAVS = [
+  'Ligue des Champions',
+  'Europa League',
+  'Ligue 1',
+  'Premier League',
+  'Liga',
+  'Bundesliga',
+  'Serie A',
+];
+
+const DAY_DATA = [
+  {
+    fav: [
+      { name: 'Ligue des Champions', count: '8 matchs', live: 8 },
+      { name: 'Premier League', count: '3 matchs', live: 2 },
+      { name: 'Ligue 1', count: '2 matchs', live: 0 },
+      { name: 'Liga', count: '2 matchs', live: 1 },
+      { name: 'Serie A', count: '1 match', live: 0 },
+    ],
+    other: [
+      { name: 'Championship', count: '6 matchs', live: 3 },
+      { name: 'Eredivisie', count: '2 matchs', live: 0 },
+      { name: 'Jupiler Pro League', count: '2 matchs', live: 0 },
+      { name: 'Liga Portugal', count: '1 match', live: 1 },
+      { name: 'Süper Lig', count: '3 matchs', live: 0 },
+    ],
+  },
+  {
+    fav: [
+      { name: 'Europa League', count: '17 matchs', live: 0 },
+      { name: 'Ligue 1', count: '1 match', live: 0 },
+    ],
+    other: [
+      { name: 'Conference League', count: '12 matchs', live: 0 },
+      { name: 'Eliteserien', count: '2 matchs', live: 0 },
+      { name: 'Süper Lig', count: '1 match', live: 0 },
+    ],
+  },
+  {
+    fav: [
+      { name: 'Bundesliga', count: '6 matchs', live: 0 },
+      { name: 'Ligue 1', count: '4 matchs', live: 0 },
+      { name: 'Liga', count: '4 matchs', live: 0 },
+      { name: 'Premier League', count: '7 matchs', live: 0 },
+      { name: 'Serie A', count: '5 matchs', live: 0 },
+    ],
+    other: [
+      { name: 'Championship', count: '11 matchs', live: 0 },
+      { name: 'Eredivisie', count: '5 matchs', live: 0 },
+      { name: 'Jupiler Pro League', count: '4 matchs', live: 0 },
+      { name: 'Liga Portugal', count: '3 matchs', live: 0 },
+      { name: 'Scottish Premiership', count: '4 matchs', live: 0 },
+      { name: 'Süper Lig', count: '5 matchs', live: 0 },
+    ],
+  },
+  {
+    fav: [
+      { name: 'Bundesliga', count: '3 matchs', live: 0 },
+      { name: 'Ligue 1', count: '4 matchs', live: 0 },
+      { name: 'Liga', count: '5 matchs', live: 0 },
+      { name: 'Premier League', count: '3 matchs', live: 0 },
+      { name: 'Serie A', count: '5 matchs', live: 0 },
+    ],
+    other: [
+      { name: 'Eredivisie', count: '4 matchs', live: 0 },
+      { name: 'Liga Portugal', count: '4 matchs', live: 0 },
+      { name: 'Süper Lig', count: '4 matchs', live: 0 },
+    ],
+  },
+  {
+    fav: [
+      { name: 'Ligue 1', count: '1 match', live: 0 },
+      { name: 'Premier League', count: '1 match', live: 0 },
+      { name: 'Serie A', count: '1 match', live: 0 },
+    ],
+    other: [
+      { name: 'Championship', count: '2 matchs', live: 0 },
+      { name: 'Liga Portugal', count: '1 match', live: 0 },
+    ],
+  },
+];
+
+const POPULAR_REVIEWS = [
+  {
+    a: 'ARS', b: 'MCI', league: 'Premier League', teams: 'Arsenal — Man City', score: '2—2',
+    rating: 4.5, author: 'marie.dlm',
+    excerpt: "Le meilleur match de la saison en Premier League, quatre buts et aucune minute de temps mort. Rice a…",
+    likes: 214, comments: 37,
+  },
+  {
+    a: 'PSG', b: 'OM', league: 'Ligue 1', teams: 'Paris SG — Marseille', score: '3—1',
+    rating: 4, author: 'salim.k',
+    excerpt: "Deuxième mi-temps complètement différente, Barcola change le match en dix minutes. Le penalty est gé…",
+    likes: 127, comments: 14,
+  },
+  {
+    a: 'BAY', b: 'RBL', league: 'Bundesliga', teams: 'Bayern — RB Leipzig', score: '4—0',
+    rating: 3.5, author: 'jonas.w',
+    excerpt: "Démonstration à sens unique, mais Leipzig a été tellement mauvais que ça enlève du mérite.",
+    likes: 96, comments: 21,
+  },
+];
+
+const FRIEND_REVIEWS = [
+  {
+    a: 'RMA', b: 'VIL', league: 'Liga', teams: 'Real Madrid — Villarreal', score: '2—1', live: true,
+    rating: 3, author: 'thomas.b', when: 'il y a 2 h',
+    excerpt: "Vinícius a tout changé en entrant. Villarreal tient encore, mais plus pour longtemps.",
+    likes: 6, comments: 0,
+  },
+  {
+    a: 'INT', b: 'NAP', league: 'Serie A', teams: 'Inter — Napoli', score: '1—1',
+    rating: 4, author: 'giulia.r', when: 'hier',
+    excerpt: "Un match d'échecs, deux entraîneurs qui se neutralisent. Le 1—1 est logique et pas ennuyeux.",
+    likes: 12, comments: 3,
+  },
+  {
+    a: 'CEL', b: 'RAN', league: 'Scottish Premiership', teams: 'Celtic — Rangers', score: '1—0',
+    rating: 5, author: 'lena.k', when: 'hier',
+    excerpt: "L'ambiance du Celtic Park à elle seule vaut les cinq étoiles. Le but à la 88e a fait trembler la tri…",
+    likes: 48, comments: 9,
+  },
+];
+
+const POPULAR_MATCHES = [
+  { a: 'PSG', b: 'OM', league: 'Ligue 1', teams: 'Paris SG — Marseille', score: '3—1', reviews: 86 },
+  { a: 'ARS', b: 'MCI', league: 'Premier League', teams: 'Arsenal — Man City', score: '2—2', reviews: 74 },
+  { a: 'RMA', b: 'VIL', league: 'Liga', teams: 'Real Madrid — Villarreal', score: '2—1', reviews: 31, live: true },
+  { a: 'INT', b: 'NAP', league: 'Serie A', teams: 'Inter — Napoli', score: '1—1', reviews: 29 },
+];
+
+class Component extends DCLogic {
+  state = { view: 'auth', day: 0 };
+
+  stars(rating) {
+    return {
+      pct: (rating / 5) * 100 + '%',
+      rating: rating.toFixed(1),
+    };
+  }
+
+  card(r) {
+    const s = typeof r.rating === 'number' ? this.stars(r.rating) : {};
+    return Object.assign({}, r, s, {
+      hue: HUE[r.league] || NEUTRAL,
+      scoreColor: r.live ? '#A8E63A' : '#F2F4F8',
+    });
+  }
+
+  renderVals() {
+    const view = this.state.view;
+    const isAuth = view === 'auth' || view === 'friendsEmpty';
+    const isAnon = view === 'anon';
+    const isLoading = view === 'loading';
+    const isEmptyDay = view === 'emptyDay';
+
+    const tabs = [
+      { k: 'auth', label: 'Connecté' },
+      { k: 'anon', label: 'Non connecté' },
+      { k: 'friendsEmpty', label: 'Aucun ami suivi' },
+      { k: 'loading', label: 'Chargement' },
+      { k: 'emptyDay', label: 'Journée vide' },
+    ].map((t) => {
+      const on = t.k === view;
+      return {
+        label: t.label,
+        pick: () => this.setState({ view: t.k }),
+        bg: on ? '#A8E63A' : 'transparent',
+        color: on ? '#0A0C11' : '#A6AEBF',
+        border: on ? '#A8E63A' : '#262D3B',
+      };
+    });
+
+    const base = new Date(2026, 8, 17);
+    const days = Array.from({ length: 5 }, (_, i) => {
+      const d = new Date(base);
+      d.setDate(base.getDate() + i);
+      const wd = d.toLocaleDateString(undefined, { weekday: 'short' });
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const on = i === this.state.day;
+      return {
+        label: wd + ' ' + dd + '/' + mm,
+        pick: () => this.setState({ day: i }),
+        bg: on ? '#A8E63A' : 'transparent',
+        color: on ? '#0A0C11' : '#A6AEBF',
+        border: on ? '#A8E63A' : '#262D3B',
+        weight: on ? 800 : 600,
+      };
+    });
+
+    const data = DAY_DATA[this.state.day];
+    const decorate = (l) => Object.assign({}, l, { hue: HUE[l.name] || NEUTRAL });
+    const favLeagues = data.fav.map(decorate);
+    const merged = data.fav
+      .concat(data.other)
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+      .map(decorate);
+
+    return {
+      viewTabs: tabs,
+      days,
+      isAuth,
+      isAnon,
+      isLoading,
+      isEmptyDay,
+      showLeagues: !isLoading && !isEmptyDay,
+      leftTitle: isAuth ? 'Mes ligues' : 'Les ligues du jour',
+      otherLabel: isAuth ? 'Les autres ligues du jour' : 'Toutes les ligues du jour',
+      favLeagues,
+      otherLeagues: isAuth ? data.other.map(decorate) : merged,
+      hasContent: !isLoading,
+      popularEmpty: false,
+      popularReviews: POPULAR_REVIEWS.map((r) => this.card(r)),
+      friendReviews: FRIEND_REVIEWS.map((r) => this.card(r)),
+      popularMatches: POPULAR_MATCHES.map((m) => this.card(m)),
+      showFriends: isAuth && view !== 'friendsEmpty',
+      friendsEmpty: view === 'friendsEmpty',
+      skeletonRows: [
+        { delay: '0s', width: '42%' },
+        { delay: '0.1s', width: '54%' },
+        { delay: '0.2s', width: '36%' },
+        { delay: '0.3s', width: '48%' },
+        { delay: '0.4s', width: '30%' },
+        { delay: '0.5s', width: '44%' },
+      ],
+      skeletonCards: [
+        { delay: '0s', width: '62%' },
+        { delay: '0.15s', width: '48%' },
+        { delay: '0.3s', width: '56%' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

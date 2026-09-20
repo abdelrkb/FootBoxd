@@ -18,6 +18,11 @@ export class LeaguesController {
     return this.leaguesService.findById(id);
   }
 
+  @Get(':id/teams')
+  teams(@Param('id', ParseUUIDPipe) id: string) {
+    return this.leaguesService.findTeams(id);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post(':id/favorite')
   @HttpCode(200)

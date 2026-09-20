@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { PublicUser } from '../auth/auth.service.js';
 import { ReviewsService } from './reviews.service.js';
 import { CreateReviewDto } from './dto/create-review.dto.js';
+import { UpdateReviewDto } from './dto/update-review.dto.js';
 import { ListReviewsDto } from './dto/list-reviews.dto.js';
 
 @Controller('reviews')
@@ -44,6 +45,12 @@ export class ReviewsController {
   @HttpCode(204)
   async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: PublicUser) {
     await this.reviewsService.softDelete(id, user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateReviewDto, @CurrentUser() user: PublicUser) {
+    return this.reviewsService.update(id, user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard)

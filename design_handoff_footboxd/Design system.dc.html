@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,400..700&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #0A0C11; }
+  a { color: #5B8CFF; text-decoration: none; }
+  a:hover { color: #8FB0FF; }
+  @keyframes fb-blink { 0%, 55% { opacity: 1 } 70%, 100% { opacity: 0.18 } }
+  @keyframes fb-halo { 0% { box-shadow: 0 0 0 0 rgba(255,59,47,0.55) } 70%, 100% { box-shadow: 0 0 0 10px rgba(255,59,47,0) } }
+  @keyframes fb-skel { 0%, 100% { opacity: 0.45 } 50% { opacity: 0.9 } }
+</style>
+</helmet>
+
+<div style="font-family: Archivo, system-ui, sans-serif; background: #0A0C11; color: #F2F4F8; padding: 56px 40px 112px; display: flex; flex-direction: column; align-items: center; gap: 72px">
+
+  <div style="width: 100%; max-width: 1120px; display: flex; flex-direction: column; gap: 18px">
+    <div style="font-family: 'Martian Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #8A93A6">Livrable 1 — design system · base v2 encre bleu-nuit</div>
+    <h1 style="font-family: Archivo; font-stretch: 125%; font-weight: 900; font-size: 56px; line-height: 0.94; letter-spacing: -0.02em; text-transform: uppercase; margin: 0">Composants</h1>
+    <p style="margin: 0; max-width: 64ch; font-size: 17px; line-height: 1.6; color: #A6AEBF">Tout ce qui se répète dans l'app, défini une fois. Les éléments interactifs de cette page réagissent vraiment au clic — sélecteur de note, favori, j'aime, commentaires — pour juger les états et pas seulement les pixels.</p>
+  </div>
+
+  <div style="width: 100%; max-width: 1120px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid #F2F4F8; padding-bottom: 10px">
+      <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Jetons</h2>
+      <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">à reporter tel quel dans globals.css</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px">
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Couleurs</div>
+        <div style="font-family: 'Martian Mono', monospace; font-size: 11.5px; line-height: 2; color: #A6AEBF">
+          <div>--bg <span style="color: #F2F4F8">#0A0C11</span></div>
+          <div>--surface <span style="color: #F2F4F8">#121620</span></div>
+          <div>--surface-2 <span style="color: #F2F4F8">#1A1F2B</span></div>
+          <div>--border <span style="color: #F2F4F8">#262D3B</span></div>
+          <div>--text <span style="color: #F2F4F8">#F2F4F8</span></div>
+          <div>--text-2 <span style="color: #F2F4F8">#A6AEBF</span></div>
+          <div>--text-3 <span style="color: #F2F4F8">#8A93A6</span></div>
+          <div>--live <span style="color: #FF3B2F">#FF3B2F</span></div>
+          <div>--action <span style="color: #A8E63A">#A8E63A</span></div>
+          <div>--rating <span style="color: #F5B841">#F5B841</span></div>
+          <div>--social <span style="color: #FF7BB0">#FF7BB0</span></div>
+          <div>--nav <span style="color: #5B8CFF">#5B8CFF</span></div>
+        </div>
+      </div>
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Rayons</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-family: 'Martian Mono', monospace; font-size: 11.5px; color: #A6AEBF">
+          <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; height: 30px; border: 1px solid #262D3B; border-radius: 16px; background: #1A1F2B"></span>16px — cartes, panneaux</div>
+          <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; height: 30px; border: 1px solid #262D3B; border-radius: 12px; background: #1A1F2B"></span>12px — lignes, vignettes</div>
+          <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; height: 30px; border: 1px solid #262D3B; border-radius: 7px; background: #1A1F2B"></span>7px — afficheur, champs</div>
+          <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; height: 30px; border: 1px solid #262D3B; border-radius: 999px; background: #1A1F2B"></span>999 — pilules, badges</div>
+        </div>
+      </div>
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Espacement · base 4</div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="display: flex; align-items: center; gap: 10px"><span style="height: 8px; width: 4px; background: #A8E63A; border-radius: 2px"></span><span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #A6AEBF">4 — icône ↔ texte</span></div>
+          <div style="display: flex; align-items: center; gap: 10px"><span style="height: 8px; width: 8px; background: #A8E63A; border-radius: 2px"></span><span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #A6AEBF">8 — dans une ligne</span></div>
+          <div style="display: flex; align-items: center; gap: 10px"><span style="height: 8px; width: 12px; background: #A8E63A; border-radius: 2px"></span><span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #A6AEBF">12 — entre lignes</span></div>
+          <div style="display: flex; align-items: center; gap: 10px"><span style="height: 8px; width: 20px; background: #A8E63A; border-radius: 2px"></span><span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #A6AEBF">20 — padding carte</span></div>
+          <div style="display: flex; align-items: center; gap: 10px"><span style="height: 8px; width: 32px; background: #A8E63A; border-radius: 2px"></span><span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #A6AEBF">32 — entre cartes</span></div>
+          <div style="display: flex; align-items: center; gap: 10px"><span style="height: 8px; width: 40px; background: #A8E63A; border-radius: 2px"></span><span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #A6AEBF">40 — gouttière colonnes</span></div>
+          <div style="display: flex; align-items: center; gap: 10px"><span style="height: 8px; width: 64px; background: #A8E63A; border-radius: 2px"></span><span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #A6AEBF">64 — entre sections</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: 100%; max-width: 1120px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid #F2F4F8; padding-bottom: 10px">
+      <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Navigation</h2>
+      <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">2 liens · cloche + avatar à droite · lien actif = filet citron</span>
+    </div>
+
+    <div style="border: 1px solid #262D3B; border-radius: 16px; overflow: hidden; background: #121620">
+      <div style="padding: 10px 20px; border-bottom: 1px solid #262D3B; font-family: 'Martian Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #8A93A6">Connecté</div>
+      <div style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; background: #0A0C11">
+        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap">
+          <span style="width: 34px; height: 34px; border-radius: 9px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px); margin-right: 14px; flex-shrink: 0"></span>
+          <span style="padding: 9px 14px 7px; border-bottom: 2px solid #A8E63A; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase">Accueil</span>
+          <span style="padding: 9px 14px 7px; border-bottom: 2px solid transparent; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Recherche</span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center">
+          <span style="position: relative; width: 40px; height: 40px; border-radius: 999px; border: 1px solid #262D3B; display: inline-flex; align-items: center; justify-content: center; cursor: pointer" style-hover="background: #1A1F2B">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#F2F4F8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 4-1.5 5.5-1.5 5.5h15S18 13 18 9Z"></path><path d="M10.2 18a2 2 0 0 0 3.6 0"></path></svg>
+            <span style="position: absolute; top: -3px; right: -3px; display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: #FF7BB0; color: #0A0C11; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 10.5px; font-weight: 600; border: 2px solid #0A0C11">3</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 5px; border-radius: 999px; border: 1px solid #262D3B; cursor: pointer" style-hover="background: #1A1F2B"><span style="width: 28px; height: 28px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span><span style="font-weight: 600; font-size: 14.5px">salim.k</span></span>
+          <span style="padding: 8px 14px; border-radius: 999px; border: 1px solid #262D3B; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #A6AEBF">Déconnexion</span>
+        </div>
+      </div>
+      <div style="padding: 10px 20px; border-top: 1px solid #262D3B; border-bottom: 1px solid #262D3B; font-family: 'Martian Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #8A93A6">Non connecté</div>
+      <div style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; background: #0A0C11">
+        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap">
+          <span style="width: 34px; height: 34px; border-radius: 9px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px); margin-right: 14px; flex-shrink: 0"></span>
+          <span style="padding: 9px 14px 7px; border-bottom: 2px solid #A8E63A; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase">Accueil</span>
+          <span style="padding: 9px 14px 7px; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Recherche</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center">
+          <span style="padding: 9px 16px; border-radius: 999px; border: 1px solid #262D3B; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #F2F4F8">Connexion</span>
+          <span style="padding: 9px 16px; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase">Inscription</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: 100%; max-width: 1120px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid #F2F4F8; padding-bottom: 10px">
+      <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Boutons</h2>
+      <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">libellés en étroit capitales · hauteur 44px minimum</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px">
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+        <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Hiérarchie</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+          <button style="height: 44px; padding: 0 20px; border: none; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer" style-hover="background: #C4F06E">Logger le match</button>
+          <button style="height: 44px; padding: 0 20px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #F2F4F8; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer" style-hover="background: #1A1F2B">Suivre</button>
+          <button style="height: 44px; padding: 0 16px; border: none; border-radius: 999px; background: transparent; color: #A6AEBF; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer" style-hover="color: #F2F4F8">Annuler</button>
+          <button style="height: 44px; padding: 0 16px; border: 1px solid rgba(255,59,47,0.4); border-radius: 999px; background: transparent; color: #FF5C52; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer" style-hover="background: rgba(255,59,47,0.12)">Supprimer</button>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-top: 1px solid #262D3B; padding-top: 16px">
+          <button style="height: 36px; padding: 0 14px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #A6AEBF; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer" style-hover="background: #1A1F2B; color: #F2F4F8">Petit · 36px</button>
+          <button disabled="" style="height: 44px; padding: 0 20px; border: none; border-radius: 999px; background: #1A1F2B; color: #6B7488; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: not-allowed">Désactivé</button>
+          <button style="height: 44px; padding: 0 20px; border: none; border-radius: 999px; background: #86BA2E; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: progress">Envoi…</button>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Connexion externe</div>
+        <button style="height: 48px; width: 100%; border: 1px solid #262D3B; border-radius: 12px; background: #1A1F2B; color: #F2F4F8; font-family: Archivo; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px" style-hover="background: #222836"><span style="width: 20px; height: 20px; border-radius: 4px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px); flex-shrink: 0"></span>Continuer avec Google</button>
+        <button style="height: 48px; width: 100%; border: 1px solid #262D3B; border-radius: 12px; background: #1A1F2B; color: #F2F4F8; font-family: Archivo; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px" style-hover="background: #222836"><span style="width: 20px; height: 20px; border-radius: 4px; border: 1px dashed #3B4557; background: repeating-linear-gradient(115deg, #0E121A 0 5px, #161B25 5px 10px); flex-shrink: 0"></span>Continuer avec Apple</button>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #8A93A6">Pleine largeur, rayon 12px, jamais colorés : ce ne sont pas les actions principales de l'écran, seulement des raccourcis. Emplacement 20×20 réservé aux logos officiels Google et Apple — je ne peux pas les dessiner, il faut déposer les SVG des kits de marque.</p>
+      </div>
+
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Actions sociales</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+          <sc-if value="{{ liked }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ toggleLike }}" style="height: 40px; padding: 0 16px; border: 1px solid #FF7BB0; border-radius: 999px; background: rgba(255,123,176,0.14); color: #FF7BB0; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 9px; white-space: nowrap">♥ {{ likes }}</button>
+          </sc-if>
+          <sc-if value="{{ notLiked }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ toggleLike }}" style="height: 40px; padding: 0 16px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #A6AEBF; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 9px; white-space: nowrap" style-hover="color: #FF7BB0; border-color: #FF7BB0">♡ {{ likes }}</button>
+          </sc-if>
+          <button onClick="{{ toggleThread }}" style="height: 40px; padding: 0 16px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #A6AEBF; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 9px; white-space: nowrap" style-hover="color: #F2F4F8; border-color: #3B4557">💬 14</button>
+          <sc-if value="{{ fav }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ toggleFav }}" style="height: 40px; padding: 0 16px; border: 1px solid #F5B841; border-radius: 999px; background: rgba(245,184,65,0.14); color: #F5B841; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap">★ Favori</button>
+          </sc-if>
+          <sc-if value="{{ notFav }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ toggleFav }}" style="height: 40px; padding: 0 16px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #A6AEBF; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap" style-hover="color: #F5B841; border-color: #F5B841">☆ Ajouter</button>
+          </sc-if>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #8A93A6">Compteurs en mono tabulaire, largeur réservée pour 3 chiffres : de 9 à 127 j'aime, le bouton ne bouge pas. État actif = fond teinté à 14 % + bordure pleine, jamais la couleur seule sur le texte.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: 100%; max-width: 1120px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid #F2F4F8; padding-bottom: 10px">
+      <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Le geste central — noter un match</h2>
+      <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">10 valeurs · 0.5 → 5 · demi-étoiles cliquables</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; align-items: start">
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 24px; display: flex; flex-direction: column; gap: 18px">
+        <div style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 19px; text-transform: uppercase">Logger le match</div>
+        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+          <div style="position: relative; display: flex; gap: 4px" onMouseLeave="{{ clearHover }}">
+            <sc-for list="{{ stars }}" as="s" hint-placeholder-count="5">
+              <span style="position: relative; display: block; width: 34px; height: 34px; font-size: 30px; line-height: 1; color: #2B3444">★<span style="position: absolute; left: 0; top: 0; overflow: hidden; color: #F5B841; white-space: nowrap; width: {{ s.fill }}">★</span></span>
+            </sc-for>
+            <div style="position: absolute; inset: 0; display: flex">
+              <sc-for list="{{ halves }}" as="h" hint-placeholder-count="10">
+                <span onClick="{{ h.pick }}" onMouseEnter="{{ h.hover }}" style="flex: 1; cursor: pointer"></span>
+              </sc-for>
+            </div>
+          </div>
+          <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 22px; color: #F5B841; white-space: nowrap">{{ ratingLabel }}/5</span>
+        </div>
+        <textarea placeholder="Ton commentaire (optionnel)" style="width: 100%; min-height: 104px; box-sizing: border-box; padding: 14px; border: 1px solid #262D3B; border-radius: 12px; background: #0A0C11; color: #F2F4F8; font-family: Archivo; font-size: 15px; line-height: 1.55; resize: vertical" style-focus="border-color: #A8E63A; outline: none"></textarea>
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+          <button style="height: 44px; padding: 0 20px; border: none; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer" style-hover="background: #C4F06E">Valider</button>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 18px">
+        <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+          <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Déjà loggé</div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 16px; border: 1px solid #262D3B; border-radius: 12px; background: #0A0C11; flex-wrap: wrap">
+            <span style="color: #F5B841; font-size: 20px; letter-spacing: 0.06em; white-space: nowrap">★★★★<span style="opacity: 0.28">★</span></span>
+            <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 15px; color: #F5B841">4.0</span>
+            <span style="font-size: 14.5px; color: #A6AEBF">Tu as déjà loggé ce match.</span>
+          </div>
+        </div>
+        <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+          <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Non connecté</div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 16px; border: 1px dashed #3B4557; border-radius: 12px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); flex-wrap: wrap">
+            <span style="font-size: 14.5px; color: #D4D9E3">Connecte-toi pour noter ce match.</span>
+            <span style="padding: 9px 16px; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase">Connexion</span>
+          </div>
+        </div>
+        <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+          <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Notes en lecture · trois tailles</div>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; align-items: center; gap: 10px"><span style="color: #F5B841; font-size: 26px; letter-spacing: 0.06em; white-space: nowrap">★★★★★</span><span style="font-family: 'Martian Mono', monospace; font-size: 17px; color: #F5B841">5.0</span><span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #8A93A6">détail du match</span></div>
+            <div style="display: flex; align-items: center; gap: 10px"><span style="color: #F5B841; font-size: 18px; letter-spacing: 0.06em; white-space: nowrap">★★★<span style="opacity: 0.28">★★</span></span><span style="font-family: 'Martian Mono', monospace; font-size: 13.5px; color: #F5B841">3.0</span><span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #8A93A6">carte</span></div>
+            <div style="display: flex; align-items: center; gap: 10px"><span style="color: #F5B841; font-size: 13px; letter-spacing: 0.06em; white-space: nowrap">★<span style="opacity: 0.28">★★★★</span></span><span style="font-family: 'Martian Mono', monospace; font-size: 12px; color: #F5B841">0.5</span><span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #8A93A6">liste compacte</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: 100%; max-width: 1120px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid #F2F4F8; padding-bottom: 10px">
+      <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Champs &amp; pilules</h2>
+      <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">rayon 12px · focus citron · erreur rouge</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; align-items: start">
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <label style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Email</label>
+          <input value="salim.k@gmail.com" style="height: 46px; box-sizing: border-box; padding: 0 14px; border: 1px solid #262D3B; border-radius: 12px; background: #0A0C11; color: #F2F4F8; font-family: Archivo; font-size: 15px" style-focus="border-color: #A8E63A; outline: none" />
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <label style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Mot de passe</label>
+          <input type="password" value="motdepasse" style="height: 46px; box-sizing: border-box; padding: 0 14px; border: 1px solid #A8E63A; border-radius: 12px; background: #0A0C11; color: #F2F4F8; font-family: Archivo; font-size: 15px" />
+          <span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #8A93A6">8 caractères minimum</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <label style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #FF5C52">Email</label>
+          <input value="salim.k@gmail.com" style="height: 46px; box-sizing: border-box; padding: 0 14px; border: 1px solid #FF3B2F; border-radius: 12px; background: #0A0C11; color: #F2F4F8; font-family: Archivo; font-size: 15px" />
+          <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #FF5C52"><span style="width: 7px; height: 7px; border-radius: 999px; background: #FF3B2F"></span>Cet email est déjà utilisé.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <label style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Ajouter un commentaire</label>
+          <div style="display: flex; gap: 10px">
+            <input placeholder="Réponds à salim.k…" style="flex: 1; min-width: 0; height: 42px; box-sizing: border-box; padding: 0 14px; border: 1px solid #262D3B; border-radius: 999px; background: #0A0C11; color: #F2F4F8; font-family: Archivo; font-size: 14.5px" style-focus="border-color: #A8E63A; outline: none" />
+            <button style="height: 42px; padding: 0 16px; border: none; border-radius: 999px; background: #1A1F2B; color: #F2F4F8; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; white-space: nowrap" style-hover="background: #262D3B">Envoyer</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Sélecteur de date · aujourd'hui + 4</div>
+          <div style="display: flex; gap: 7px; flex-wrap: wrap">
+            <span style="padding: 10px 14px; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap">jeu. 17/09</span>
+            <span style="padding: 10px 14px; border-radius: 999px; border: 1px solid #262D3B; color: #A6AEBF; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap">ven. 18/09</span>
+            <span style="padding: 10px 14px; border-radius: 999px; border: 1px solid #262D3B; color: #A6AEBF; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap">sam. 19/09</span>
+            <span style="padding: 10px 14px; border-radius: 999px; border: 1px solid #262D3B; color: #A6AEBF; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap">dim. 20/09</span>
+            <span style="padding: 10px 14px; border-radius: 999px; border: 1px solid #262D3B; color: #A6AEBF; font-family: Archivo; font-stretch: 75%; font-weight: 600; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap">lun. 21/09</span>
+          </div>
+          <span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #8A93A6">format court + date numérique, dans la locale du navigateur</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #262D3B; padding-top: 18px">
+          <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Badges</div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center">
+            <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 24px; padding: 0 8px; border-radius: 999px; background: #FF3B2F; color: #fff; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12.5px; animation: fb-halo 1.8s ease-out infinite">3</span>
+            <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 24px; padding: 0 8px; border-radius: 999px; background: #FF3B2F; color: #fff; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12.5px; animation: fb-halo 1.8s ease-out infinite">12</span>
+            <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 24px; padding: 0 8px; border-radius: 999px; background: #FF3B2F; color: #fff; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12.5px; animation: fb-halo 1.8s ease-out infinite">128</span>
+            <span style="display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 999px; background: rgba(255,59,47,0.14); color: #FF5C52; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap"><span style="width: 7px; height: 7px; border-radius: 999px; background: #FF3B2F; animation: fb-blink 1.1s steps(1, end) infinite"></span>En direct</span>
+            <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 14px; background: #1A1F2B; border: 1px solid #262D3B; border-radius: 7px; padding: 3px 9px; white-space: nowrap">3—1</span>
+            <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 14px; color: #A8E63A; background: #1A1F2B; border: 1px solid #262D3B; border-radius: 7px; padding: 3px 9px; white-space: nowrap">2—1</span>
+          </div>
+          <span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #8A93A6">le badge live pulse ; largeur mini 26px, jusqu'à 3 chiffres sans déformer</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #262D3B; padding-top: 18px">
+          <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Avatars &amp; écussons</div>
+          <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap">
+            <span style="width: 48px; height: 48px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span>
+            <span style="width: 32px; height: 32px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span>
+            <span style="width: 24px; height: 24px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span>
+            <span style="width: 20px; height: 20px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span>
+            <span style="display: flex"><span style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 8px; color: #8A93A6">PSG</span><span style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 8px; color: #8A93A6; margin-left: -13px">OM</span></span>
+          </div>
+          <span style="font-family: 'Martian Mono', monospace; font-size: 11px; color: #8A93A6">48 profil · 32 review · 24 ligne de ligue · 20 carte. Hachure = emplacement du logo TheSportsDB ou de l'avatar Dicebear</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: 100%; max-width: 1120px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid #F2F4F8; padding-bottom: 10px">
+      <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">La carte unique — 4 usages</h2>
+      <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">une seule coque, des slots qui s'activent</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; align-items: start">
+
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: 'Martian Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #8A93A6">Review populaire</div>
+        <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 18px; display: flex; gap: 14px" style-hover="border-color: #3B4557">
+          <div style="display: flex; flex-shrink: 0">
+            <span style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7.5px; color: #8A93A6">ARS</span>
+            <span style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7.5px; color: #8A93A6; margin-left: -12px">MCI</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1">
+            <div style="display: flex; align-items: center; gap: 8px"><span style="width: 3px; height: 12px; border-radius: 999px; background: #8E3BE0"></span><span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Premier League</span></div>
+            <div style="display: flex; align-items: center; gap: 9px; flex-wrap: wrap"><span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 15.5px; text-transform: uppercase">Arsenal — Man City</span><span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; background: #1A1F2B; border: 1px solid #262D3B; border-radius: 7px; padding: 2px 8px; white-space: nowrap">2—2</span></div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="position: relative; display: inline-block; white-space: nowrap; font-size: 14px; letter-spacing: 0.06em; color: #2B3444">★★★★★<span style="position: absolute; left: 0; top: 0; overflow: hidden; color: #F5B841; width: 90%">★★★★★</span></span><span style="font-family: 'Martian Mono', monospace; font-size: 12.5px; color: #F5B841">4.5</span><span style="width: 20px; height: 20px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span><span style="font-size: 13.5px; font-weight: 600">marie.dlm</span></div>
+            <p style="margin: 2px 0 0; font-size: 14px; line-height: 1.5; color: #D4D9E3">Le meilleur match de la saison en Premier League, quatre buts et aucune minute de temps mort. Rice a…</p>
+            <div style="display: flex; gap: 14px; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12px; color: #A6AEBF; margin-top: 4px; white-space: nowrap"><span><span style="color: #FF7BB0">♥</span> 214</span><span>💬 37</span></div>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #8A93A6">Slots actifs : écussons, ligue, score, note, auteur, extrait tronqué à 100 caractères, compteurs.</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: 'Martian Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #8A93A6">Review d'un ami · sans commentaire</div>
+        <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 18px; display: flex; gap: 14px" style-hover="border-color: #3B4557">
+          <div style="display: flex; flex-shrink: 0">
+            <span style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7.5px; color: #8A93A6">RMA</span>
+            <span style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7.5px; color: #8A93A6; margin-left: -12px">VIL</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1">
+            <div style="display: flex; align-items: center; gap: 8px"><span style="width: 3px; height: 12px; border-radius: 999px; background: #E0452B"></span><span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Liga</span></div>
+            <div style="display: flex; align-items: center; gap: 9px; flex-wrap: wrap"><span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 15.5px; text-transform: uppercase">Real Madrid — Villarreal</span><span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; color: #A8E63A; background: #1A1F2B; border: 1px solid #262D3B; border-radius: 7px; padding: 2px 8px; white-space: nowrap">2—1</span></div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="color: #F5B841; font-size: 14px; letter-spacing: 0.06em; white-space: nowrap">★★★<span style="opacity: 0.28">★★</span></span><span style="font-family: 'Martian Mono', monospace; font-size: 12.5px; color: #F5B841">3.0</span><span style="width: 20px; height: 20px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span><span style="font-size: 13.5px; font-weight: 600">thomas.b</span><span style="font-family: 'Martian Mono', monospace; font-size: 11.5px; color: #8A93A6">il y a 2 h</span></div>
+            <div style="display: flex; gap: 14px; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12px; color: #A6AEBF; margin-top: 4px; white-space: nowrap"><span><span style="color: #FF7BB0">♥</span> 6</span><span>💬 0</span></div>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #8A93A6">Le slot texte est vide : la carte garde sa hauteur mini et gagne l'horodatage. Score en citron car le match est encore en direct.</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: 'Martian Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #8A93A6">Match populaire · pas de note</div>
+        <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 18px; display: flex; gap: 14px; align-items: center" style-hover="border-color: #3B4557">
+          <div style="display: flex; flex-shrink: 0">
+            <span style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7.5px; color: #8A93A6">PSG</span>
+            <span style="width: 36px; height: 36px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 7.5px; color: #8A93A6; margin-left: -12px">OM</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1">
+            <div style="display: flex; align-items: center; gap: 8px"><span style="width: 3px; height: 12px; border-radius: 999px; background: #2B4CE0"></span><span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #A6AEBF">Ligue 1</span></div>
+            <div style="display: flex; align-items: center; gap: 9px; flex-wrap: wrap"><span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 15.5px; text-transform: uppercase">Paris SG — Marseille</span><span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 13px; background: #1A1F2B; border: 1px solid #262D3B; border-radius: 7px; padding: 2px 8px; white-space: nowrap">3—1</span></div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0">
+            <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 19px">86</span>
+            <span style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">reviews</span>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #8A93A6">Slots note / texte / compteurs coupés, compteur de reviews en colonne droite.</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: 'Martian Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #8A93A6">Profil · compact, 4 par grille</div>
+        <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 16px; display: flex; gap: 12px; align-items: center" style-hover="border-color: #3B4557">
+          <div style="display: flex; flex-shrink: 0">
+            <span style="width: 28px; height: 28px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 6.5px; color: #8A93A6">INT</span>
+            <span style="width: 28px; height: 28px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); display: flex; align-items: center; justify-content: center; font-family: 'Martian Mono', monospace; font-size: 6.5px; color: #8A93A6; margin-left: -10px">NAP</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1">
+            <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 13.5px; text-transform: uppercase">Inter — Napoli</span>
+            <span style="font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 11.5px; color: #8A93A6">1—1 · 14/09</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 7px; flex-shrink: 0"><span style="color: #F5B841; font-size: 12px; letter-spacing: 0.06em; white-space: nowrap">★★★★<span style="opacity: 0.28">★</span></span><span style="font-family: 'Martian Mono', monospace; font-size: 12px; color: #F5B841">4.0</span></div>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #8A93A6">Même coque en densité réduite : écussons 28px, pas d'extrait, note à droite.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: 100%; max-width: 1120px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid #F2F4F8; padding-bottom: 10px">
+      <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Review développée &amp; commentaires</h2>
+      <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">écran détail du match · 💬 déplie le fil</span>
+    </div>
+
+    <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 14px; max-width: 720px">
+      <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap">
+        <span style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px)"></span>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0">
+          <span style="font-weight: 600; font-size: 15px">salim.k</span>
+          <span style="font-family: 'Martian Mono', monospace; font-size: 11.5px; color: #8A93A6">il y a 3 h</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 9px"><span style="color: #F5B841; font-size: 17px; letter-spacing: 0.06em; white-space: nowrap">★★★★<span style="opacity: 0.28">★</span></span><span style="font-family: 'Martian Mono', monospace; font-size: 14px; color: #F5B841">4.0</span></div>
+      </div>
+      <p style="margin: 0; font-size: 15.5px; line-height: 1.6">Deuxième mi-temps complètement différente, Barcola change le match en dix minutes. Le penalty est généreux mais ça ne change rien au scénario : Marseille n'a pas cadré après l'heure de jeu.</p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-top: 1px solid #262D3B; padding-top: 14px">
+        <sc-if value="{{ liked }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toggleLike }}" style="height: 38px; padding: 0 15px; border: 1px solid #FF7BB0; border-radius: 999px; background: rgba(255,123,176,0.14); color: #FF7BB0; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12.5px; cursor: pointer; white-space: nowrap">♥ {{ likes }}</button>
+        </sc-if>
+        <sc-if value="{{ notLiked }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ toggleLike }}" style="height: 38px; padding: 0 15px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #A6AEBF; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12.5px; cursor: pointer; white-space: nowrap" style-hover="color: #FF7BB0; border-color: #FF7BB0">♡ {{ likes }}</button>
+        </sc-if>
+        <button onClick="{{ toggleThread }}" style="height: 38px; padding: 0 15px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #A6AEBF; font-family: 'Martian Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12.5px; cursor: pointer; white-space: nowrap" style-hover="color: #F2F4F8">💬 2 {{ threadLabel }}</button>
+        <div style="position: relative; margin-left: auto">
+          <button onClick="{{ toggleMenu }}" style="width: 38px; height: 38px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #A6AEBF; font-size: 17px; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center" style-hover="color: #F2F4F8; border-color: #3B4557">···</button>
+          <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ true }}">
+            <div style="position: absolute; right: 0; top: 44px; z-index: 2; min-width: 168px; border: 1px solid #262D3B; border-radius: 12px; background: #1A1F2B; padding: 6px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 12px 28px rgba(0,0,0,0.5)">
+              <button style="height: 38px; padding: 0 12px; border: none; border-radius: 8px; background: transparent; color: #F2F4F8; font-family: Archivo; font-weight: 600; font-size: 14px; text-align: left; cursor: pointer" style-hover="background: #262D3B">Modifier ma note</button>
+              <button style="height: 38px; padding: 0 12px; border: none; border-radius: 8px; background: transparent; color: #FF5C52; font-family: Archivo; font-weight: 600; font-size: 14px; text-align: left; cursor: pointer" style-hover="background: rgba(255,59,47,0.14)">Supprimer</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+      <sc-if value="{{ threadOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 14px; border-top: 1px solid #262D3B; padding-top: 14px">
+          <div style="display: flex; gap: 12px; align-items: flex-start">
+            <span style="width: 28px; height: 28px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); flex-shrink: 0"></span>
+            <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0"><span style="font-weight: 600; font-size: 14px">marie.dlm</span><span style="font-size: 14.5px; line-height: 1.5; color: #D4D9E3">Le penalty est clair, arrête. Mais d'accord sur Barcola.</span></div>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: flex-start">
+            <span style="width: 28px; height: 28px; border-radius: 999px; border: 1px solid #262D3B; background: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px); flex-shrink: 0"></span>
+            <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0"><span style="font-weight: 600; font-size: 14px">thomas.b</span><span style="font-size: 14.5px; line-height: 1.5; color: #D4D9E3">4 c'est sévère pour un match à quatre buts.</span></div>
+          </div>
+          <div style="display: flex; gap: 10px">
+            <input placeholder="Ajoute un commentaire…" style="flex: 1; min-width: 0; height: 42px; box-sizing: border-box; padding: 0 14px; border: 1px solid #262D3B; border-radius: 999px; background: #0A0C11; color: #F2F4F8; font-family: Archivo; font-size: 14.5px" style-focus="border-color: #A8E63A; outline: none" />
+            <button style="height: 42px; padding: 0 16px; border: none; border-radius: 999px; background: #1A1F2B; color: #F2F4F8; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; white-space: nowrap" style-hover="background: #262D3B">Envoyer</button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="width: 100%; max-width: 1120px; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 2px solid #F2F4F8; padding-bottom: 10px">
+      <h2 style="font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0">Chargement &amp; vides</h2>
+      <span style="font-family: 'Martian Mono', monospace; font-size: 10.5px; color: #8A93A6">aucune liste n'est garantie non vide</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; align-items: start">
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Chargement · squelette</div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; gap: 14px; align-items: center; padding: 14px; border: 1px solid #262D3B; border-radius: 12px; background: #0A0C11; animation: fb-skel 1.4s ease-in-out infinite">
+            <span style="width: 36px; height: 36px; border-radius: 999px; background: #1A1F2B; flex-shrink: 0"></span>
+            <span style="display: flex; flex-direction: column; gap: 7px; flex: 1"><span style="height: 11px; width: 62%; border-radius: 999px; background: #1A1F2B"></span><span style="height: 9px; width: 38%; border-radius: 999px; background: #161B25"></span></span>
+          </div>
+          <div style="display: flex; gap: 14px; align-items: center; padding: 14px; border: 1px solid #262D3B; border-radius: 12px; background: #0A0C11; animation: fb-skel 1.4s ease-in-out 0.2s infinite">
+            <span style="width: 36px; height: 36px; border-radius: 999px; background: #1A1F2B; flex-shrink: 0"></span>
+            <span style="display: flex; flex-direction: column; gap: 7px; flex: 1"><span style="height: 11px; width: 48%; border-radius: 999px; background: #1A1F2B"></span><span style="height: 9px; width: 30%; border-radius: 999px; background: #161B25"></span></span>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #8A93A6">Le squelette reprend la géométrie de la carte réelle, respire à 1,4 s et ne dit jamais « Chargement… » en texte nu.</p>
+      </div>
+
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Vide · constat</div>
+        <div style="padding: 24px 18px; border: 1px dashed #3B4557; border-radius: 12px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); display: flex; flex-direction: column; gap: 6px; align-items: flex-start">
+          <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 16px; text-transform: uppercase">Aucun match ce jour-là</span>
+          <span style="font-size: 14px; color: #A6AEBF">Essaie un autre jour du sélecteur.</span>
+        </div>
+        <div style="padding: 24px 18px; border: 1px dashed #3B4557; border-radius: 12px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); display: flex; flex-direction: column; gap: 6px; align-items: flex-start">
+          <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 16px; text-transform: uppercase">Rien de populaire pour l'instant</span>
+          <span style="font-size: 14px; color: #A6AEBF">Les 48 dernières heures sont calmes.</span>
+        </div>
+        <div style="padding: 24px 18px; border: 1px dashed #3B4557; border-radius: 12px; background: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px); display: flex; flex-direction: column; gap: 6px; align-items: flex-start">
+          <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 16px; text-transform: uppercase">Aucune notification</span>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #262D3B; border-radius: 16px; background: #121620; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <div style="font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #8A93A6">Vide social · invitation</div>
+        <div style="padding: 22px 18px; border: 1px solid #262D3B; border-radius: 12px; background: #0A0C11; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+          <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 16px; text-transform: uppercase">Suis des gens, remplis ton fil</span>
+          <span style="font-size: 14px; line-height: 1.5; color: #A6AEBF">Tu ne suis personne pour l'instant — leurs notes apparaîtront ici dès que ce sera le cas.</span>
+          <button style="height: 40px; padding: 0 16px; border: none; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">Trouver des gens</button>
+        </div>
+        <div style="padding: 22px 18px; border: 1px solid #262D3B; border-radius: 12px; background: #0A0C11; display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+          <span style="font-family: Archivo; font-stretch: 112%; font-weight: 800; font-size: 16px; text-transform: uppercase">Connecte-toi pour voir tes amis</span>
+          <span style="font-size: 14px; line-height: 1.5; color: #A6AEBF">Les notes des gens que tu suis s'affichent ici.</span>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap">
+            <button style="height: 40px; padding: 0 16px; border: none; border-radius: 999px; background: #A8E63A; color: #0A0C11; font-family: Archivo; font-stretch: 75%; font-weight: 800; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">Connexion</button>
+            <button style="height: 40px; padding: 0 16px; border: 1px solid #262D3B; border-radius: 999px; background: transparent; color: #F2F4F8; font-family: Archivo; font-stretch: 75%; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer">Inscription</button>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #8A93A6">Vide de contenu = cadre hachuré, pas d'action. Vide social = cadre plein + un bouton : c'est une invitation, pas un constat.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200}}">
+class Component extends DCLogic {
+  state = { rating: 4, hover: 0, liked: false, likes: 127, fav: true, threadOpen: true, menuOpen: false };
+
+  renderVals() {
+    const v = this.state.hover || this.state.rating;
+    const stars = [1, 2, 3, 4, 5].map((i) => ({
+      i,
+      fill: Math.round(Math.max(0, Math.min(1, v - (i - 1))) * 100) + '%',
+    }));
+    const halves = Array.from({ length: 10 }, (_, k) => {
+      const val = (k + 1) / 2;
+      return {
+        v: val,
+        pick: () => this.setState({ rating: val }),
+        hover: () => this.setState({ hover: val }),
+      };
+    });
+    return {
+      stars,
+      halves,
+      ratingLabel: v.toFixed(1),
+      clearHover: () => this.setState({ hover: 0 }),
+      liked: this.state.liked,
+      notLiked: !this.state.liked,
+      likes: this.state.likes,
+      toggleLike: () =>
+        this.setState((s) => ({ liked: !s.liked, likes: s.likes + (s.liked ? -1 : 1) })),
+      fav: this.state.fav,
+      notFav: !this.state.fav,
+      toggleFav: () => this.setState((s) => ({ fav: !s.fav })),
+      threadOpen: this.state.threadOpen,
+      threadLabel: this.state.threadOpen ? 'replier' : 'déplier',
+      toggleThread: () => this.setState((s) => ({ threadOpen: !s.threadOpen })),
+      menuOpen: this.state.menuOpen,
+      toggleMenu: () => this.setState((s) => ({ menuOpen: !s.menuOpen })),
+    };
+  }
+}
+</script>
+</body>
+</html>
