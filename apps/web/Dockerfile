@@ -10,6 +10,9 @@ RUN npm install
 COPY packages ./packages
 COPY apps/web ./apps/web
 
+ARG NEXT_PUBLIC_API_URL=http://localhost:3000
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 RUN npm run build --workspace=@football-app/web
 
 EXPOSE 3000

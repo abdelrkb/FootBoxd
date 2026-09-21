@@ -3,9 +3,10 @@ name: Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 env:
-  IMAGE_PREFIX: ghcr.io/OWNER/football-app
+  IMAGE_PREFIX: ghcr.io/abdelrkb/football-app
 
 jobs:
   build-and-push:
@@ -34,6 +35,8 @@ jobs:
             ${{ env.IMAGE_PREFIX }}-${{ matrix.app }}:latest
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+          build-args: |
+            ${{ matrix.app == 'web' && 'NEXT_PUBLIC_API_URL=/api' || '' }}
 
   deploy:
     needs: build-and-push
