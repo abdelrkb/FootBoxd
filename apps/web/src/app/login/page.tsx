@@ -61,7 +61,7 @@ export default function LoginPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <OAuthButton href={api.googleLoginUrl()} label="Continuer avec Google" />
-        <OAuthButton href={api.appleLoginUrl()} label="Continuer avec Apple" />
+        {/* <OAuthButton href={api.appleLoginUrl()} label="Continuer avec Apple" /> */}
       </div>
 
       <p style={{ fontSize: 14, color: 'var(--fb-text-2)' }}>

@@ -14,23 +14,7 @@ import { EmptyContent, EmptySocial } from '../components/ui/empty-state';
 import { SkeletonList } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
 import { leagueAccentColor } from '../components/ui/card-shell';
-
-const CALENDAR_DAYS_AHEAD = 5; // section 7 : calendrier navigable jusqu'à +5 jours
-
-function toDateString(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
-
-function nextDays(n: number): string[] {
-  const days: string[] = [];
-  const today = new Date();
-  for (let i = 0; i < n; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    days.push(toDateString(d));
-  }
-  return days;
-}
+import { todayString } from '../lib/calendar-days';
 
 interface LeagueRow {
   league: League;
@@ -130,8 +114,7 @@ function Sidebar({ user }: { user: { id: string } | null }) {
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
-  const days = useMemo(() => nextDays(CALENDAR_DAYS_AHEAD), []);
-  const [selectedDate, setSelectedDate] = useState(days[0]);
+  const [selectedDate, setSelectedDate] = useState(todayString());
   const [matches, setMatches] = useState<Match[] | null>(null);
   const [favoriteLeagueIds, setFavoriteLeagueIds] = useState<Set<string> | null>(null);
 
@@ -193,7 +176,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <DateSelector days={days} selected={selectedDate} onSelect={setSelectedDate} />
+        <DateSelector selected={selectedDate} onSelect={setSelectedDate} />
 
         {loading && <SkeletonList />}
         {!loading && leagueRows.length === 0 && (

@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useMemo, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { Match, League } from '@football-app/shared-types';
@@ -14,23 +14,7 @@ import { StatusLabel } from '../../../components/ui/status-label';
 import { EmptyContent } from '../../../components/ui/empty-state';
 import { SkeletonList } from '../../../components/ui/skeleton';
 import { SpoilerScore } from '../../../components/ui/spoiler-score';
-
-const CALENDAR_DAYS_AHEAD = 5;
-
-function toDateString(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
-
-function nextDays(n: number): string[] {
-  const days: string[] = [];
-  const today = new Date();
-  for (let i = 0; i < n; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    days.push(toDateString(d));
-  }
-  return days;
-}
+import { todayString } from '../../../lib/calendar-days';
 
 function MatchRight({ match }: { match: Match }) {
   if (match.status === 'scheduled') {
@@ -57,8 +41,7 @@ export default function LeagueDetailPage({ params }: PageProps<'/leagues/[id]'>)
   const { id } = use(params);
   const { user } = useAuth();
   const searchParams = useSearchParams();
-  const days = useMemo(() => nextDays(CALENDAR_DAYS_AHEAD), []);
-  const [selectedDate, setSelectedDate] = useState(searchParams.get('date') ?? days[0]);
+  const [selectedDate, setSelectedDate] = useState(searchParams.get('date') ?? todayString());
   const [league, setLeague] = useState<League | null>(null);
   const [matches, setMatches] = useState<Match[] | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -124,7 +107,7 @@ export default function LeagueDetailPage({ params }: PageProps<'/leagues/[id]'>)
         )}
       </div>
 
-      <DateSelector days={days} selected={selectedDate} onSelect={setSelectedDate} />
+      <DateSelector selected={selectedDate} onSelect={setSelectedDate} />
 
       {matches === null && <SkeletonList />}
       {matches?.length === 0 && <EmptyContent title="Aucun match ce jour-là" subtitle="Essaie un autre jour du sélecteur." />}
