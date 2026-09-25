@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "dad1167e2a9ee5f81f7e4f1af82a08000fcddd2d",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": false,
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "football-app",
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        { "type": "json", "path": "apps/api/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "apps/web/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "apps/worker/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "packages/config/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "packages/database/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "packages/shared-types/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "package-lock.json", "jsonpath": "$.packages['apps/api'].version" },
+        { "type": "json", "path": "package-lock.json", "jsonpath": "$.packages['apps/web'].version" },
+        { "type": "json", "path": "package-lock.json", "jsonpath": "$.packages['apps/worker'].version" },
+        { "type": "json", "path": "package-lock.json", "jsonpath": "$.packages['packages/config'].version" },
+        { "type": "json", "path": "package-lock.json", "jsonpath": "$.packages['packages/database'].version" },
+        { "type": "json", "path": "package-lock.json", "jsonpath": "$.packages['packages/shared-types'].version" }
+      ]
+    }
+  }
+}

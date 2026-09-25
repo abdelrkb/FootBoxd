@@ -121,11 +121,30 @@ docker compose down -v               # tout arrêter ET supprimer les données
 
 Cible : un VPS Hetzner CX23, Postgres en conteneur, Caddy en reverse-proxy unique (HTTPS automatique), routage par chemin sur un seul domaine (`/` → web, `/api/*` → api) — tout reste same-origin, donc le cookie httpOnly d'auth fonctionne sans configuration de domaine.
 
-- [`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml) — sur push `main` : build des images `api`/`worker`/`web` (web buildé avec `NEXT_PUBLIC_API_URL=/api`), push sur ghcr.io (tags `:<sha>` et `:latest`), copie de `docker-compose.prod.yml` sur le VPS, `pull`, migrations Prisma, `up -d`.
+- [`.github/workflows/release.yml`](./.github/workflows/release.yml) — versionnage et déploiement (voir « Versions et releases » ci-dessous) : à chaque release, build des images `api`/`worker`/`web` (web buildé avec `NEXT_PUBLIC_API_URL=/api`), push sur ghcr.io (tags `:vX.Y.Z`, `:<sha>` et `:latest`), copie de `docker-compose.prod.yml` sur le VPS, `pull`, migrations Prisma, `up -d`.
 - [`docker-compose.prod.yml`](./docker-compose.prod.yml) — autonome, images ghcr.io, aucun port publié ; `api` et `web` rejoignent le réseau externe `proxy` (alias `football-api` / `football-web`). Ne pas le combiner avec `docker-compose.yml`.
 - [`deploy/`](./deploy) — fichiers de référence côté VPS : `proxy/` (Caddy partagé dans `/opt/proxy`, un fichier `sites/*.caddy` par site), `env.prod.example` (modèle du `.env` de prod), `backup.sh` (pg_dump quotidien, 14 jours de rétention dans `/opt/backups`).
 - Secrets GitHub à définir : `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`.
 - Remplacer le domaine placeholder (`foot.tondomaine.com`) dans `deploy/proxy/sites/football.caddy` et `env.prod.example`, et pointer le DNS vers le VPS avant de démarrer Caddy.
+
+### Versions et releases
+
+Une seule version SemVer pour tout le repo (tags `vX.Y.Z`), gérée par [release-please](https://github.com/googleapis/release-please). **Merger dans `main` ne déploie plus** : seule une release déploie.
+
+**Conventional Commits** — le message de commit (ou le titre de la PR si on squash) détermine la version :
+
+| Préfixe | Effet (version < 1.0) | Exemple |
+|---|---|---|
+| `fix:` | patch (0.1.0 → 0.1.1) | `fix: minute en direct absente` |
+| `feat:` | minor (0.1.0 → 0.2.0) | `feat: recherche d'utilisateurs` |
+| `feat!:` ou `BREAKING CHANGE:` en pied de message | minor avant 1.0, major ensuite | `feat!: nouveau format d'API` |
+| `chore:`, `docs:`, `refactor:`… | aucune release | `docs: mise à jour du README` |
+
+**Fonctionnement** : après chaque merge dans `main`, release-please ouvre (ou met à jour) une PR « chore(main): release X.Y.Z » avec le `CHANGELOG.md` et les versions des `package.json`. Merger cette PR crée le tag `vX.Y.Z` et la Release GitHub, puis le même workflow build les images, les pousse sur ghcr.io et déploie ce tag sur le VPS (`TAG=vX.Y.Z` dans le `.env`).
+
+**Rollback** : GitHub → Actions → *Release* → *Run workflow* → renseigner `tag` (ex. `v1.1.0`). Le workflow saute le build et redéploie les images et le compose de ce tag. ⚠️ Les migrations Prisma **ne sont pas annulées** : la base garde le schéma de la version la plus récente. Un rollback n'est sûr que si l'ancienne version reste compatible avec ce schéma (migrations additives) ; sinon il faut écrire une migration corrective.
+
+**Réglage GitHub requis** : Settings → Actions → General → Workflow permissions → cocher *Allow GitHub Actions to create and approve pull requests*.
 
 Plan complet, durcissement du serveur et points ouverts : [architecture.md](./architecture.md) section 9.
 
