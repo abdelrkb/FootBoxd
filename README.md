@@ -129,22 +129,13 @@ Cible : un VPS Hetzner CX23, Postgres en conteneur, Caddy en reverse-proxy uniqu
 
 ### Versions et releases
 
-Une seule version SemVer pour tout le repo (tags `vX.Y.Z`), gérée par [release-please](https://github.com/googleapis/release-please). **Merger dans `main` ne déploie plus** : seule une release déploie.
+Une seule version SemVer pour tout le repo (tags `vX.Y.Z`). **Merger dans `main` ne déploie rien** : on déploie en **publiant une Release GitHub** à la main (tag `vX.Y.Z`), ce qui build les images, les pousse sur ghcr.io et déploie ce tag sur le VPS (`TAG=vX.Y.Z` dans le `.env`, `pull`, migrations Prisma, `up -d`).
 
-**Conventional Commits** — le message de commit (ou le titre de la PR si on squash) détermine la version :
+Guide complet (procédure, milestones, hotfix, rollback, dépannage) : [RELEASE.md](./RELEASE.md).
 
-| Préfixe | Effet (version < 1.0) | Exemple |
-|---|---|---|
-| `fix:` | patch (0.1.0 → 0.1.1) | `fix: minute en direct absente` |
-| `feat:` | minor (0.1.0 → 0.2.0) | `feat: recherche d'utilisateurs` |
-| `feat!:` ou `BREAKING CHANGE:` en pied de message | minor avant 1.0, major ensuite | `feat!: nouveau format d'API` |
-| `chore:`, `docs:`, `refactor:`… | aucune release | `docs: mise à jour du README` |
-
-**Fonctionnement** : après chaque merge dans `main`, release-please ouvre (ou met à jour) une PR « chore(main): release X.Y.Z » avec le `CHANGELOG.md` et les versions des `package.json`. Merger cette PR crée le tag `vX.Y.Z` et la Release GitHub, puis le même workflow build les images, les pousse sur ghcr.io et déploie ce tag sur le VPS (`TAG=vX.Y.Z` dans le `.env`).
-
-**Rollback** : GitHub → Actions → *Release* → *Run workflow* → renseigner `tag` (ex. `v1.1.0`). Le workflow saute le build et redéploie les images et le compose de ce tag. ⚠️ Les migrations Prisma **ne sont pas annulées** : la base garde le schéma de la version la plus récente. Un rollback n'est sûr que si l'ancienne version reste compatible avec ce schéma (migrations additives) ; sinon il faut écrire une migration corrective.
-
-**Réglage GitHub requis** : Settings → Actions → General → Workflow permissions → cocher *Allow GitHub Actions to create and approve pull requests*.
+- **Livrer** : rattacher les PR à une milestone, les merger dans `main`, puis Releases → *Draft a new release* → nouveau tag `vX.Y.Z` (cible `main`) → *Generate release notes* → *Publish*.
+- **Hotfix** : partir du tag en prod (`git checkout -b hotfix/vX.Y.Z+1 vX.Y.Z`), publier une Release dont la cible est la branche de hotfix, puis reporter le correctif dans `main`.
+- **Rollback** : Actions → *Release* → *Run workflow* → `tag` = version à remettre (sans rebuild). ⚠️ Les migrations Prisma **ne sont pas annulées** : le rollback n'est sûr que si l'ancienne version reste compatible avec le schéma actuel de la base.
 
 Plan complet, durcissement du serveur et points ouverts : [architecture.md](./architecture.md) section 9.
 

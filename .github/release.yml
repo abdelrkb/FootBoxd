@@ -1,0 +1,15 @@
+# Catégories des notes de release auto-générées (bouton « Generate release notes »).
+# Les PR sont classées par label ; sans label, elles tombent dans « Autres changements ».
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+  categories:
+    - title: Nouveautés
+      labels: [feature, enhancement]
+    - title: Corrections
+      labels: [bug, fix, hotfix]
+    - title: Changements incompatibles
+      labels: [breaking]
+    - title: Autres changements
+      labels: ["*"]
