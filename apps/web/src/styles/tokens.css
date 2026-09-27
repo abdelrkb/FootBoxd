@@ -77,6 +77,8 @@
   /* ——— Hachure « craie » : emplacement vide, slot d'image, état vide ——— */
   --fb-hatch: repeating-linear-gradient(115deg, #0E121A 0 9px, #121620 9px 18px);
   --fb-hatch-avatar: repeating-linear-gradient(115deg, #1A1F2B 0 5px, #121620 5px 10px);
+
+  --fb-curtain: repeating-linear-gradient(135deg, rgba(8, 10, 14, 0.82) 0 10px, rgba(20, 23, 30, 0.92) 10px 20px);
 }
 
 /* ——— Mode clair : minimum viable, mêmes rôles ——— */
@@ -109,6 +111,8 @@
 
     --fb-hatch: repeating-linear-gradient(115deg, #EFEEEA 0 9px, #F7F6F3 9px 18px);
     --fb-hatch-avatar: repeating-linear-gradient(115deg, #E7E5E0 0 5px, #F2F1ED 5px 10px);
+
+    --fb-curtain: repeating-linear-gradient(135deg, rgba(233, 231, 225, 0.85) 0 10px, rgba(247, 246, 243, 0.93) 10px 20px);
   }
 }
 

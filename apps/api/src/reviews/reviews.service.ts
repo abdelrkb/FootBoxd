@@ -96,6 +96,9 @@ export class ReviewsService {
 
     const match = await this.prisma.client.match.findUnique({ where: { id: dto.matchId } });
     if (!match) throw new NotFoundException('Match introuvable');
+    if (match.status !== 'finished') {
+      throw new ForbiddenException("Ce match n'est pas encore terminé");
+    }
 
     const tagIds = await this.resolveTagIds(dto.tags);
 
