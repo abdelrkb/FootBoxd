@@ -15,6 +15,7 @@ import { ScoreChip } from '../../../components/ui/badges';
 import { StatusLabel } from '../../../components/ui/status-label';
 import { StarsDisplay, StarsSelector } from '../../../components/ui/stars';
 import { TagInput } from '../../../components/ui/tag-input';
+import { LockIcon } from '../../../components/ui/lock-icon';
 import { Button } from '../../../components/ui/button';
 import { EmptyContent } from '../../../components/ui/empty-state';
 import { SpoilerScore } from '../../../components/ui/spoiler-score';
@@ -214,7 +215,77 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
             </div>
           )}
 
-          {user && !myReview && (
+          {user && !myReview && match.status !== 'finished' && (
+            <div
+              style={{
+                position: 'relative',
+                border: '1px solid var(--fb-border)',
+                borderRadius: 16,
+                background: 'var(--fb-surface)',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                aria-hidden
+                style={{
+                  padding: 24,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 18,
+                  opacity: 0.4,
+                  filter: 'blur(1.5px)',
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                }}
+              >
+                <h2 className="fb-card-title" style={{ fontSize: 20, margin: 0 }}>
+                  Logger le match
+                </h2>
+                <StarsSelector value={3} onChange={() => {}} size={38} />
+                <div
+                  style={{
+                    width: '100%',
+                    minHeight: 110,
+                    boxSizing: 'border-box',
+                    border: '1px solid var(--fb-border)',
+                    borderRadius: 12,
+                    background: 'var(--fb-bg)',
+                  }}
+                />
+                <div
+                  style={{
+                    width: '100%',
+                    minHeight: 46,
+                    boxSizing: 'border-box',
+                    border: '1px solid var(--fb-border)',
+                    borderRadius: 12,
+                    background: 'var(--fb-bg)',
+                  }}
+                />
+              </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 12,
+                  textAlign: 'center',
+                  padding: 24,
+                  background: 'var(--fb-curtain)',
+                }}
+              >
+                <LockIcon size={26} color="var(--fb-text)" />
+                <p className="fb-card-title" style={{ fontSize: 15, margin: 0, maxWidth: 260 }}>
+                  Regarde ce match jusqu&rsquo;au bout pour pouvoir le logger
+                </p>
+              </div>
+            </div>
+          )}
+
+          {user && !myReview && match.status === 'finished' && (
             <form
               onSubmit={handleLogMatch}
               style={{
