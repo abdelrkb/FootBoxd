@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { Comment, Review } from '@football-app/shared-types';
+import type { Comment, Review, TagSelection } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { Crest } from '../../../components/ui/crest';
 import { StarsDisplay, StarsSelector } from '../../../components/ui/stars';
 import { OwnRatingPill } from '../../../components/ui/badges';
 import { Button } from '../../../components/ui/button';
 import { ClientDate } from '../../../components/client-date';
+import { TagInput } from '../../../components/ui/tag-input';
+import { TagChip } from '../../../components/ui/tag-chip';
 
 export function DevelopedReviewCard({
   review,
@@ -28,6 +30,9 @@ export function DevelopedReviewCard({
   const [editing, setEditing] = useState(false);
   const [editRating, setEditRating] = useState(Number(review.rating));
   const [editComment, setEditComment] = useState(review.comment ?? '');
+  const [editTags, setEditTags] = useState<TagSelection[]>(
+    review.tags.map((t) => ({ id: t.id, name: t.name, color: t.color, colorEnd: t.colorEnd })),
+  );
 
   async function toggleLike() {
     setLiked((prev) => !prev);
@@ -49,7 +54,7 @@ export function DevelopedReviewCard({
   }
 
   async function saveEdit() {
-    await api.updateReview(review.id, { rating: editRating, comment: editComment || undefined });
+    await api.updateReview(review.id, { rating: editRating, comment: editComment || undefined, tags: editTags });
     setEditing(false);
     onChange();
   }
@@ -119,6 +124,7 @@ export function DevelopedReviewCard({
               resize: 'vertical',
             }}
           />
+          <TagInput value={editTags} onChange={setEditTags} />
           <div style={{ display: 'flex', gap: 10 }}>
             <Button size="sm" onClick={saveEdit}>
               Enregistrer
@@ -129,7 +135,18 @@ export function DevelopedReviewCard({
           </div>
         </div>
       ) : (
-        review.comment && <p className="fb-body">{review.comment}</p>
+        <>
+          {review.comment && <p className="fb-body">{review.comment}</p>}
+          {review.tags.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {review.tags.map((tag) => (
+                <TagChip key={tag.id} color={tag.color} colorEnd={tag.colorEnd}>
+                  {tag.name}
+                </TagChip>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {!editing && (
