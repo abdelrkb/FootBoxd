@@ -13,6 +13,8 @@ import type {
   MatchEvent,
   RatingDistribution,
   Team,
+  Tag,
+  TagSelection,
 } from '@football-app/shared-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -73,12 +75,12 @@ export const getReviewsForMatch = (matchId: string) => apiFetch<Review[]>(`/revi
 
 export const getReview = (id: string) => apiFetch<Review>(`/reviews/${id}`);
 
-export const createReview = (matchId: string, rating: number, comment?: string) =>
-  apiFetch<Review>('/reviews', { method: 'POST', body: JSON.stringify({ matchId, rating, comment }) });
+export const createReview = (matchId: string, rating: number, comment?: string, tags?: TagSelection[]) =>
+  apiFetch<Review>('/reviews', { method: 'POST', body: JSON.stringify({ matchId, rating, comment, tags }) });
 
 export const deleteReview = (id: string) => apiFetch<void>(`/reviews/${id}`, { method: 'DELETE' });
 
-export const updateReview = (id: string, data: { rating?: number; comment?: string }) =>
+export const updateReview = (id: string, data: { rating?: number; comment?: string; tags?: TagSelection[] }) =>
   apiFetch<Review>(`/reviews/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
 export const likeReview = (id: string) => apiFetch<{ success: boolean }>(`/reviews/${id}/like`, { method: 'POST' });
@@ -88,6 +90,9 @@ export const unlikeReview = (id: string) => apiFetch<{ success: boolean }>(`/rev
 export const getPopularReviews = () => apiFetch<PopularReview[]>('/reviews/popular');
 
 export const getFollowingReviews = () => apiFetch<ReviewWithMatch[]>('/reviews/following');
+
+// --- Tags ---
+export const getTags = () => apiFetch<Tag[]>('/tags');
 
 // --- Comments ---
 export const getComments = (reviewId: string) => apiFetch<Comment[]>(`/reviews/${reviewId}/comments`);

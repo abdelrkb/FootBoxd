@@ -3,8 +3,11 @@ import { Prisma } from '@football-app/database';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import type { CreateReviewDto } from './dto/create-review.dto.js';
+import type { TagInputDto } from './dto/tag-input.dto.js';
 
 const PRISMA_UNIQUE_VIOLATION = 'P2002';
+
+const DEFAULT_TAG_COLOR = '#6C63FF';
 
 function assertValidRating(rating: number) {
   const isInRange = rating >= 0.5 && rating <= 5;
@@ -17,7 +20,19 @@ function assertValidRating(rating: number) {
 const reviewInclude = {
   user: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
   _count: { select: { likes: true, comments: true } },
+  tags: { include: { tag: true } },
 } as const;
+
+type ReviewTagsShape = { tags: Array<{ tag: { id: string; name: string; color: string; colorEnd: string | null } }> };
+
+// Le front reçoit `tags: Tag[]` à plat (pas la ligne de jointure `ReviewTag`) — voir
+// shared-types `Review.tags`.
+function serializeReview<T extends ReviewTagsShape>(review: T) {
+  return {
+    ...review,
+    tags: review.tags.map((rt) => rt.tag).sort((a, b) => a.name.localeCompare(b.name)),
+  };
+}
 
 const reviewWithMatchInclude = {
   ...reviewInclude,
@@ -41,17 +56,61 @@ export class ReviewsService {
     private readonly notificationsService: NotificationsService,
   ) {}
 
+  // Un tag est partagé entre tous les users (autocomplete + réutilisation de sa couleur) :
+  // - id fourni -> tag existant, réutilisé tel quel (couleur/nom ignorés, on ne réattribue pas
+  //   la couleur d'un tag déjà en base à chaque review).
+  // - pas d'id -> recherche par nom insensible à la casse ; trouvé -> réutilisé ; sinon créé
+  //   avec la couleur choisie dans le color-picker (ou une couleur par défaut).
+  private async resolveTagIds(tags: TagInputDto[] | undefined): Promise<string[]> {
+    if (!tags || tags.length === 0) return [];
+    const ids = new Set<string>();
+    for (const input of tags) {
+      if (input.id) {
+        const existing = await this.prisma.client.tag.findUnique({ where: { id: input.id } });
+        if (!existing) throw new NotFoundException(`Tag introuvable : ${input.id}`);
+        ids.add(existing.id);
+        continue;
+      }
+
+      const name = input.name.trim();
+      if (!name) continue;
+
+      const existing = await this.prisma.client.tag.findFirst({
+        where: { name: { equals: name, mode: 'insensitive' } },
+      });
+      if (existing) {
+        ids.add(existing.id);
+        continue;
+      }
+
+      const created = await this.prisma.client.tag.create({
+        data: { name, color: input.color ?? DEFAULT_TAG_COLOR, colorEnd: input.colorEnd },
+      });
+      ids.add(created.id);
+    }
+    return Array.from(ids);
+  }
+
   async create(userId: string, dto: CreateReviewDto) {
     assertValidRating(dto.rating);
 
     const match = await this.prisma.client.match.findUnique({ where: { id: dto.matchId } });
     if (!match) throw new NotFoundException('Match introuvable');
 
+    const tagIds = await this.resolveTagIds(dto.tags);
+
     try {
-      return await this.prisma.client.review.create({
-        data: { userId, matchId: dto.matchId, rating: dto.rating, comment: dto.comment },
+      const review = await this.prisma.client.review.create({
+        data: {
+          userId,
+          matchId: dto.matchId,
+          rating: dto.rating,
+          comment: dto.comment,
+          tags: { create: tagIds.map((tagId) => ({ tagId })) },
+        },
         include: reviewInclude,
       });
+      return serializeReview(review);
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === PRISMA_UNIQUE_VIOLATION) {
         throw new ConflictException('Vous avez déjà noté ce match');
@@ -60,18 +119,19 @@ export class ReviewsService {
     }
   }
 
-  findForMatch(matchId: string) {
-    return this.prisma.client.review.findMany({
+  async findForMatch(matchId: string) {
+    const reviews = await this.prisma.client.review.findMany({
       where: { matchId, deletedAt: null },
       include: reviewInclude,
       orderBy: { createdAt: 'desc' },
     });
+    return reviews.map(serializeReview);
   }
 
   async findActiveById(id: string) {
     const review = await this.prisma.client.review.findUnique({ where: { id }, include: reviewInclude });
     if (!review || review.deletedAt) throw new NotFoundException('Review introuvable');
-    return review;
+    return serializeReview(review);
   }
 
   async softDelete(id: string, userId: string) {
@@ -83,17 +143,24 @@ export class ReviewsService {
   }
 
   // "Modifier ma note" (handoff design du 2026-09-20, menu ··· sur sa propre review).
-  async update(id: string, userId: string, data: { rating?: number; comment?: string }) {
+  // `tags` absent = tags inchangés ; `tags` présent (même vide) = remplace l'ensemble des tags.
+  async update(id: string, userId: string, data: { rating?: number; comment?: string; tags?: TagInputDto[] }) {
     const review = await this.prisma.client.review.findUnique({ where: { id } });
     if (!review || review.deletedAt) throw new NotFoundException('Review introuvable');
     if (review.userId !== userId) throw new ForbiddenException("Cette review n'est pas la vôtre");
     if (data.rating !== undefined) assertValidRating(data.rating);
 
-    return this.prisma.client.review.update({
+    const tagsUpdate =
+      data.tags === undefined
+        ? {}
+        : { tags: { deleteMany: {}, create: (await this.resolveTagIds(data.tags)).map((tagId) => ({ tagId })) } };
+
+    const updated = await this.prisma.client.review.update({
       where: { id },
-      data: { rating: data.rating, comment: data.comment },
+      data: { rating: data.rating, comment: data.comment, ...tagsUpdate },
       include: reviewInclude,
     });
+    return serializeReview(updated);
   }
 
   async like(reviewId: string, userId: string) {
@@ -120,15 +187,15 @@ export class ReviewsService {
       include: reviewWithMatchInclude,
     });
     return candidates
-      .map((review) => ({ ...review, popularityScore: popularityScore(review._count) }))
+      .map((review) => ({ ...serializeReview(review), popularityScore: popularityScore(review._count) }))
       .sort((a, b) => b.popularityScore - a.popularityScore)
       .slice(0, limit);
   }
 
   // "Mes amis" = les utilisateurs que je suis (section 6 : follows). Pas de fenêtre temporelle
   // ici, juste les N plus récentes (contrairement à "populaire" qui est borné à 48h).
-  findFromFollowing(userId: string, limit = 10) {
-    return this.prisma.client.review.findMany({
+  async findFromFollowing(userId: string, limit = 10) {
+    const reviews = await this.prisma.client.review.findMany({
       where: {
         deletedAt: null,
         user: { followers: { some: { followerId: userId } } },
@@ -137,5 +204,6 @@ export class ReviewsService {
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
+    return reviews.map(serializeReview);
   }
 }

@@ -214,6 +214,7 @@ model Review {
   match    Match        @relation(fields: [matchId], references: [id], onDelete: Cascade)
   comments Comment[]
   likes    ReviewLike[]
+  tags     ReviewTag[]
 
   // Pas de @@unique/@@index ici : la vraie contrainte est un index UNIQUE PARTIEL
   // (WHERE deleted_at IS NULL) + un CHECK sur `rating`, tous deux ajoutés à la main
@@ -223,6 +224,33 @@ model Review {
   // "manquant" en base lors d'un futur `migrate dev` et générerait une migration corrective
   // en doublon de celui posé à la main.
   @@map("reviews")
+}
+
+// Tag libre posé sur une review (ambiance, avec qui, où… — champ non structuré, décision
+// produit du 27/09) : nom unique partagé entre tous les users (autocomplete + réutilisation
+// de la couleur déjà choisie par un tag existant), couleur solide ou dégradé (colorEnd) choisie
+// à la création par le premier utilisateur du tag.
+model Tag {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  color     String
+  colorEnd  String?  @map("color_end")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  reviews ReviewTag[]
+
+  @@map("tags")
+}
+
+model ReviewTag {
+  reviewId String @map("review_id") @db.Uuid
+  tagId    String @map("tag_id") @db.Uuid
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([reviewId, tagId])
+  @@map("review_tags")
 }
 
 model Comment {

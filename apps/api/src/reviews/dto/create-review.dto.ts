@@ -1,4 +1,6 @@
-import { IsNumber, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ArrayMaxSize, IsArray, IsNumber, IsOptional, IsString, IsUUID, MaxLength, ValidateNested } from 'class-validator';
+import { TagInputDto } from './tag-input.dto.js';
 
 export class CreateReviewDto {
   @IsUUID()
@@ -13,4 +15,11 @@ export class CreateReviewDto {
   @IsString()
   @MaxLength(2000)
   comment?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(8)
+  @ValidateNested({ each: true })
+  @Type(() => TagInputDto)
+  tags?: TagInputDto[];
 }

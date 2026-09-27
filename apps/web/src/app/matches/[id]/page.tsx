@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import type { Match, Review, MatchEvent, RatingDistribution } from '@football-app/shared-types';
+import type { Match, Review, MatchEvent, RatingDistribution, TagSelection } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import { DevelopedReviewCard } from './developed-review-card';
@@ -14,6 +14,7 @@ import { Crest } from '../../../components/ui/crest';
 import { ScoreChip } from '../../../components/ui/badges';
 import { StatusLabel } from '../../../components/ui/status-label';
 import { StarsDisplay, StarsSelector } from '../../../components/ui/stars';
+import { TagInput } from '../../../components/ui/tag-input';
 import { Button } from '../../../components/ui/button';
 import { EmptyContent } from '../../../components/ui/empty-state';
 import { SpoilerScore } from '../../../components/ui/spoiler-score';
@@ -28,6 +29,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
   const [distribution, setDistribution] = useState<RatingDistribution | null>(null);
   const [rating, setRating] = useState(3);
   const [comment, setComment] = useState('');
+  const [tags, setTags] = useState<TagSelection[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const loadReviews = () => api.getReviewsForMatch(id).then(setReviews);
@@ -44,8 +46,9 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
     e.preventDefault();
     setError(null);
     try {
-      await api.createReview(id, rating, comment || undefined);
+      await api.createReview(id, rating, comment || undefined, tags.length ? tags : undefined);
       setComment('');
+      setTags([]);
       loadReviews();
     } catch (err) {
       setError(err instanceof api.ApiError ? err.message : 'Erreur inconnue');
@@ -247,6 +250,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
                   resize: 'vertical',
                 }}
               />
+              <TagInput value={tags} onChange={setTags} />
               {error && <p style={{ color: 'var(--fb-live-text)', fontSize: 13 }}>{error}</p>}
               <Button type="submit" style={{ width: 'fit-content' }}>
                 Logger

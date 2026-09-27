@@ -75,6 +75,23 @@ export interface Match {
   awayTeam: Team;
 }
 
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  colorEnd: string | null;
+}
+
+// Ce que le front envoie pour poser un tag sur une review (log ou modification) : soit un tag
+// existant (id, couleur/nom ignorés côté API), soit un nouveau tag (pas d'id, couleur choisie
+// dans le color-picker — voir apps/api/src/reviews/dto/tag-input.dto.ts).
+export interface TagSelection {
+  id?: string;
+  name: string;
+  color?: string;
+  colorEnd?: string | null;
+}
+
 export interface Review {
   id: string;
   userId: string;
@@ -85,6 +102,7 @@ export interface Review {
   deletedAt: string | null;
   user: UserSummary;
   _count: { likes: number; comments: number };
+  tags: Tag[];
 }
 
 export interface ReviewWithMatch extends Review {
