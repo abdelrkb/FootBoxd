@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { PopularMatch } from '@football-app/shared-types';
 import { CrestPair } from './ui/crest';
 import { cardShellStyle, LeagueStripe } from './ui/card-shell';
+import { WatchlistMenuButton } from './ui/watchlist-menu-button';
 
 export function MatchMiniCard({ match }: { match: PopularMatch }) {
   return (
@@ -21,6 +22,7 @@ export function MatchMiniCard({ match }: { match: PopularMatch }) {
           reviews
         </span>
       </div>
+      <WatchlistMenuButton matchId={match.id} />
     </Link>
   );
 }

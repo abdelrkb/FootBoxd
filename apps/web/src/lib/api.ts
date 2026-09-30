@@ -15,6 +15,7 @@ import type {
   Team,
   Tag,
   TagSelection,
+  WatchlistEntry,
 } from '@football-app/shared-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -160,3 +161,19 @@ export const updatePreferences = (
 
 export const completeOnboarding = () =>
   apiFetch<PublicUser>('/users/me/complete-onboarding', { method: 'POST' });
+
+// --- Watchlist ---
+export const getWatchlist = () => apiFetch<WatchlistEntry[]>('/watchlist');
+
+export const getWatchlistIds = () => apiFetch<string[]>('/watchlist/ids');
+
+export const getUserWatchlist = (userId: string) => apiFetch<WatchlistEntry[]>(`/users/${userId}/watchlist`);
+
+export const addToWatchlist = (matchId: string) =>
+  apiFetch<{ success: boolean }>(`/watchlist/${matchId}`, { method: 'POST' });
+
+export const removeFromWatchlist = (matchId: string) =>
+  apiFetch<{ success: boolean }>(`/watchlist/${matchId}`, { method: 'DELETE' });
+
+export const setWatchlistVisibility = (isPublic: boolean) =>
+  apiFetch<PublicUser>('/users/me/watchlist-visibility', { method: 'PATCH', body: JSON.stringify({ isPublic }) });

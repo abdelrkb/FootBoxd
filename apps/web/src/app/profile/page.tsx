@@ -31,9 +31,14 @@ export default function ProfilePage() {
     <ProfileView
       profile={profile}
       headerAction={
-        <Link href="/settings">
-          <Button variant="secondary">Modifier le profil</Button>
-        </Link>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Link href="/watchlist">
+            <Button variant="secondary">Watchlist</Button>
+          </Link>
+          <Link href="/settings">
+            <Button variant="secondary">Modifier le profil</Button>
+          </Link>
+        </div>
       }
     />
   );
