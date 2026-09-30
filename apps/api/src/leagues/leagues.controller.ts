@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { PublicUser } from '../auth/auth.service.js';
@@ -11,6 +11,12 @@ export class LeaguesController {
   @Get()
   list() {
     return this.leaguesService.findAll();
+  }
+
+  // Doit rester déclarée avant `:id` — sinon Nest tente de parser "search" comme un UUID.
+  @Get('search')
+  search(@Query('q') q = '') {
+    return this.leaguesService.search(q);
   }
 
   @Get(':id')

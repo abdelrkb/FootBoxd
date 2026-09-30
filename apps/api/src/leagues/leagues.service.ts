@@ -12,6 +12,19 @@ export class LeaguesService {
     return this.prisma.client.league.findMany({ orderBy: { name: 'asc' } });
   }
 
+  // Recherche par nom (prioritaire) ou pays — mêmes règles que la recherche utilisateurs.
+  search(query: string) {
+    const q = query.trim();
+    if (q.length < 2) return [];
+    return this.prisma.client.league.findMany({
+      where: {
+        OR: [{ name: { contains: q, mode: 'insensitive' } }, { country: { contains: q, mode: 'insensitive' } }],
+      },
+      take: 20,
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async findById(id: string) {
     const league = await this.prisma.client.league.findUnique({ where: { id } });
     if (!league) throw new NotFoundException('Ligue introuvable');
