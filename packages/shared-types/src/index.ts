@@ -27,6 +27,7 @@ export interface PublicUser {
   notifyOnComment: boolean;
   notifyOnNewFollower: boolean;
   notifyKickoffReminder: boolean;
+  notifyWatchlistKickoff: boolean;
   hideScoresUntilClick: boolean;
   hasCompletedOnboarding: boolean;
   isWatchlistPublic: boolean;

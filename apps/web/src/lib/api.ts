@@ -154,7 +154,12 @@ export const updatePreferences = (
   prefs: Partial<
     Pick<
       PublicUser,
-      'notifyOnLike' | 'notifyOnComment' | 'notifyOnNewFollower' | 'notifyKickoffReminder' | 'hideScoresUntilClick'
+      | 'notifyOnLike'
+      | 'notifyOnComment'
+      | 'notifyOnNewFollower'
+      | 'notifyKickoffReminder'
+      | 'notifyWatchlistKickoff'
+      | 'hideScoresUntilClick'
     >
   >,
 ) => apiFetch<PublicUser>('/users/me/preferences', { method: 'PATCH', body: JSON.stringify(prefs) });

@@ -12,7 +12,7 @@ export async function syncKickoffReminders(): Promise<void> {
   const dueEntries = await prisma.watchlistEntry.findMany({
     where: {
       reminderSentAt: null,
-      user: { notifyKickoffReminder: true },
+      user: { notifyWatchlistKickoff: true },
       match: { status: 'scheduled', kickoffAt: { gte: now, lte: windowEnd } },
     },
     select: { userId: true, matchId: true },

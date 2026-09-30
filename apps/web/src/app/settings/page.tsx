@@ -13,7 +13,8 @@ const PREF_LABELS = [
   { key: 'notifyOnLike' as const, label: "J'aime" },
   { key: 'notifyOnComment' as const, label: 'Réponses' },
   { key: 'notifyOnNewFollower' as const, label: 'Nouveaux abonnés' },
-  { key: 'notifyKickoffReminder' as const, label: 'Notif coup d\'envoi matchs de la Watchlist (30min)' },
+  { key: 'notifyKickoffReminder' as const, label: 'Rappel au coup d\'envoi (ligues favorites)' },
+  { key: 'notifyWatchlistKickoff' as const, label: 'Rappel 30 min avant le coup d\'envoi (watchlist)' },
   { key: 'hideScoresUntilClick' as const, label: 'Masquer les scores jusqu\'au clic' },
 ];
 
@@ -26,6 +27,7 @@ export default function SettingsPage() {
     notifyOnComment: true,
     notifyOnNewFollower: true,
     notifyKickoffReminder: false,
+    notifyWatchlistKickoff: false,
     hideScoresUntilClick: false,
   });
   const [saved, setSaved] = useState(false);
@@ -38,6 +40,7 @@ export default function SettingsPage() {
       notifyOnComment: user.notifyOnComment,
       notifyOnNewFollower: user.notifyOnNewFollower,
       notifyKickoffReminder: user.notifyKickoffReminder,
+      notifyWatchlistKickoff: user.notifyWatchlistKickoff,
       hideScoresUntilClick: user.hideScoresUntilClick,
     });
     api.getFavoriteLeagues(user.id).then(async (leagues) => {

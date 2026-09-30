@@ -95,6 +95,10 @@ model User {
   // Watchlist (2026-09-30) : visibilité par défaut privée, l'utilisateur peut la rendre
   // publique pour que son profil affiche un bouton "Voir la watchlist" à ses visiteurs.
   isWatchlistPublic Boolean @default(false) @map("is_watchlist_public")
+  // Distinct de `notifyKickoffReminder` (qui reste dédié aux ligues favorites, toujours sans
+  // effet) : celui-ci ne rappelle que les matchs explicitement ajoutés à la watchlist, envoyé
+  // par apps/worker/src/sync/kickoff-reminders.ts.
+  notifyWatchlistKickoff Boolean @default(false) @map("notify_watchlist_kickoff")
 
   @@map("users")
 }
