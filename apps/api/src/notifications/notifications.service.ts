@@ -15,6 +15,17 @@ export class NotificationsService {
     });
   }
 
+  // Notification système (pas d'acteur humain) : rappel de coup d'envoi pour un match en
+  // watchlist — voir apps/worker/src/sync/kickoff-reminders.ts. `actorId` = `recipientId` en
+  // repli, le schéma n'ayant pas de colonne acteur nullable ; le front ignore l'acteur pour ce
+  // type (voir LABELS dans apps/web/src/app/notifications/page.tsx) et affiche le match à la
+  // place, résolu ci-dessous via `referenceId`.
+  async createKickoffReminder(userId: string, matchId: string) {
+    await this.prisma.client.notification.create({
+      data: { recipientId: userId, actorId: userId, type: 'kickoff_reminder', referenceId: matchId },
+    });
+  }
+
   async findForUser(userId: string) {
     const notifications = await this.prisma.client.notification.findMany({
       where: { recipientId: userId },
@@ -34,9 +45,22 @@ export class NotificationsService {
         : [];
     const followingSet = new Set(alreadyFollowing.map((f) => f.followingId));
 
+    const kickoffMatchIds = notifications
+      .filter((n) => n.type === 'kickoff_reminder' && n.referenceId)
+      .map((n) => n.referenceId as string);
+    const matches =
+      kickoffMatchIds.length > 0
+        ? await this.prisma.client.match.findMany({
+            where: { id: { in: kickoffMatchIds } },
+            include: { league: true, homeTeam: true, awayTeam: true },
+          })
+        : [];
+    const matchById = new Map(matches.map((m) => [m.id, m]));
+
     return notifications.map((n) => ({
       ...n,
       isFollowingActor: n.type === 'follow' ? followingSet.has(n.actorId) : undefined,
+      match: n.type === 'kickoff_reminder' && n.referenceId ? matchById.get(n.referenceId) : undefined,
     }));
   }
 

@@ -36,6 +36,7 @@ enum NotificationType {
   comment
   like
   follow
+  kickoff_reminder
 
   @@map("notification_type")
 }
@@ -72,6 +73,7 @@ model User {
   notificationsReceived  Notification[] @relation("Recipient")
   notificationsTriggered Notification[] @relation("Actor")
   favoriteLeagues        FavoriteLeague[]
+  watchlist              WatchlistEntry[]
 
   // "Club de cœur" — décision produit du 2026-09-20 (handoff design), une seule équipe
   // favorite, ses matchs épinglés en haut de l'accueil.
@@ -89,6 +91,10 @@ model User {
   notifyKickoffReminder  Boolean @default(false) @map("notify_kickoff_reminder")
   hideScoresUntilClick   Boolean @default(false) @map("hide_scores_until_click")
   hasCompletedOnboarding Boolean @default(false) @map("has_completed_onboarding")
+
+  // Watchlist (2026-09-30) : visibilité par défaut privée, l'utilisateur peut la rendre
+  // publique pour que son profil affiche un bouton "Voir la watchlist" à ses visiteurs.
+  isWatchlistPublic Boolean @default(false) @map("is_watchlist_public")
 
   @@map("users")
 }
@@ -176,8 +182,26 @@ model Match {
   awayTeam Team     @relation("AwayTeam", fields: [awayTeamId], references: [id])
   reviews  Review[]
   events   MatchEvent[]
+  watchlistedBy WatchlistEntry[]
 
   @@map("matches")
+}
+
+// Watchlist (2026-09-30) : matchs qu'un utilisateur prévoit de regarder, avec rappel de
+// notification optionnel 30 min avant le coup d'envoi (réutilise `User.notifyKickoffReminder`,
+// jusque-là stocké mais sans effet — voir schema.prisma section User). `reminderSentAt` évite
+// qu'un même match génère plusieurs rappels si le worker tourne plusieurs fois dans la fenêtre.
+model WatchlistEntry {
+  userId         String    @map("user_id") @db.Uuid
+  matchId        String    @map("match_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at")
+  reminderSentAt DateTime? @map("reminder_sent_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@id([userId, matchId])
+  @@map("watchlist_entries")
 }
 
 model MatchEvent {

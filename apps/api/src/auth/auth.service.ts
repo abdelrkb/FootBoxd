@@ -2,16 +2,15 @@ import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/co
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service.js';
-import type { User } from '@football-app/database';
+import { toPublicUser } from '../users/to-public-user.js';
+import type { PublicUser } from '../users/to-public-user.js';
 
 const BCRYPT_SALT_ROUNDS = 12;
 
-export type PublicUser = Omit<User, 'passwordHash'>;
-
-function toPublicUser(user: User): PublicUser {
-  const { passwordHash: _passwordHash, ...publicUser } = user;
-  return publicUser;
-}
+// Réexporté ici : tous les contrôleurs importent `PublicUser` depuis auth.service.ts (usage
+// historique, ex. `@CurrentUser() user: PublicUser`) — le type vit désormais dans
+// to-public-user.ts pour être utilisable côté users.service.ts sans import circulaire.
+export type { PublicUser };
 
 @Injectable()
 export class AuthService {

@@ -19,6 +19,7 @@ import { LockIcon } from '../../../components/ui/lock-icon';
 import { Button } from '../../../components/ui/button';
 import { EmptyContent } from '../../../components/ui/empty-state';
 import { SpoilerScore } from '../../../components/ui/spoiler-score';
+import { WatchlistMenuButton } from '../../../components/ui/watchlist-menu-button';
 import { leagueAccentColor } from '../../../components/ui/card-shell';
 
 export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) {
@@ -77,11 +78,14 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
           gap: 22,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ width: 4, height: 16, borderRadius: 999, background: leagueAccentColor(match.league) }} />
-          <span className="fb-label" style={{ fontSize: 12.5, color: 'var(--fb-text-2)' }}>
-            {match.league.name}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ width: 4, height: 16, borderRadius: 999, background: leagueAccentColor(match.league) }} />
+            <span className="fb-label" style={{ fontSize: 12.5, color: 'var(--fb-text-2)' }}>
+              {match.league.name}
+            </span>
+          </div>
+          <WatchlistMenuButton matchId={match.id} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap', justifyContent: 'center' }}>

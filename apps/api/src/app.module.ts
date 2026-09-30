@@ -12,6 +12,7 @@ import { FollowsModule } from './follows/follows.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { LeaguesModule } from './leagues/leagues.module.js';
 import { TagsModule } from './tags/tags.module.js';
+import { WatchlistModule } from './watchlist/watchlist.module.js';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { TagsModule } from './tags/tags.module.js';
     NotificationsModule,
     LeaguesModule,
     TagsModule,
+    WatchlistModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

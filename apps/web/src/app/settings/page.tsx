@@ -13,7 +13,7 @@ const PREF_LABELS = [
   { key: 'notifyOnLike' as const, label: "J'aime" },
   { key: 'notifyOnComment' as const, label: 'Réponses' },
   { key: 'notifyOnNewFollower' as const, label: 'Nouveaux abonnés' },
-  { key: 'notifyKickoffReminder' as const, label: "Rappel au coup d'envoi (ligues favorites)" },
+  { key: 'notifyKickoffReminder' as const, label: 'Notif coup d\'envoi matchs de la Watchlist (30min)' },
   { key: 'hideScoresUntilClick' as const, label: 'Masquer les scores jusqu\'au clic' },
 ];
 

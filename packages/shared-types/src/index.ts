@@ -11,7 +11,7 @@ export type MatchStatus =
   | 'suspended'
   | 'abandoned';
 
-export type NotificationType = 'comment' | 'like' | 'follow';
+export type NotificationType = 'comment' | 'like' | 'follow' | 'kickoff_reminder';
 
 export interface PublicUser {
   id: string;
@@ -29,6 +29,7 @@ export interface PublicUser {
   notifyKickoffReminder: boolean;
   hideScoresUntilClick: boolean;
   hasCompletedOnboarding: boolean;
+  isWatchlistPublic: boolean;
 }
 
 export interface UserSummary {
@@ -129,6 +130,8 @@ export interface Notification {
   actor: UserSummary;
   // Uniquement pour type "follow" (handoff design : bouton "Suivre" en retour).
   isFollowingActor?: boolean;
+  // Uniquement pour type "kickoff_reminder" (pas d'acteur humain, voir notifications.service.ts).
+  match?: Match;
 }
 
 export type MatchEventType = 'goal' | 'card' | 'substitution';
@@ -171,4 +174,13 @@ export interface Profile {
   favoriteMatches: ReviewWithMatch[];
   followersCount: number;
   followingCount: number;
+  isWatchlistPublic: boolean;
+}
+
+export interface WatchlistEntry {
+  userId: string;
+  matchId: string;
+  createdAt: string;
+  reminderSentAt: string | null;
+  match: Match;
 }

@@ -53,15 +53,22 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
     <ProfileView
       profile={profile}
       headerAction={
-        user && user.id !== id ? (
-          <Button variant={isFollowing ? 'secondary' : 'primary'} loading={pending} onClick={toggleFollow}>
-            {isFollowing ? 'Suivi(e)' : 'Suivre'}
-          </Button>
-        ) : !user ? (
-          <Link href="/login">
-            <Button variant="secondary">Connexion pour suivre</Button>
-          </Link>
-        ) : null
+        <div style={{ display: 'flex', gap: 10 }}>
+          {profile.isWatchlistPublic && (
+            <Link href={`/profile/${id}/watchlist`}>
+              <Button variant="secondary">Watchlist</Button>
+            </Link>
+          )}
+          {user && user.id !== id ? (
+            <Button variant={isFollowing ? 'secondary' : 'primary'} loading={pending} onClick={toggleFollow}>
+              {isFollowing ? 'Suivi(e)' : 'Suivre'}
+            </Button>
+          ) : !user ? (
+            <Link href="/login">
+              <Button variant="secondary">Connexion pour suivre</Button>
+            </Link>
+          ) : null}
+        </div>
       }
     />
   );

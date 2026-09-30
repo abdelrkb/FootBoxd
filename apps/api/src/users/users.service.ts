@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { FollowsService } from '../follows/follows.service.js';
+import { toPublicUser } from './to-public-user.js';
 import type { AuthProviderType } from '@football-app/database';
 
 const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/9.x/thumbs/svg?seed=default';
@@ -151,18 +152,20 @@ export class UsersService {
       favoriteMatches,
       followersCount,
       followingCount,
+      isWatchlistPublic: user.isWatchlistPublic,
     };
   }
 
   // "Club de cœur" (handoff design du 2026-09-20) : une seule équipe favorite, épinglée en
   // haut de l'accueil. `teamId: null` retire le club de cœur.
-  setFavoriteTeam(userId: string, teamId: string | null) {
-    return this.prisma.client.user.update({ where: { id: userId }, data: { favoriteTeamId: teamId } });
+  async setFavoriteTeam(userId: string, teamId: string | null) {
+    const user = await this.prisma.client.user.update({ where: { id: userId }, data: { favoriteTeamId: teamId } });
+    return toPublicUser(user);
   }
 
   // Réglages de notification (onboarding, écran "Réglages", 2026-09-20). Décision produit :
   // stockées mais seule hideScoresUntilClick a un effet réel pour l'instant (voir schema.prisma).
-  updatePreferences(
+  async updatePreferences(
     userId: string,
     prefs: Partial<{
       notifyOnLike: boolean;
@@ -172,10 +175,17 @@ export class UsersService {
       hideScoresUntilClick: boolean;
     }>,
   ) {
-    return this.prisma.client.user.update({ where: { id: userId }, data: prefs });
+    const user = await this.prisma.client.user.update({ where: { id: userId }, data: prefs });
+    return toPublicUser(user);
   }
 
-  completeOnboarding(userId: string) {
-    return this.prisma.client.user.update({ where: { id: userId }, data: { hasCompletedOnboarding: true } });
+  async completeOnboarding(userId: string) {
+    const user = await this.prisma.client.user.update({ where: { id: userId }, data: { hasCompletedOnboarding: true } });
+    return toPublicUser(user);
+  }
+
+  async setWatchlistVisibility(userId: string, isPublic: boolean) {
+    const user = await this.prisma.client.user.update({ where: { id: userId }, data: { isWatchlistPublic: isPublic } });
+    return toPublicUser(user);
   }
 }

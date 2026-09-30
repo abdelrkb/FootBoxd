@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../styles/tokens.css";
 import "./globals.css";
 import { AuthProvider } from "../lib/auth-context";
+import { WatchlistProvider } from "../lib/watchlist-context";
 import { Nav } from "../components/nav";
 
 export const metadata: Metadata = {
@@ -22,8 +23,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body>
         <AuthProvider>
-          <Nav />
-          <main>{children}</main>
+          <WatchlistProvider>
+            <Nav />
+            <main>{children}</main>
+          </WatchlistProvider>
         </AuthProvider>
       </body>
     </html>

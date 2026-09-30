@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { Notification } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
-import { Crest } from '../../components/ui/crest';
+import { Crest, CrestPair } from '../../components/ui/crest';
 import { EmptyContent, EmptySocial } from '../../components/ui/empty-state';
 import { Button } from '../../components/ui/button';
 import { SkeletonList } from '../../components/ui/skeleton';
@@ -15,6 +15,7 @@ const LABELS: Record<Notification['type'], string> = {
   comment: 'a commenté ta review',
   like: 'a aimé ta review',
   follow: 'a commencé à te suivre',
+  kickoff_reminder: '',
 };
 
 export default function NotificationsPage() {
@@ -103,23 +104,51 @@ export default function NotificationsPage() {
                 flexShrink: 0,
               }}
             />
-            <Link href={`/profile/${n.actorId}`} onClick={(e) => e.stopPropagation()}>
-              <Crest src={n.actor.avatarUrl} alt={n.actor.displayName} size={38} />
-            </Link>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <span
-                style={{
-                  fontSize: 14.5,
-                  fontWeight: n.isRead ? 400 : 700,
-                  color: n.isRead ? 'var(--fb-text-2)' : 'var(--fb-text)',
-                }}
-              >
-                <Link href={`/profile/${n.actorId}`} onClick={(e) => e.stopPropagation()} style={{ color: 'inherit', textDecoration: 'none' }}>
-                  <strong>{n.actor.displayName}</strong>
-                </Link>{' '}
-                {LABELS[n.type]}
-              </span>
-            </div>
+            {n.type === 'kickoff_reminder' && n.match ? (
+              <>
+                <Link href={`/matches/${n.match.id}`} onClick={(e) => e.stopPropagation()}>
+                  <CrestPair home={n.match.homeTeam} away={n.match.awayTeam} size={38} />
+                </Link>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Link
+                    href={`/matches/${n.match.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      color: n.isRead ? 'var(--fb-text-2)' : 'var(--fb-text)',
+                      textDecoration: 'none',
+                      fontSize: 14.5,
+                      fontWeight: n.isRead ? 400 : 700,
+                    }}
+                  >
+                    Coup d&rsquo;envoi dans 30 min : <strong>{n.match.homeTeam.name} — {n.match.awayTeam.name}</strong>
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link href={`/profile/${n.actorId}`} onClick={(e) => e.stopPropagation()}>
+                  <Crest src={n.actor.avatarUrl} alt={n.actor.displayName} size={38} />
+                </Link>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span
+                    style={{
+                      fontSize: 14.5,
+                      fontWeight: n.isRead ? 400 : 700,
+                      color: n.isRead ? 'var(--fb-text-2)' : 'var(--fb-text)',
+                    }}
+                  >
+                    <Link
+                      href={`/profile/${n.actorId}`}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ color: 'inherit', textDecoration: 'none' }}
+                    >
+                      <strong>{n.actor.displayName}</strong>
+                    </Link>{' '}
+                    {LABELS[n.type]}
+                  </span>
+                </div>
+              </>
+            )}
             {n.type === 'follow' && !n.isFollowingActor && (
               <Button
                 size="sm"
