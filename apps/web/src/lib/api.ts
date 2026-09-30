@@ -132,6 +132,9 @@ export const getAllLeagues = () => apiFetch<League[]>('/leagues');
 
 export const getLeague = (id: string) => apiFetch<League>(`/leagues/${id}`);
 
+export const searchLeagues = (query: string) =>
+  apiFetch<League[]>(`/leagues/search?q=${encodeURIComponent(query)}`);
+
 export const getFavoriteLeagues = (userId: string) => apiFetch<League[]>(`/users/${userId}/favorite-leagues`);
 
 export const favoriteLeague = (leagueId: string) =>
