@@ -172,6 +172,7 @@ export class UsersService {
       notifyOnComment: boolean;
       notifyOnNewFollower: boolean;
       notifyKickoffReminder: boolean;
+      notifyWatchlistKickoff: boolean;
       hideScoresUntilClick: boolean;
     }>,
   ) {
