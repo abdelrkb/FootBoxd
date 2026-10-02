@@ -26,6 +26,31 @@ function BellIcon() {
   );
 }
 
+// Rappel de vérification d'email (2026-10-02) : le compte reste utilisable sans vérifier
+// (décision produit), un simple bandeau suffit — jamais affiché sur /verify-email elle-même.
+function VerifyEmailBanner() {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        gap: 10,
+        alignItems: 'center',
+        padding: '10px 24px',
+        background: 'var(--fb-surface-unread)',
+        borderBottom: '1px solid var(--fb-border)',
+        fontSize: 13,
+        flexWrap: 'wrap',
+      }}
+    >
+      <span>Confirme ton adresse email pour sécuriser ton compte.</span>
+      <Link href="/verify-email" style={{ color: 'var(--fb-nav)', fontWeight: 700 }}>
+        Entrer le code
+      </Link>
+    </div>
+  );
+}
+
 export function Nav() {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
@@ -38,6 +63,8 @@ export function Nav() {
   }, [user]);
 
   return (
+    <>
+    {user && !user.emailVerifiedAt && pathname !== '/verify-email' && <VerifyEmailBanner />}
     <nav
       style={{
         display: 'flex',
@@ -147,5 +174,6 @@ export function Nav() {
         )}
       </div>
     </nav>
+    </>
   );
 }

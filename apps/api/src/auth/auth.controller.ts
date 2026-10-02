@@ -1,8 +1,13 @@
-import { Body, Controller, Get, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { AuthService, type PublicUser } from './auth.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
+import { VerifyEmailDto } from './dto/verify-email.dto.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
+import { DeleteAccountDto } from './dto/delete-account.dto.js';
 import { LocalAuthGuard } from './guards/local-auth.guard.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { GoogleAuthGuard } from './guards/google-auth.guard.js';
@@ -34,6 +39,9 @@ export class AuthController {
     return user;
   }
 
+  // Limite dédiée, plus stricte que le throttler global (100/min, app.module.ts) : une route
+  // d'authentification est une cible de choix pour du brute-force.
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(200)
@@ -54,6 +62,56 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: PublicUser) {
     return user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('verify-email')
+  @HttpCode(200)
+  verifyEmail(@Body() dto: VerifyEmailDto, @CurrentUser() user: PublicUser) {
+    return this.authService.verifyEmail(user.id, dto.code);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @UseGuards(JwtAuthGuard)
+  @Post('resend-verification-code')
+  @HttpCode(200)
+  async resendVerificationCode(@CurrentUser() user: PublicUser) {
+    await this.authService.resendVerificationCode(user);
+    return { success: true };
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Post('forgot-password')
+  @HttpCode(200)
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.authService.requestPasswordReset(dto.email);
+    // Réponse volontairement identique que l'email existe ou non.
+    return { success: true };
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Post('reset-password')
+  @HttpCode(200)
+  async resetPassword(@Body() dto: ResetPasswordDto, @Res({ passthrough: true }) res: Response) {
+    const user = await this.authService.resetPassword(dto.email, dto.code, dto.newPassword);
+    // Reconnecte automatiquement avec le nouveau mot de passe (meilleure UX qu'un aller-retour
+    // vers /login) ; `resetPassword` a déjà invalidé les sessions précédentes.
+    const token = this.authService.issueToken(user);
+    setAuthCookie(res, token);
+    return user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('me')
+  @HttpCode(200)
+  async deleteAccount(
+    @Body() dto: DeleteAccountDto,
+    @CurrentUser() user: PublicUser,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.deleteAccount(user.id, dto.password);
+    res.clearCookie(COOKIE_NAME, { path: '/' });
+    return { success: true };
   }
 
   @UseGuards(GoogleAuthGuard)

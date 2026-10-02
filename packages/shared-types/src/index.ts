@@ -31,6 +31,10 @@ export interface PublicUser {
   hideScoresUntilClick: boolean;
   hasCompletedOnboarding: boolean;
   isWatchlistPublic: boolean;
+  // Compte & sécurité (2026-10-02).
+  bio: string | null;
+  emailVerifiedAt: string | null;
+  usernameChangedAt: string | null;
 }
 
 export interface UserSummary {
@@ -168,6 +172,7 @@ export interface Profile {
   id: string;
   username: string;
   displayName: string;
+  bio: string | null;
   avatarUrl: string | null;
   totalReviewsCount: number;
   reviewsThisSeasonCount: number;
@@ -184,4 +189,21 @@ export interface WatchlistEntry {
   createdAt: string;
   reminderSentAt: string | null;
   match: Match;
+}
+
+// --- Compte & sécurité (2026-10-02) ---
+
+export interface BlockStatus {
+  blockedByOwner: boolean;
+  viewerHasBlocked: boolean;
+}
+
+export type ReportTargetType = 'user' | 'review' | 'comment';
+export type ReportReason = 'spam' | 'harassment' | 'inappropriate_content' | 'fake_account' | 'other';
+
+export interface CreateReportInput {
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: ReportReason;
+  details?: string;
 }

@@ -3,8 +3,10 @@ import { JwtModule } from '@nestjs/jwt';
 import type { SignOptions } from 'jsonwebtoken';
 import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../users/users.module.js';
+import { EmailModule } from '../email/email.module.js';
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
+import { VerificationCodeService } from './verification-code.service.js';
 import { LocalStrategy } from './strategies/local.strategy.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { GoogleStrategy } from './strategies/google.strategy.js';
@@ -27,6 +29,7 @@ if (process.env.APPLE_CLIENT_ID) {
 @Module({
   imports: [
     UsersModule,
+    EmailModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
@@ -36,6 +39,6 @@ if (process.env.APPLE_CLIENT_ID) {
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, ...oauthProviders],
+  providers: [AuthService, VerificationCodeService, LocalStrategy, JwtStrategy, ...oauthProviders],
 })
 export class AuthModule {}

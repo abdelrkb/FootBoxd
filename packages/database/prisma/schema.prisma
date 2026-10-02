@@ -41,6 +41,33 @@ enum NotificationType {
   @@map("notification_type")
 }
 
+// Compte & sécurité (2026-10-02) : un seul modèle pour les deux usages (vérification d'email à
+// l'inscription, reset de mot de passe) plutôt que deux tables quasi identiques.
+enum VerificationCodePurpose {
+  email_verification
+  password_reset
+
+  @@map("verification_code_purpose")
+}
+
+enum ReportTargetType {
+  user
+  review
+  comment
+
+  @@map("report_target_type")
+}
+
+enum ReportReason {
+  spam
+  harassment
+  inappropriate_content
+  fake_account
+  other
+
+  @@map("report_reason")
+}
+
 // Refonte design du 2026-09-20 (handoff design_handoff_footboxd) : "faits de match" (buts,
 // cartons, remplacements). Alimenté par le worker via l'endpoint TheSportsDB
 // `lookup/event_timeline`, vérifié réel et disponible avant d'être ajouté ici.
@@ -59,8 +86,35 @@ model User {
   // Handle unique pour retrouver quelqu'un par recherche (décision produit du 2026-09-20),
   // distinct de `displayName` qui reste libre et non-unique.
   username     String   @unique
+  // Horodatage du dernier changement de pseudo — limite à une fois tous les 14 jours (décision
+  // produit du 2026-10-02), vérifié côté service avant d'autoriser un nouveau changement.
+  usernameChangedAt DateTime? @map("username_changed_at")
   displayName  String   @map("display_name")
+  // Courte présentation libre sur le profil (2026-10-02), optionnelle.
+  bio          String?  @db.VarChar(280)
   avatarUrl    String?  @map("avatar_url")
+  // Avatar stocké en base (2026-10-02) : pas de Cloudflare R2 disponible pour l'instant (voir
+  // architecture.md section 8). `avatarUrl` pointe alors vers `GET /users/:id/avatar`, qui sert
+  // ces octets — ce qui évite de toucher tout le code front qui consomme déjà `avatarUrl` comme
+  // une simple URL d'image. Les comptes sans avatar personnalisé gardent `avatarUrl` pointant
+  // vers le générateur Dicebear, `avatarData`/`avatarMimeType` restant `null`.
+  avatarData     Bytes?  @map("avatar_data")
+  avatarMimeType String? @map("avatar_mime_type")
+  // Null tant que l'email n'est pas confirmé par code (inscription email/mot de passe
+  // uniquement — les comptes Google/Apple sont considérés vérifiés dès la création, leur email
+  // étant déjà confirmé par le provider). Décision produit du 2026-10-02 : le compte reste
+  // utilisable sans vérification, un bandeau de rappel suffit pour le MVP.
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  // Incrémenté au changement de mot de passe et à la suppression de compte : le JwtStrategy
+  // compare ce compteur à celui encodé dans le JWT (`validate()`), ce qui invalide tous les
+  // tokens déjà émis sans avoir à les stocker/révoquer individuellement (JWT reste stateless).
+  tokenVersion Int @default(0) @map("token_version")
+  // Suppression de compte = anonymisation (décision produit du 2026-10-02, comme Letterboxd) :
+  // email/pseudo/nom/avatar/bio sont écrasés par des valeurs génériques, le contenu (reviews,
+  // commentaires, follows en tant que cible) reste intact pour ne pas casser les fils des
+  // autres utilisateurs. `deletedAt` marque le compte comme supprimé ; non `null` => compte
+  // exclu de la recherche et de la connexion.
+  deletedAt    DateTime? @map("deleted_at")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -74,6 +128,10 @@ model User {
   notificationsTriggered Notification[] @relation("Actor")
   favoriteLeagues        FavoriteLeague[]
   watchlist              WatchlistEntry[]
+  verificationCodes      VerificationCode[]
+  blocksMade             Block[]          @relation("Blocker")
+  blocksReceived         Block[]          @relation("Blocked")
+  reportsMade            Report[]
 
   // "Club de cœur" — décision produit du 2026-09-20 (handoff design), une seule équipe
   // favorite, ses matchs épinglés en haut de l'accueil.
@@ -332,4 +390,53 @@ model Notification {
   actor     User @relation("Actor", fields: [actorId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+model VerificationCode {
+  id         String                  @id @default(uuid()) @db.Uuid
+  userId     String                  @map("user_id") @db.Uuid
+  purpose    VerificationCodePurpose
+  // Le code (6 chiffres) n'est jamais stocké en clair, seulement son hash bcrypt — même
+  // logique que les mots de passe, au cas où la base fuiterait.
+  codeHash   String                  @map("code_hash")
+  expiresAt  DateTime                @map("expires_at")
+  consumedAt DateTime?               @map("consumed_at")
+  // Anti brute-force sur la saisie (ex: 5 tentatives max) — distinct du rate-limiting sur la
+  // route elle-même (section 8), qui limite la fréquence des requêtes, pas les essais sur un
+  // code précis.
+  attempts   Int                     @default(0)
+  createdAt  DateTime                @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@map("verification_codes")
+}
+
+model Block {
+  blockerId String   @map("blocker_id") @db.Uuid
+  blockedId String   @map("blocked_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blocker User @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@map("blocks")
+}
+
+model Report {
+  id         String           @id @default(uuid()) @db.Uuid
+  reporterId String           @map("reporter_id") @db.Uuid
+  targetType ReportTargetType @map("target_type")
+  // Polymorphe (id d'un user, d'une review ou d'un commentaire selon targetType) — même
+  // pattern que `notifications.reference_id`, pas de FK possible.
+  targetId   String           @map("target_id") @db.Uuid
+  reason     ReportReason
+  details    String?
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
 }

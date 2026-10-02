@@ -48,6 +48,9 @@ export default function LoginPage() {
           error={error ?? undefined}
           required
         />
+        <Link href="/forgot-password" style={{ color: 'var(--fb-nav)', fontSize: 13, alignSelf: 'flex-end' }}>
+          Mot de passe oublié ?
+        </Link>
         <Button type="submit" loading={submitting} style={{ width: '100%' }}>
           Se connecter
         </Button>

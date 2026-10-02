@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { Comment, Review, TagSelection } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
+import { useAuth } from '../../../lib/auth-context';
 import { Crest } from '../../../components/ui/crest';
 import { StarsDisplay, StarsSelector } from '../../../components/ui/stars';
 import { OwnRatingPill } from '../../../components/ui/badges';
@@ -11,6 +12,7 @@ import { Button } from '../../../components/ui/button';
 import { ClientDate } from '../../../components/client-date';
 import { TagInput } from '../../../components/ui/tag-input';
 import { TagChip } from '../../../components/ui/tag-chip';
+import { ReportDialog } from '../../../components/report-dialog';
 
 export function DevelopedReviewCard({
   review,
@@ -33,6 +35,8 @@ export function DevelopedReviewCard({
   const [editTags, setEditTags] = useState<TagSelection[]>(
     review.tags.map((t) => ({ id: t.id, name: t.name, color: t.color, colorEnd: t.colorEnd })),
   );
+  const { user } = useAuth();
+  const [report, setReport] = useState<{ targetType: 'review' | 'comment'; targetId: string } | null>(null);
 
   async function toggleLike() {
     setLiked((prev) => !prev);
@@ -269,6 +273,65 @@ export function DevelopedReviewCard({
               )}
             </div>
           )}
+          {!isMine && user && (
+            <div style={{ position: 'relative', marginLeft: 'auto' }}>
+              <button
+                onClick={() => setMenuOpen((prev) => !prev)}
+                style={{
+                  width: 38,
+                  height: 38,
+                  border: '1px solid var(--fb-border)',
+                  borderRadius: 999,
+                  background: 'transparent',
+                  color: 'var(--fb-text-2)',
+                  fontSize: 17,
+                  lineHeight: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ···
+              </button>
+              {menuOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: 44,
+                    zIndex: 2,
+                    minWidth: 168,
+                    border: '1px solid var(--fb-border)',
+                    borderRadius: 12,
+                    background: 'var(--fb-surface-2)',
+                    padding: 6,
+                    boxShadow: '0 12px 28px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setReport({ targetType: 'review', targetId: review.id });
+                    }}
+                    style={{
+                      height: 38,
+                      padding: '0 12px',
+                      border: 'none',
+                      borderRadius: 8,
+                      background: 'transparent',
+                      color: 'var(--fb-live-text)',
+                      fontWeight: 600,
+                      fontSize: 14,
+                      textAlign: 'left',
+                      width: '100%',
+                    }}
+                  >
+                    Signaler cette review
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -287,12 +350,21 @@ export function DevelopedReviewCard({
               <Link href={`/profile/${c.user.id}`}>
                 <Crest src={c.user.avatarUrl} alt={c.user.displayName} size={28} />
               </Link>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0, flex: 1 }}>
                 <Link href={`/profile/${c.user.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <span style={{ fontWeight: 600, fontSize: 14 }}>{c.user.displayName}</span>
                 </Link>
                 <span style={{ fontSize: 14.5, lineHeight: 1.5, color: 'var(--fb-text-strong-2)' }}>{c.content}</span>
               </div>
+              {user && user.id !== c.user.id && (
+                <button
+                  onClick={() => setReport({ targetType: 'comment', targetId: c.id })}
+                  className="fb-meta"
+                  style={{ background: 'none', border: 'none', fontSize: 11.5, flexShrink: 0, color: 'var(--fb-text-3)' }}
+                >
+                  Signaler
+                </button>
+              )}
             </div>
           ))}
           <div style={{ display: 'flex', gap: 10 }}>
@@ -332,6 +404,10 @@ export function DevelopedReviewCard({
             </button>
           </div>
         </div>
+      )}
+
+      {report && (
+        <ReportDialog targetType={report.targetType} targetId={report.targetId} onClose={() => setReport(null)} />
       )}
     </div>
   );

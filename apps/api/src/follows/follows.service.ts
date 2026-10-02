@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@football-app/database';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { BlocksService } from '../blocks/blocks.service.js';
 
 const PRISMA_UNIQUE_VIOLATION = 'P2002';
 const userSummarySelect = { id: true, username: true, displayName: true, avatarUrl: true } as const;
@@ -11,6 +12,7 @@ export class FollowsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly blocksService: BlocksService,
   ) {}
 
   // Follow public et instantané, pas de système de demande (section 6).
@@ -20,6 +22,9 @@ export class FollowsService {
     }
     const target = await this.prisma.client.user.findUnique({ where: { id: followingId } });
     if (!target) throw new NotFoundException('Utilisateur introuvable');
+    if (await this.blocksService.isEitherBlocked(followerId, followingId)) {
+      throw new ForbiddenException('Impossible de suivre cet utilisateur');
+    }
 
     try {
       await this.prisma.client.follow.create({ data: { followerId, followingId } });

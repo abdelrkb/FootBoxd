@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ReviewsService } from '../reviews/reviews.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { BlocksService } from '../blocks/blocks.service.js';
 
 @Injectable()
 export class CommentsService {
@@ -9,6 +10,7 @@ export class CommentsService {
     private readonly prisma: PrismaService,
     private readonly reviewsService: ReviewsService,
     private readonly notificationsService: NotificationsService,
+    private readonly blocksService: BlocksService,
   ) {}
 
   findForReview(reviewId: string) {
@@ -21,6 +23,9 @@ export class CommentsService {
 
   async create(reviewId: string, userId: string, content: string) {
     const review = await this.reviewsService.findActiveById(reviewId);
+    if (await this.blocksService.isEitherBlocked(userId, review.user.id)) {
+      throw new ForbiddenException('Action impossible');
+    }
     const comment = await this.prisma.client.comment.create({
       data: { reviewId, userId, content },
       include: { user: { select: { id: true, username: true, displayName: true, avatarUrl: true } } },

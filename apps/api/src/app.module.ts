@@ -13,6 +13,8 @@ import { NotificationsModule } from './notifications/notifications.module.js';
 import { LeaguesModule } from './leagues/leagues.module.js';
 import { TagsModule } from './tags/tags.module.js';
 import { WatchlistModule } from './watchlist/watchlist.module.js';
+import { BlocksModule } from './blocks/blocks.module.js';
+import { ReportsModule } from './reports/reports.module.js';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { WatchlistModule } from './watchlist/watchlist.module.js';
     LeaguesModule,
     TagsModule,
     WatchlistModule,
+    BlocksModule,
+    ReportsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

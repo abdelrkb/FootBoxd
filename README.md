@@ -75,6 +75,31 @@ Si ces ports sont pris, édite `docker-compose.yml` (`ports` de `web`/`api`) et 
 
 Les deux suivent les 7 ligues principales (5 grands championnats + Ligue des Champions + Europa League).
 
+### Service d'envoi d'email (Brevo)
+
+Les codes de vérification d'email (inscription) et de réinitialisation de mot de passe sont envoyés via [Brevo](https://www.brevo.com/) (ex-Sendinblue). **Sans configuration**, l'API fonctionne quand même : le code part juste dans ses logs au lieu d'un vrai email — pratique pour développer en local sans compte Brevo :
+
+```bash
+docker compose logs -f api | grep "EmailService"
+# [EmailService] BREVO_API_KEY absent — email non envoyé à ... Contenu : ... <code à 6 chiffres> ...
+```
+
+Pour recevoir de vrais emails (test complet du parcours, ou prod) :
+
+1. Créer un compte sur [app.brevo.com/account/register](https://app.brevo.com/account/register) (offre gratuite : 300 emails/jour, largement suffisant pour <100 utilisateurs).
+2. **Valider l'adresse d'expédition** : Brevo → *Senders, Domains & Dedicated IPs* → *Senders* → ajouter l'adresse utilisée dans `EMAIL_FROM_ADDRESS` (ex `no-reply@tondomaine.com`) et confirmer via le lien reçu par email. Sans domaine à soi, on peut valider une simple adresse (Gmail, etc.) comme expéditeur pour commencer — la délivrabilité est alors moins bonne mais ça fonctionne pour tester.
+   - Pour la prod, **valider le domaine entier** plutôt qu'une seule adresse : *Senders, Domains & Dedicated IPs* → *Domains* → ajouter le domaine → créer les enregistrements DNS (SPF/DKIM) que Brevo fournit, chez le registrar du domaine → cliquer *Authenticate* une fois propagés (peut prendre jusqu'à 24-48h).
+3. **Récupérer une clé API** : Brevo → icône profil → *SMTP & API* → onglet *API Keys* → *Generate a new API key*. C'est la valeur de `BREVO_API_KEY`.
+4. Renseigner dans `.env` :
+   ```
+   BREVO_API_KEY=xkeysib-...
+   EMAIL_FROM_ADDRESS=no-reply@tondomaine.com
+   EMAIL_FROM_NAME=FootBoxd
+   ```
+5. Redémarrer l'API pour prendre en compte la clé : `docker compose restart api`.
+
+Code concerné : [`apps/api/src/email/email.service.ts`](./apps/api/src/email/email.service.ts) (appel REST direct à l'API Brevo, pas de SDK).
+
 ## Développement au quotidien
 
 `docker-compose.override.yml` (chargé automatiquement) monte le code en volume et lance chaque service en mode watch :
