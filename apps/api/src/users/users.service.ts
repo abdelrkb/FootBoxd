@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { FollowsService } from '../follows/follows.service.js';
 import { toPublicUser } from './to-public-user.js';
 import type { AuthProviderType } from '@football-app/database';
 
 const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/9.x/thumbs/svg?seed=default';
+const USERNAME_COOLDOWN_MS = 14 * 24 * 60 * 60_000;
+const ALLOWED_AVATAR_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
 @Injectable()
 export class UsersService {
@@ -22,12 +26,14 @@ export class UsersService {
   }
 
   // Recherche par pseudo (prioritaire) ou nom affiché — un utilisateur qui a oublié le pseudo
-  // exact d'un ami mais se souvient de son nom doit quand même pouvoir le retrouver.
+  // exact d'un ami mais se souvient de son nom doit quand même pouvoir le retrouver. Les
+  // comptes supprimés (anonymisés, `deletedAt` non null) sont exclus.
   search(query: string) {
     const q = query.trim();
     if (q.length < 2) return [];
     return this.prisma.client.user.findMany({
       where: {
+        deletedAt: null,
         OR: [{ username: { contains: q, mode: 'insensitive' } }, { displayName: { contains: q, mode: 'insensitive' } }],
       },
       select: { id: true, username: true, displayName: true, avatarUrl: true },
@@ -104,6 +110,9 @@ export class UsersService {
         username,
         displayName: params.displayName,
         avatarUrl: params.avatarUrl ?? DEFAULT_AVATAR_URL,
+        // L'email est déjà confirmé par le provider OAuth — pas besoin de notre propre code
+        // de vérification (contrairement à l'inscription email/mot de passe).
+        emailVerifiedAt: new Date(),
         authProviders: {
           create: { provider: params.provider, providerUserId: params.providerUserId },
         },
@@ -145,6 +154,7 @@ export class UsersService {
       id: user.id,
       username: user.username,
       displayName: user.displayName,
+      bio: user.bio,
       avatarUrl: user.avatarUrl,
       totalReviewsCount: activeReviews.length,
       reviewsThisSeasonCount: reviewsThisSeason.length,
@@ -188,5 +198,125 @@ export class UsersService {
   async setWatchlistVisibility(userId: string, isPublic: boolean) {
     const user = await this.prisma.client.user.update({ where: { id: userId }, data: { isWatchlistPublic: isPublic } });
     return toPublicUser(user);
+  }
+
+  // --- Compte & sécurité (2026-10-02) ---
+
+  async markEmailVerified(userId: string) {
+    const user = await this.prisma.client.user.update({ where: { id: userId }, data: { emailVerifiedAt: new Date() } });
+    return toPublicUser(user);
+  }
+
+  // Appelé après un reset de mot de passe réussi (voir auth.service.ts) : incrémente
+  // `tokenVersion` pour invalider tous les JWT déjà émis (voir jwt.strategy.ts).
+  async setPasswordAndInvalidateSessions(userId: string, passwordHash: string) {
+    return this.prisma.client.user.update({
+      where: { id: userId },
+      data: { passwordHash, tokenVersion: { increment: 1 } },
+    });
+  }
+
+  async updateProfile(userId: string, data: { displayName?: string; bio?: string | null }) {
+    const user = await this.prisma.client.user.update({ where: { id: userId }, data });
+    return toPublicUser(user);
+  }
+
+  async updateUsername(userId: string, newUsername: string) {
+    const current = await this.findById(userId);
+    if (!current) throw new NotFoundException('Utilisateur introuvable');
+
+    if (current.usernameChangedAt) {
+      const nextAllowedAt = current.usernameChangedAt.getTime() + USERNAME_COOLDOWN_MS;
+      if (Date.now() < nextAllowedAt) {
+        const daysLeft = Math.ceil((nextAllowedAt - Date.now()) / 86_400_000);
+        throw new ForbiddenException(
+          `Tu as déjà changé de pseudo récemment — réessaie dans ${daysLeft} jour${daysLeft > 1 ? 's' : ''}`,
+        );
+      }
+    }
+
+    if (newUsername === current.username) return toPublicUser(current);
+
+    const existing = await this.findByUsername(newUsername);
+    if (existing) throw new BadRequestException('Ce pseudo est déjà pris');
+
+    const user = await this.prisma.client.user.update({
+      where: { id: userId },
+      data: { username: newUsername, usernameChangedAt: new Date() },
+    });
+    return toPublicUser(user);
+  }
+
+  async uploadAvatar(userId: string, file: { buffer: Buffer; mimetype: string; size: number }) {
+    if (!ALLOWED_AVATAR_MIME_TYPES.has(file.mimetype)) {
+      throw new BadRequestException('Format non supporté (jpeg, png ou webp uniquement)');
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      throw new BadRequestException('Image trop lourde (2 Mo maximum)');
+    }
+    const user = await this.prisma.client.user.update({
+      where: { id: userId },
+      data: {
+        avatarData: file.buffer,
+        avatarMimeType: file.mimetype,
+        // Cache-buster : sans lui, le navigateur et les CDN garderaient l'ancien avatar en
+        // cache sur cette même URL après un remplacement.
+        avatarUrl: `/users/${userId}/avatar?v=${Date.now()}`,
+      },
+    });
+    return toPublicUser(user);
+  }
+
+  async removeAvatar(userId: string) {
+    const user = await this.prisma.client.user.update({
+      where: { id: userId },
+      data: { avatarData: null, avatarMimeType: null, avatarUrl: DEFAULT_AVATAR_URL },
+    });
+    return toPublicUser(user);
+  }
+
+  async getAvatar(userId: string): Promise<{ data: Buffer; mimeType: string } | null> {
+    const user = await this.prisma.client.user.findUnique({
+      where: { id: userId },
+      select: { avatarData: true, avatarMimeType: true },
+    });
+    if (!user?.avatarData || !user.avatarMimeType) return null;
+    return { data: user.avatarData, mimeType: user.avatarMimeType };
+  }
+
+  // Suppression de compte = anonymisation (décision produit du 2026-10-02) : le contenu
+  // (reviews, commentaires, follows en tant que cible) reste intact pour ne pas casser les fils
+  // des autres utilisateurs, seules les données personnelles sont écrasées. `email`/`username`
+  // doivent rester uniques en base, d'où les valeurs générées à partir de l'id.
+  async deleteAccount(userId: string, password?: string): Promise<void> {
+    const user = await this.findById(userId);
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+
+    if (user.passwordHash) {
+      if (!password || !(await bcrypt.compare(password, user.passwordHash))) {
+        throw new UnauthorizedException('Mot de passe incorrect');
+      }
+    }
+
+    const shortId = userId.slice(0, 8);
+    await this.prisma.client.$transaction([
+      this.prisma.client.authProvider.deleteMany({ where: { userId } }),
+      this.prisma.client.user.update({
+        where: { id: userId },
+        data: {
+          email: `deleted-${userId}@deleted.footboxd.invalid`,
+          username: `deleted_${shortId}`,
+          displayName: 'Utilisateur supprimé',
+          bio: null,
+          avatarUrl: DEFAULT_AVATAR_URL,
+          avatarData: null,
+          avatarMimeType: null,
+          passwordHash: null,
+          favoriteTeamId: null,
+          deletedAt: new Date(),
+          tokenVersion: { increment: 1 },
+        },
+      }),
+    ]);
   }
 }

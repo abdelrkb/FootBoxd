@@ -16,6 +16,8 @@ import type {
   Tag,
   TagSelection,
   WatchlistEntry,
+  BlockStatus,
+  CreateReportInput,
 } from '@football-app/shared-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -182,3 +184,54 @@ export const removeFromWatchlist = (matchId: string) =>
 
 export const setWatchlistVisibility = (isPublic: boolean) =>
   apiFetch<PublicUser>('/users/me/watchlist-visibility', { method: 'PATCH', body: JSON.stringify({ isPublic }) });
+
+// --- Compte & sécurité (2026-10-02) ---
+
+export const verifyEmail = (code: string) =>
+  apiFetch<PublicUser>('/auth/verify-email', { method: 'POST', body: JSON.stringify({ code }) });
+
+export const resendVerificationCode = () =>
+  apiFetch<{ success: boolean }>('/auth/resend-verification-code', { method: 'POST' });
+
+export const forgotPassword = (email: string) =>
+  apiFetch<{ success: boolean }>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+
+export const resetPassword = (email: string, code: string, newPassword: string) =>
+  apiFetch<PublicUser>('/auth/reset-password', { method: 'POST', body: JSON.stringify({ email, code, newPassword }) });
+
+export const deleteAccount = (password?: string) =>
+  apiFetch<{ success: boolean }>('/auth/me', { method: 'DELETE', body: JSON.stringify({ password }) });
+
+export const updateProfile = (data: { displayName?: string; bio?: string }) =>
+  apiFetch<PublicUser>('/users/me/profile', { method: 'PATCH', body: JSON.stringify(data) });
+
+export const updateUsername = (username: string) =>
+  apiFetch<PublicUser>('/users/me/username', { method: 'PATCH', body: JSON.stringify({ username }) });
+
+// multipart/form-data : ne pas passer par apiFetch, qui force Content-Type: application/json
+// (le navigateur doit fixer lui-même le boundary multipart).
+export async function uploadAvatar(file: File): Promise<PublicUser> {
+  const formData = new FormData();
+  formData.append('avatar', file);
+  const res = await fetch(`${API_URL}/users/me/avatar`, { method: 'POST', credentials: 'include', body: formData });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const message = Array.isArray(body.message) ? body.message.join(', ') : body.message;
+    throw new ApiError(res.status, message ?? `Erreur ${res.status}`);
+  }
+  return res.json() as Promise<PublicUser>;
+}
+
+export const removeAvatar = () => apiFetch<PublicUser>('/users/me/avatar', { method: 'DELETE' });
+
+export const blockUser = (userId: string) => apiFetch<{ success: boolean }>(`/users/${userId}/block`, { method: 'POST' });
+
+export const unblockUser = (userId: string) =>
+  apiFetch<{ success: boolean }>(`/users/${userId}/block`, { method: 'DELETE' });
+
+export const getBlockStatus = (userId: string) => apiFetch<BlockStatus>(`/users/${userId}/block-status`);
+
+export const getBlockedAccounts = () => apiFetch<UserSummary[]>('/users/me/blocked-accounts');
+
+export const createReport = (input: CreateReportInput) =>
+  apiFetch<{ success: boolean }>('/reports', { method: 'POST', body: JSON.stringify(input) });

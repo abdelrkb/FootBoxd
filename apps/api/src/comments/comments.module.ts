@@ -3,9 +3,10 @@ import { CommentsService } from './comments.service.js';
 import { CommentsController } from './comments.controller.js';
 import { ReviewsModule } from '../reviews/reviews.module.js';
 import { NotificationsModule } from '../notifications/notifications.module.js';
+import { BlocksModule } from '../blocks/blocks.module.js';
 
 @Module({
-  imports: [ReviewsModule, NotificationsModule],
+  imports: [ReviewsModule, NotificationsModule, BlocksModule],
   providers: [CommentsService],
   controllers: [CommentsController],
 })

@@ -24,7 +24,17 @@ function StatCell({ value, label, accent }: { value: number; label: string; acce
 // Vue de profil partagée entre "mon profil" (/profile) et "le profil de quelqu'un d'autre"
 // (/profile/[id]) — même mise en page (handoff design), seule la zone d'action en haut à
 // droite change (éditer vs suivre).
-export function ProfileView({ profile, headerAction }: { profile: Profile; headerAction: ReactNode }) {
+export function ProfileView({
+  profile,
+  headerAction,
+  blockedByOwner,
+}: {
+  profile: Profile;
+  headerAction: ReactNode;
+  // Le PROPRIÉTAIRE du profil a bloqué le visiteur (2026-10-02) : le profil reste trouvable
+  // (recherche, lien direct) mais n'affiche plus que ce message, ni stats ni contenu.
+  blockedByOwner?: boolean;
+}) {
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 24px 80px', display: 'flex', flexDirection: 'column', gap: 32 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
@@ -42,60 +52,82 @@ export function ProfileView({ profile, headerAction }: { profile: Profile; heade
         {headerAction}
       </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-          gap: 1,
-          background: 'var(--fb-border)',
-          border: '1px solid var(--fb-border)',
-          borderRadius: 12,
-          overflow: 'hidden',
-        }}
-      >
-        <StatCell value={profile.followersCount} label="Followers" />
-        <StatCell value={profile.followingCount} label="Suivi(e)s" />
-        <StatCell value={profile.totalReviewsCount} label="Matchs notés" />
-        <StatCell value={profile.reviewsThisSeasonCount} label="Vus cette saison" accent />
-      </div>
+      {blockedByOwner ? (
+        <div
+          style={{
+            padding: 24,
+            border: '1px dashed var(--fb-border-strong)',
+            borderRadius: 16,
+            background: 'var(--fb-hatch)',
+            textAlign: 'center',
+          }}
+        >
+          <p style={{ margin: 0, fontSize: 15, color: 'var(--fb-text-2)' }}>Vous êtes bloqué par cet utilisateur.</p>
+        </div>
+      ) : (
+        <>
+          {profile.bio && (
+            <p className="fb-body" style={{ margin: 0, maxWidth: 640, whiteSpace: 'pre-wrap' }}>
+              {profile.bio}
+            </p>
+          )}
 
-      <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <h2 className="fb-section" style={{ margin: 0 }}>
-          Matchs préférés
-        </h2>
-        {profile.favoriteMatches.length === 0 ? (
-          <EmptySocial
-            title="Ta saison commence ici"
-            subtitle="Logge un match pour voir apparaître tes préférés."
-            action={
-              <Link href="/">
-                <Button size="sm">Voir les matchs du jour</Button>
-              </Link>
-            }
-          />
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 16 }}>
-            {profile.favoriteMatches.map((review) => (
-              <ProfileMatchCard key={review.id} review={review} />
-            ))}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+              gap: 1,
+              background: 'var(--fb-border)',
+              border: '1px solid var(--fb-border)',
+              borderRadius: 12,
+              overflow: 'hidden',
+            }}
+          >
+            <StatCell value={profile.followersCount} label="Followers" />
+            <StatCell value={profile.followingCount} label="Suivi(e)s" />
+            <StatCell value={profile.totalReviewsCount} label="Matchs notés" />
+            <StatCell value={profile.reviewsThisSeasonCount} label="Vus cette saison" accent />
           </div>
-        )}
-      </section>
 
-      <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <h2 className="fb-section" style={{ margin: 0 }}>
-          Derniers matchs loggés
-        </h2>
-        {profile.lastReviews.length === 0 ? (
-          <EmptyContent title="Aucun match loggé cette saison" />
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 16 }}>
-            {profile.lastReviews.map((review) => (
-              <ProfileMatchCard key={review.id} review={review} />
-            ))}
-          </div>
-        )}
-      </section>
+          <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <h2 className="fb-section" style={{ margin: 0 }}>
+              Matchs préférés
+            </h2>
+            {profile.favoriteMatches.length === 0 ? (
+              <EmptySocial
+                title="Ta saison commence ici"
+                subtitle="Logge un match pour voir apparaître tes préférés."
+                action={
+                  <Link href="/">
+                    <Button size="sm">Voir les matchs du jour</Button>
+                  </Link>
+                }
+              />
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 16 }}>
+                {profile.favoriteMatches.map((review) => (
+                  <ProfileMatchCard key={review.id} review={review} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <h2 className="fb-section" style={{ margin: 0 }}>
+              Derniers matchs loggés
+            </h2>
+            {profile.lastReviews.length === 0 ? (
+              <EmptyContent title="Aucun match loggé cette saison" />
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 16 }}>
+                {profile.lastReviews.map((review) => (
+                  <ProfileMatchCard key={review.id} review={review} />
+                ))}
+              </div>
+            )}
+          </section>
+        </>
+      )}
     </div>
   );
 }

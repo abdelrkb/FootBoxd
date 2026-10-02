@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import { Prisma } from '@football-app/database';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { BlocksService } from '../blocks/blocks.service.js';
 import type { CreateReviewDto } from './dto/create-review.dto.js';
 import type { TagInputDto } from './dto/tag-input.dto.js';
 
@@ -54,6 +55,7 @@ export class ReviewsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly blocksService: BlocksService,
   ) {}
 
   // Un tag est partagé entre tous les users (autocomplete + réutilisation de sa couleur) :
@@ -168,6 +170,9 @@ export class ReviewsService {
 
   async like(reviewId: string, userId: string) {
     const review = await this.findActiveById(reviewId);
+    if (await this.blocksService.isEitherBlocked(userId, review.user.id)) {
+      throw new ForbiddenException('Action impossible');
+    }
     try {
       await this.prisma.client.reviewLike.create({ data: { reviewId, userId } });
     } catch (err) {
