@@ -120,3 +120,27 @@ export function OwnRatingPill() {
     </span>
   );
 }
+
+// Visionnage répété d'un même match par le même utilisateur (issue #14, 2026-10-02, façon
+// Letterboxd) — affiché à partir du 2e log (watchNumber > 1).
+export function RewatchBadge({ watchNumber }: { watchNumber: number }) {
+  return (
+    <span
+      className="fb-label"
+      title={`${watchNumber}e visionnage`}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 4,
+        padding: '3px 9px',
+        borderRadius: 999,
+        background: 'var(--fb-surface-2)',
+        border: '1px solid var(--fb-border)',
+        color: 'var(--fb-text-2)',
+        fontSize: 10.5,
+      }}
+    >
+      ↻ Revu
+    </span>
+  );
+}

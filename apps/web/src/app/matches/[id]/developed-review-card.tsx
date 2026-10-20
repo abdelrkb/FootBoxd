@@ -7,7 +7,7 @@ import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import { Crest } from '../../../components/ui/crest';
 import { StarsDisplay, StarsSelector } from '../../../components/ui/stars';
-import { OwnRatingPill } from '../../../components/ui/badges';
+import { OwnRatingPill, RewatchBadge } from '../../../components/ui/badges';
 import { Button } from '../../../components/ui/button';
 import { ClientDate } from '../../../components/client-date';
 import { TagInput } from '../../../components/ui/tag-input';
@@ -90,6 +90,7 @@ export function DevelopedReviewCard({
             <span style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
               <span style={{ fontWeight: 600, fontSize: 15 }}>{review.user.displayName}</span>
               {isMine && <OwnRatingPill />}
+              {review.watchNumber > 1 && <RewatchBadge watchNumber={review.watchNumber} />}
             </span>
             <span className="fb-meta">
               <ClientDate iso={review.createdAt} options={{ dateStyle: 'medium', timeStyle: 'short' }} fallback="" />
