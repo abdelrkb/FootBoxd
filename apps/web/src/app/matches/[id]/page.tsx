@@ -33,6 +33,9 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
   const [comment, setComment] = useState('');
   const [tags, setTags] = useState<TagSelection[]>([]);
   const [error, setError] = useState<string | null>(null);
+  // "Reloguer ce match" (issue #14) : la première review ouvre le formulaire par défaut
+  // (myReviews vide), un revisionnage doit être demandé explicitement via le bouton dédié.
+  const [showLogForm, setShowLogForm] = useState(false);
 
   const loadReviews = () => api.getReviewsForMatch(id).then(setReviews);
 
@@ -49,8 +52,10 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
     setError(null);
     try {
       await api.createReview(id, rating, comment || undefined, tags.length ? tags : undefined);
+      setRating(3);
       setComment('');
       setTags([]);
+      setShowLogForm(false);
       loadReviews();
     } catch (err) {
       setError(err instanceof api.ApiError ? err.message : 'Erreur inconnue');
@@ -59,7 +64,12 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
 
   if (!match) return null; // squelette omis pour cette passe — voir handoff pour la géométrie exacte
 
-  const myReview = user ? reviews?.find((r) => r.userId === user.id) : undefined;
+  // Plusieurs reviews actives possibles pour le même utilisateur depuis l'issue #14 (rewatch) —
+  // `reviews` est trié du plus récent au plus ancien (reviews.service.ts `findForMatch`), donc
+  // le premier élément après filtrage est la plus récente, utilisée comme aperçu du bandeau
+  // "déjà loggé".
+  const myReviews = user ? (reviews?.filter((r) => r.userId === user.id) ?? []) : [];
+  const latestMyReview = myReviews[0];
 
   return (
     <div style={{ maxWidth: 1240, margin: '0 auto', padding: '24px 24px 80px', display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -198,7 +208,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
             </div>
           )}
 
-          {user && myReview && (
+          {user && latestMyReview && !showLogForm && (
             <div
               style={{
                 border: '1px solid var(--fb-border)',
@@ -211,15 +221,20 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
                 flexWrap: 'wrap',
               }}
             >
-              <StarsDisplay rating={Number(myReview.rating)} size={22} />
+              <StarsDisplay rating={Number(latestMyReview.rating)} size={22} />
               <span className="fb-num" style={{ fontSize: 16, color: 'var(--fb-rating)' }}>
-                {Number(myReview.rating).toFixed(1)}
+                {Number(latestMyReview.rating).toFixed(1)}
               </span>
-              <span style={{ fontSize: 15, color: 'var(--fb-text-2)' }}>Tu as déjà loggé ce match.</span>
+              <span style={{ fontSize: 15, color: 'var(--fb-text-2)' }}>
+                Tu as déjà loggé ce match{myReviews.length > 1 ? ` (${myReviews.length} fois)` : ''}.
+              </span>
+              <Button variant="secondary" size="sm" onClick={() => setShowLogForm(true)} style={{ marginLeft: 'auto' }}>
+                Reloguer ce match
+              </Button>
             </div>
           )}
 
-          {user && !myReview && match.status !== 'finished' && (
+          {user && myReviews.length === 0 && match.status !== 'finished' && (
             <div
               style={{
                 position: 'relative',
@@ -289,7 +304,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
             </div>
           )}
 
-          {user && !myReview && match.status === 'finished' && (
+          {user && (myReviews.length === 0 || showLogForm) && match.status === 'finished' && (
             <form
               onSubmit={handleLogMatch}
               style={{
@@ -302,9 +317,16 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
                 gap: 18,
               }}
             >
-              <h2 className="fb-card-title" style={{ fontSize: 20, margin: 0 }}>
-                Logger le match
-              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <h2 className="fb-card-title" style={{ fontSize: 20, margin: 0 }}>
+                  {myReviews.length > 0 ? 'Reloguer ce match' : 'Logger le match'}
+                </h2>
+                {myReviews.length > 0 && (
+                  <Button type="button" variant="tertiary" size="sm" onClick={() => setShowLogForm(false)}>
+                    Annuler
+                  </Button>
+                )}
+              </div>
               <StarsSelector value={rating} onChange={setRating} size={38} />
               <textarea
                 placeholder="Ton commentaire (optionnel)"

@@ -106,6 +106,9 @@ export interface Review {
   comment: string | null;
   createdAt: string;
   deletedAt: string | null;
+  // Rewatch (issue #14, 2026-10-02) : 1 = premier visionnage de ce match par cet utilisateur,
+  // 2+ = revisionnage (badge "Revu" côté front).
+  watchNumber: number;
   user: UserSummary;
   _count: { likes: number; comments: number };
   tags: Tag[];

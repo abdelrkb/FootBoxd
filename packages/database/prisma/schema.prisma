@@ -295,6 +295,13 @@ model Review {
   comment   String?
   createdAt DateTime  @default(now()) @map("created_at")
   deletedAt DateTime? @map("deleted_at")
+  // "Reloguer ce match" (issue #14, 2026-10-02) : un même utilisateur peut désormais logger un
+  // même match plusieurs fois (façon Letterboxd, "rewatch"). 1 = premier visionnage, 2+ = revu
+  // (badge "Revu" affiché côté front, voir developed-review-card.tsx). Calculé une fois à la
+  // création (nombre de reviews actives déjà existantes pour ce couple user/match, +1), pas
+  // recalculé ensuite même si une review plus ancienne est supprimée — une suppression ne doit
+  // pas faire "remonter" silencieusement le numéro des visionnages suivants.
+  watchNumber Int @default(1) @map("watch_number")
 
   user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   match    Match        @relation(fields: [matchId], references: [id], onDelete: Cascade)
@@ -302,13 +309,11 @@ model Review {
   likes    ReviewLike[]
   tags     ReviewTag[]
 
-  // Pas de @@unique/@@index ici : la vraie contrainte est un index UNIQUE PARTIEL
-  // (WHERE deleted_at IS NULL) + un CHECK sur `rating`, tous deux ajoutés à la main
-  // dans la migration SQL (non exprimables dans schema.prisma) — voir section 6 de
-  // architecture.md et packages/database/prisma/migrations/20260916131938_init/migration.sql.
-  // Ne pas ajouter de @@index/@@unique équivalent ici : Prisma le considérerait comme
-  // "manquant" en base lors d'un futur `migrate dev` et générerait une migration corrective
-  // en doublon de celui posé à la main.
+  // Avant le 2026-10-02 : un index UNIQUE PARTIEL (user_id, match_id WHERE deleted_at IS NULL)
+  // limitait à une review active par match et par utilisateur — retiré pour permettre les
+  // rewatches (voir migrations/20261002140000_allow_rewatches). Le CHECK sur `rating` reste,
+  // toujours ajouté à la main dans la migration SQL (non exprimable dans schema.prisma) — voir
+  // section 6 de architecture.md et packages/database/prisma/migrations/20260916131938_init/migration.sql.
   @@map("reviews")
 }
 

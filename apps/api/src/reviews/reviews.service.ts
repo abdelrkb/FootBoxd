@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@football-app/database';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
@@ -104,24 +104,26 @@ export class ReviewsService {
 
     const tagIds = await this.resolveTagIds(dto.tags);
 
-    try {
-      const review = await this.prisma.client.review.create({
-        data: {
-          userId,
-          matchId: dto.matchId,
-          rating: dto.rating,
-          comment: dto.comment,
-          tags: { create: tagIds.map((tagId) => ({ tagId })) },
-        },
-        include: reviewInclude,
-      });
-      return serializeReview(review);
-    } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === PRISMA_UNIQUE_VIOLATION) {
-        throw new ConflictException('Vous avez déjà noté ce match');
-      }
-      throw err;
-    }
+    // "Reloguer ce match" (issue #14) : plus de contrainte d'unicité user+match (voir
+    // schema.prisma) — watchNumber compte les visionnages actifs déjà loggés par CET
+    // utilisateur sur CE match, +1. Pas recalculé si une review plus ancienne est supprimée
+    // ensuite (voir le commentaire sur le champ dans schema.prisma).
+    const previousWatches = await this.prisma.client.review.count({
+      where: { userId, matchId: dto.matchId, deletedAt: null },
+    });
+
+    const review = await this.prisma.client.review.create({
+      data: {
+        userId,
+        matchId: dto.matchId,
+        rating: dto.rating,
+        comment: dto.comment,
+        watchNumber: previousWatches + 1,
+        tags: { create: tagIds.map((tagId) => ({ tagId })) },
+      },
+      include: reviewInclude,
+    });
+    return serializeReview(review);
   }
 
   async findForMatch(matchId: string) {
