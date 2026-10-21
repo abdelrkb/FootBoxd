@@ -44,6 +44,13 @@ export interface UserSummary {
   avatarUrl: string | null;
 }
 
+// Suggestions de personnes à suivre (issue #17) : `reason` dit pourquoi cette personne est
+// suggérée (club favori commun, amis en commun, ou les deux), affiché tel quel côté front.
+export interface UserSuggestion extends UserSummary {
+  reason: 'same_club' | 'mutual_friends' | 'both';
+  mutualFriends: number;
+}
+
 export interface League {
   id: string;
   externalId: string;

@@ -22,6 +22,7 @@ import type {
   Standing,
   TeamOverview,
   TeamStats,
+  UserSuggestion,
 } from '@football-app/shared-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -140,6 +141,8 @@ export const amIFollowing = (userId: string) =>
 
 export const searchUsers = (query: string) =>
   apiFetch<UserSummary[]>(`/users/search?q=${encodeURIComponent(query)}`);
+
+export const getFollowSuggestions = () => apiFetch<UserSuggestion[]>('/users/suggestions');
 
 // --- Leagues / favoris ---
 export const getAllLeagues = () => apiFetch<League[]>('/leagues');
