@@ -91,3 +91,50 @@ export interface SportsDbTimelineRow {
 export interface EventTimelineResponse {
   lookup: SportsDbTimelineRow[] | null;
 }
+
+// Classement (issue #7, 2026-10-20). Vérifié réel sur GET /v1/json/{KEY}/lookuptable.php :
+// MJ/buts/pts déjà calculés par TheSportsDB, jamais recalculés à la main côté worker — gère
+// déjà les cas particuliers (pénalités de points, etc.) qu'on ne voudrait pas réinventer.
+export interface SportsDbStandingRow {
+  idStanding: string;
+  intRank: string;
+  idTeam: string;
+  strTeam: string;
+  strBadge: string | null;
+  idLeague: string;
+  strLeague: string;
+  strSeason: string;
+  intPlayed: string;
+  intWin: string;
+  intLoss: string;
+  intDraw: string;
+  intGoalsFor: string;
+  intGoalsAgainst: string;
+  intGoalDifference: string;
+  intPoints: string;
+  // Zone de qualif/relégation en texte libre (ex. "Promotion - Champions League (League
+  // phase)"), chaîne vide pour le milieu de tableau — vérifié en réel le 2026-10-21.
+  strDescription: string | null;
+}
+
+export interface StandingsResponse {
+  table: SportsDbStandingRow[] | null;
+}
+
+// Effectif (issue #7). Vérifié réel sur GET /v2/json/list/players/{idTeam} — payload plus léger
+// que lookup_all_players.php (v1), suffisant pour une liste simple (pas de fiche joueur).
+export interface SportsDbSquadPlayer {
+  idPlayer: string;
+  strPlayer: string;
+  idTeam: string;
+  strTeam: string;
+  strThumb: string | null;
+  strCutout: string | null;
+  strRender: string | null;
+  dateBorn: string | null;
+  strPosition: string | null;
+}
+
+export interface SquadResponse {
+  list: SportsDbSquadPlayer[] | null;
+}

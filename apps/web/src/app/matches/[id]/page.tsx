@@ -99,12 +99,15 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
+          <Link
+            href={`/teams/${match.homeTeam.id}`}
+            style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
+          >
             <Crest src={match.homeTeam.logoUrl} alt={match.homeTeam.name} size={64} />
             <h1 className="fb-display" style={{ fontSize: 40, margin: 0 }}>
               {match.homeTeam.name}
             </h1>
-          </div>
+          </Link>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
             {(() => {
               const scoreEl = (
@@ -132,12 +135,15 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
             })()}
             <StatusLabel status={match.status} minute={match.liveMinute} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
+          <Link
+            href={`/teams/${match.awayTeam.id}`}
+            style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
+          >
             <h1 className="fb-display" style={{ fontSize: 40, margin: 0 }}>
               {match.awayTeam.name}
             </h1>
             <Crest src={match.awayTeam.logoUrl} alt={match.awayTeam.name} size={64} />
-          </div>
+          </Link>
         </div>
 
         <div

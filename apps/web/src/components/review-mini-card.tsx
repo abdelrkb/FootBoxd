@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ReviewWithMatch } from '@football-app/shared-types';
-import { CrestPair } from './ui/crest';
+import { CrestPair, TeamNamePair } from './ui/crest';
 import { StarsDisplay } from './ui/stars';
 import { ScoreChip } from './ui/badges';
 import { cardShellStyle, LeagueStripe } from './ui/card-shell';
@@ -17,9 +17,7 @@ export function ReviewMiniCard({ review }: { review: ReviewWithMatch }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0, flex: 1 }}>
         <LeagueStripe league={match.league} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
-          <span className="fb-card-title">
-            {match.homeTeam.name} — {match.awayTeam.name}
-          </span>
+          <TeamNamePair home={match.homeTeam} away={match.awayTeam} className="fb-card-title" />
           <ScoreChip home={match.homeScore} away={match.awayScore} live={match.status === 'live'} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

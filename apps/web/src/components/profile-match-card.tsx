@@ -1,4 +1,8 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import type { MouseEvent } from 'react';
 import type { ReviewWithMatch } from '@football-app/shared-types';
 import { CrestPair } from './ui/crest';
 import { StarsDisplay } from './ui/stars';
@@ -12,6 +16,15 @@ export function ProfileMatchCard({ review }: { review: ReviewWithMatch }) {
   const { match } = review;
   const homeWon = (match.homeScore ?? 0) > (match.awayScore ?? 0);
   const awayWon = (match.awayScore ?? 0) > (match.homeScore ?? 0);
+  const router = useRouter();
+
+  function goToTeam(teamId: string) {
+    return (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      router.push(`/teams/${teamId}`);
+    };
+  }
 
   return (
     <Link href={`/matches/${match.id}`} style={{ ...cardShellStyle(16), flexDirection: 'column' }} className="fb-card">
@@ -34,7 +47,9 @@ export function ProfileMatchCard({ review }: { review: ReviewWithMatch }) {
               textOverflow: 'ellipsis',
             }}
           >
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{match.homeTeam.name}</span>
+            <span onClick={goToTeam(match.homeTeam.id)} style={{ overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer' }}>
+              {match.homeTeam.name}
+            </span>
             <span className="fb-num">{match.homeScore ?? '-'}</span>
           </div>
           <div
@@ -49,7 +64,9 @@ export function ProfileMatchCard({ review }: { review: ReviewWithMatch }) {
               textOverflow: 'ellipsis',
             }}
           >
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{match.awayTeam.name}</span>
+            <span onClick={goToTeam(match.awayTeam.id)} style={{ overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'pointer' }}>
+              {match.awayTeam.name}
+            </span>
             <span className="fb-num">{match.awayScore ?? '-'}</span>
           </div>
         </div>

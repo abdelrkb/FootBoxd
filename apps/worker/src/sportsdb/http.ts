@@ -20,6 +20,17 @@ async function fetchWithRateLimitAndBackoff(url: string, init?: RequestInit): Pr
   throw new Error(`[sportsdb] Toujours 429 après ${MAX_RETRIES_ON_429} tentatives: ${url}`);
 }
 
+// Vérifié en réel le 2026-10-21 (lookuptable.php sur une ligue sans classement classique, ex.
+// une poule de championnat amateur) : l'API renvoie un 200 OK avec un corps VIDE plutôt qu'un
+// JSON `{"table": null}` — `res.json()` plante alors avec "Unexpected end of JSON input", une
+// erreur qui ne dit pas du tout ce qui se passe. On traite un corps vide comme "pas de données"
+// (objet vide) plutôt que de planter — concerne tous les endpoints, pas seulement les tables.
+async function parseJsonOrEmpty<T>(res: Response): Promise<T> {
+  const text = await res.text();
+  if (text.trim() === '') return {} as T;
+  return JSON.parse(text) as T;
+}
+
 // v1 : utilisé uniquement pour eventsday.php (pas d'équivalent v2 pour "matchs d'un jour X",
 // voir section 2 de architecture.md). Clé API dans le chemin, pas de header.
 export async function fetchV1<T>(path: string, params: Record<string, string> = {}): Promise<T> {
@@ -31,7 +42,7 @@ export async function fetchV1<T>(path: string, params: Record<string, string> = 
   if (!res.ok) {
     throw new Error(`[sportsdb v1] ${res.status} ${res.statusText} — ${url.pathname}`);
   }
-  return res.json() as Promise<T>;
+  return parseJsonOrEmpty<T>(res);
 }
 
 // v2 : à privilégier partout où possible (section 2). Auth via header X-API-KEY.
@@ -43,5 +54,5 @@ export async function fetchV2<T>(path: string): Promise<T> {
   if (!res.ok) {
     throw new Error(`[sportsdb v2] ${res.status} ${res.statusText} — ${path}`);
   }
-  return res.json() as Promise<T>;
+  return parseJsonOrEmpty<T>(res);
 }

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { PopularMatch } from '@football-app/shared-types';
-import { CrestPair } from './ui/crest';
+import { CrestPair, TeamNamePair } from './ui/crest';
 import { cardShellStyle, LeagueStripe } from './ui/card-shell';
 import { WatchlistMenuButton } from './ui/watchlist-menu-button';
 
@@ -10,9 +10,7 @@ export function MatchMiniCard({ match }: { match: PopularMatch }) {
       <CrestPair home={match.homeTeam} away={match.awayTeam} size={36} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0, flex: 1 }}>
         <LeagueStripe league={match.league} />
-        <span className="fb-card-title">
-          {match.homeTeam.name} — {match.awayTeam.name}
-        </span>
+        <TeamNamePair home={match.homeTeam} away={match.awayTeam} className="fb-card-title" />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
         <span className="fb-num" style={{ fontWeight: 600, fontSize: 19 }}>
