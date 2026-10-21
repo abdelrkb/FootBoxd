@@ -36,6 +36,10 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
   // "Reloguer ce match" (issue #14) : la première review ouvre le formulaire par défaut
   // (myReviews vide), un revisionnage doit être demandé explicitement via le bouton dédié.
   const [showLogForm, setShowLogForm] = useState(false);
+  // "Compléter ma note rapide" (issue #15) : si la dernière review active est une quickRating,
+  // on complète CETTE review (PATCH) plutôt que d'en créer une nouvelle — voir log-match-modal.tsx
+  // pour la même logique côté modal, dupliquée ici car le formulaire de cette page est inline.
+  const [completingQuick, setCompletingQuick] = useState(false);
 
   const loadReviews = () => api.getReviewsForMatch(id).then(setReviews);
 
@@ -47,14 +51,35 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  function openCompleteQuickRating(latest: Review) {
+    setRating(Number(latest.rating));
+    setComment('');
+    setTags([]);
+    setCompletingQuick(true);
+    setShowLogForm(true);
+  }
+
+  function openNewLog() {
+    setRating(3);
+    setComment('');
+    setTags([]);
+    setCompletingQuick(false);
+    setShowLogForm(true);
+  }
+
   async function handleLogMatch(e: FormEvent) {
     e.preventDefault();
     setError(null);
     try {
-      await api.createReview(id, rating, comment || undefined, tags.length ? tags : undefined);
+      if (completingQuick && latestMyReview) {
+        await api.updateReview(latestMyReview.id, { rating, comment: comment || undefined, tags, quickRating: false });
+      } else {
+        await api.createReview(id, rating, comment || undefined, tags.length ? tags : undefined);
+      }
       setRating(3);
       setComment('');
       setTags([]);
+      setCompletingQuick(false);
       setShowLogForm(false);
       loadReviews();
     } catch (err) {
@@ -232,11 +257,20 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
                 {Number(latestMyReview.rating).toFixed(1)}
               </span>
               <span style={{ fontSize: 15, color: 'var(--fb-text-2)' }}>
-                Tu as déjà loggé ce match{myReviews.length > 1 ? ` (${myReviews.length} fois)` : ''}.
+                {latestMyReview.quickRating
+                  ? 'Tu as déjà noté ce match rapidement.'
+                  : `Tu as déjà loggé ce match${myReviews.length > 1 ? ` (${myReviews.length} fois)` : ''}.`}
               </span>
-              <Button variant="secondary" size="sm" onClick={() => setShowLogForm(true)} style={{ marginLeft: 'auto' }}>
-                Reloguer ce match
-              </Button>
+              <div style={{ display: 'flex', gap: 10, marginLeft: 'auto' }}>
+                {latestMyReview.quickRating && (
+                  <Button variant="secondary" size="sm" onClick={() => openCompleteQuickRating(latestMyReview)}>
+                    Compléter cette note
+                  </Button>
+                )}
+                <Button variant="secondary" size="sm" onClick={openNewLog}>
+                  {latestMyReview.quickRating ? 'Logger un nouveau visionnage' : 'Reloguer ce match'}
+                </Button>
+              </div>
             </div>
           )}
 
@@ -325,10 +359,18 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                 <h2 className="fb-card-title" style={{ fontSize: 20, margin: 0 }}>
-                  {myReviews.length > 0 ? 'Reloguer ce match' : 'Logger le match'}
+                  {completingQuick ? 'Compléter ma note' : myReviews.length > 0 ? 'Reloguer ce match' : 'Logger le match'}
                 </h2>
                 {myReviews.length > 0 && (
-                  <Button type="button" variant="tertiary" size="sm" onClick={() => setShowLogForm(false)}>
+                  <Button
+                    type="button"
+                    variant="tertiary"
+                    size="sm"
+                    onClick={() => {
+                      setCompletingQuick(false);
+                      setShowLogForm(false);
+                    }}
+                  >
                     Annuler
                   </Button>
                 )}

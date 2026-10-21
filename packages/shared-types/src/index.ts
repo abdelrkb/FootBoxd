@@ -109,6 +109,9 @@ export interface Review {
   // Rewatch (issue #14, 2026-10-02) : 1 = premier visionnage de ce match par cet utilisateur,
   // 2+ = revisionnage (badge "Revu" côté front).
   watchNumber: number;
+  // "Noter sans logger" (issue #15) : true si posée depuis une mini-card sans ouvrir la fiche.
+  // Compte dans les stats/moyennes comme une review normale, exclue des flux de logs.
+  quickRating: boolean;
   user: UserSummary;
   _count: { likes: number; comments: number };
   tags: Tag[];

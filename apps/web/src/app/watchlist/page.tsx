@@ -13,6 +13,7 @@ import { Switch } from '../../components/ui/switch';
 import { EmptySocial, EmptyContent } from '../../components/ui/empty-state';
 import { SkeletonList } from '../../components/ui/skeleton';
 import { Button } from '../../components/ui/button';
+import { MatchCardMenu } from '../../components/ui/match-card-menu';
 
 export default function WatchlistPage() {
   const { user, loading: authLoading } = useAuth();
@@ -110,6 +111,7 @@ export default function WatchlistPage() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
               <KickoffCountdown kickoffAt={match.kickoffAt} />
+              <MatchCardMenu match={match} />
               <button
                 onClick={() => handleRemove(match.id)}
                 aria-label="Retirer de la watchlist"

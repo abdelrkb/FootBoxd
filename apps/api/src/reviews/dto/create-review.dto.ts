@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsNumber, IsOptional, IsString, IsUUID, MaxLength, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsNumber, IsOptional, IsString, IsUUID, MaxLength, ValidateNested } from 'class-validator';
 import { TagInputDto } from './tag-input.dto.js';
 
 export class CreateReviewDto {
@@ -22,4 +22,10 @@ export class CreateReviewDto {
   @ValidateNested({ each: true })
   @Type(() => TagInputDto)
   tags?: TagInputDto[];
+
+  // "Noter" depuis une mini-card (issue #15) : true si posée sans ouvrir le formulaire complet
+  // — exclut la review des flux de logs (voir reviews.service.ts). Absent/false = log normal.
+  @IsOptional()
+  @IsBoolean()
+  quickRating?: boolean;
 }

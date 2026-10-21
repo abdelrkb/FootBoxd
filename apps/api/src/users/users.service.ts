@@ -158,7 +158,9 @@ export class UsersService {
       avatarUrl: user.avatarUrl,
       totalReviewsCount: activeReviews.length,
       reviewsThisSeasonCount: reviewsThisSeason.length,
-      lastReviews: reviewsThisSeason.slice(0, 4),
+      // quickRating exclu (issue #15) : une note posée sans ouvrir la fiche n'est pas un "log"
+      // — compte dans les stats ci-dessus et peut rester un match préféré, mais pas ici.
+      lastReviews: reviewsThisSeason.filter((r) => !r.quickRating).slice(0, 4),
       favoriteMatches,
       followersCount,
       followingCount,

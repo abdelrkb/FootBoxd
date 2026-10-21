@@ -11,10 +11,7 @@ import { EmptySocial } from '../../components/ui/empty-state';
 import { SkeletonList } from '../../components/ui/skeleton';
 import { Button } from '../../components/ui/button';
 import { leagueAccentColor } from '../../components/ui/card-shell';
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
+import { todayString as today } from '../../lib/calendar-days';
 
 export default function AllLeaguesPage() {
   const { user, loading: authLoading } = useAuth();

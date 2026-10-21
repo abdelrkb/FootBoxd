@@ -119,6 +119,7 @@ export class ReviewsService {
         rating: dto.rating,
         comment: dto.comment,
         watchNumber: previousWatches + 1,
+        quickRating: dto.quickRating ?? false,
         tags: { create: tagIds.map((tagId) => ({ tagId })) },
       },
       include: reviewInclude,
@@ -151,7 +152,13 @@ export class ReviewsService {
 
   // "Modifier ma note" (handoff design du 2026-09-20, menu ··· sur sa propre review).
   // `tags` absent = tags inchangés ; `tags` présent (même vide) = remplace l'ensemble des tags.
-  async update(id: string, userId: string, data: { rating?: number; comment?: string; tags?: TagInputDto[] }) {
+  // `quickRating` (issue #15) : absent = inchangé, false explicite = "compléter ma note rapide"
+  // (la review rejoint les flux de logs en même temps qu'on lui ajoute un commentaire).
+  async update(
+    id: string,
+    userId: string,
+    data: { rating?: number; comment?: string; tags?: TagInputDto[]; quickRating?: boolean },
+  ) {
     const review = await this.prisma.client.review.findUnique({ where: { id } });
     if (!review || review.deletedAt) throw new NotFoundException('Review introuvable');
     if (review.userId !== userId) throw new ForbiddenException("Cette review n'est pas la vôtre");
@@ -164,7 +171,7 @@ export class ReviewsService {
 
     const updated = await this.prisma.client.review.update({
       where: { id },
-      data: { rating: data.rating, comment: data.comment, ...tagsUpdate },
+      data: { rating: data.rating, comment: data.comment, quickRating: data.quickRating, ...tagsUpdate },
       include: reviewInclude,
     });
     return serializeReview(updated);
@@ -192,8 +199,10 @@ export class ReviewsService {
 
   async findPopular(limit = 10) {
     const since = new Date(Date.now() - POPULARITY_WINDOW_MS);
+    // quickRating exclu (issue #15) : une note posée depuis une mini-card n'est pas un "log"
+    // et ne doit pas apparaître dans ce flux, même avec des likes/commentaires.
     const candidates = await this.prisma.client.review.findMany({
-      where: { deletedAt: null, createdAt: { gte: since } },
+      where: { deletedAt: null, createdAt: { gte: since }, quickRating: false },
       include: reviewWithMatchInclude,
     });
     return candidates
@@ -205,9 +214,11 @@ export class ReviewsService {
   // "Mes amis" = les utilisateurs que je suis (section 6 : follows). Pas de fenêtre temporelle
   // ici, juste les N plus récentes (contrairement à "populaire" qui est borné à 48h).
   async findFromFollowing(userId: string, limit = 10) {
+    // quickRating exclu (issue #15), même raison que findPopular.
     const reviews = await this.prisma.client.review.findMany({
       where: {
         deletedAt: null,
+        quickRating: false,
         user: { followers: { some: { followerId: userId } } },
       },
       include: reviewWithMatchInclude,

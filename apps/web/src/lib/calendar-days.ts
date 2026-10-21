@@ -1,5 +1,11 @@
+// Date locale du navigateur, pas UTC (bug observé le 2026-10-22 : à 1h du matin en France
+// l'heure UTC est encore la veille, donc `toISOString().slice(0, 10)` affichait "Aujourd'hui"
+// sur le mauvais jour) — getFullYear/getMonth/getDate sont déjà en heure locale en JS.
 export function toDateString(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export function todayString(): string {

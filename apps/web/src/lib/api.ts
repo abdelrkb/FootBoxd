@@ -82,13 +82,20 @@ export const getReviewsForMatch = (matchId: string) => apiFetch<Review[]>(`/revi
 
 export const getReview = (id: string) => apiFetch<Review>(`/reviews/${id}`);
 
-export const createReview = (matchId: string, rating: number, comment?: string, tags?: TagSelection[]) =>
-  apiFetch<Review>('/reviews', { method: 'POST', body: JSON.stringify({ matchId, rating, comment, tags }) });
+export const createReview = (
+  matchId: string,
+  rating: number,
+  comment?: string,
+  tags?: TagSelection[],
+  quickRating?: boolean,
+) => apiFetch<Review>('/reviews', { method: 'POST', body: JSON.stringify({ matchId, rating, comment, tags, quickRating }) });
 
 export const deleteReview = (id: string) => apiFetch<void>(`/reviews/${id}`, { method: 'DELETE' });
 
-export const updateReview = (id: string, data: { rating?: number; comment?: string; tags?: TagSelection[] }) =>
-  apiFetch<Review>(`/reviews/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const updateReview = (
+  id: string,
+  data: { rating?: number; comment?: string; tags?: TagSelection[]; quickRating?: boolean },
+) => apiFetch<Review>(`/reviews/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 
 export const likeReview = (id: string) => apiFetch<{ success: boolean }>(`/reviews/${id}/like`, { method: 'POST' });
 

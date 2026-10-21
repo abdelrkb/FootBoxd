@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ClientDate } from '../client-date';
 import { Pill } from './pill';
 import { daysFromOffset, offsetFromToday, todayString } from '../../lib/calendar-days';
@@ -34,6 +34,14 @@ function ArrowButton({ direction, onClick }: { direction: 'prev' | 'next'; onCli
 // Fenêtre de VISIBLE_DAYS jours qui glisse d'un jour à chaque clic sur une flèche (pas de scroll) :
 // par défaut 2 jours passés max visibles avant aujourd'hui.
 export function DateSelector({ selected, onSelect }: { selected: string; onSelect: (day: string) => void }) {
+  // "Aujourd'hui" dépend du fuseau LOCAL du navigateur (bug corrigé le 2026-10-22, voir
+  // calendar-days.ts) — le serveur ne peut pas le connaître pendant le SSR, donc même
+  // principe que ClientDate : rien de daté n'est calculé avant le montage côté client,
+  // sinon le jour "aujourd'hui" diffère entre le rendu serveur et l'hydratation (serveur
+  // potentiellement dans un autre fuseau, ex. UTC en conteneur Docker).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const [startOffset, setStartOffset] = useState(() => {
     // Un lien profond (?date=...) hors de la fenêtre par défaut doit rester visible.
     const selectedOffset = offsetFromToday(selected);
@@ -42,6 +50,9 @@ export function DateSelector({ selected, onSelect }: { selected: string; onSelec
     if (selectedOffset > defaultStart + VISIBLE_DAYS - 1) return selectedOffset - (VISIBLE_DAYS - 1);
     return defaultStart;
   });
+
+  if (!mounted) return <div style={{ height: 38 }} />;
+
   const days = daysFromOffset(startOffset, VISIBLE_DAYS);
   const today = todayString();
 

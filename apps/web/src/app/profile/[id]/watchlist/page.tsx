@@ -9,6 +9,7 @@ import { CrestPair, TeamNamePair } from '../../../../components/ui/crest';
 import { KickoffCountdown } from '../../../../components/ui/kickoff-countdown';
 import { EmptyContent } from '../../../../components/ui/empty-state';
 import { SkeletonList } from '../../../../components/ui/skeleton';
+import { MatchCardMenu } from '../../../../components/ui/match-card-menu';
 
 export default function UserWatchlistPage({ params }: PageProps<'/profile/[id]/watchlist'>) {
   const { id } = use(params);
@@ -70,7 +71,10 @@ export default function UserWatchlistPage({ params }: PageProps<'/profile/[id]/w
                 </span>
               </div>
             </div>
-            <KickoffCountdown kickoffAt={match.kickoffAt} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+              <KickoffCountdown kickoffAt={match.kickoffAt} />
+              <MatchCardMenu match={match} />
+            </div>
           </Link>
         ))}
       </div>
