@@ -14,8 +14,7 @@ import { StatusLabel } from '../../../components/ui/status-label';
 import { EmptyContent } from '../../../components/ui/empty-state';
 import { SkeletonList } from '../../../components/ui/skeleton';
 import { SpoilerScore } from '../../../components/ui/spoiler-score';
-import { WatchlistMenuButton } from '../../../components/ui/watchlist-menu-button';
-import { LogMatchMenuButton } from '../../../components/ui/log-match-menu-button';
+import { MatchCardMenu } from '../../../components/ui/match-card-menu';
 import { todayString } from '../../../lib/calendar-days';
 
 function MatchRight({ match }: { match: Match }) {
@@ -143,8 +142,7 @@ export default function LeagueDetailPage({ params }: PageProps<'/leagues/[id]'>)
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <MatchRight match={match} />
-              <LogMatchMenuButton match={match} />
-              <WatchlistMenuButton matchId={match.id} />
+              <MatchCardMenu match={match} showWatchlist />
             </div>
           </Link>
         ))}
