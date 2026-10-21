@@ -13,6 +13,7 @@ import { SpoilerScore } from '../../../components/ui/spoiler-score';
 import { EmptyContent } from '../../../components/ui/empty-state';
 import { SkeletonList } from '../../../components/ui/skeleton';
 import { LeagueStripe } from '../../../components/ui/card-shell';
+import { LogMatchMenuButton } from '../../../components/ui/log-match-menu-button';
 
 type Tab = 'results' | 'calendar' | 'standings' | 'news' | 'squad';
 
@@ -116,6 +117,7 @@ function MatchRow({ match, perspectiveTeamId }: { match: Match; perspectiveTeamI
       ) : (
         <StatusLabel status={match.status} />
       )}
+      <LogMatchMenuButton match={match} />
     </Link>
   );
 }

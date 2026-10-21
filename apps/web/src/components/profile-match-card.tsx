@@ -8,6 +8,7 @@ import { CrestPair } from './ui/crest';
 import { StarsDisplay } from './ui/stars';
 import { cardShellStyle, LeagueStripe } from './ui/card-shell';
 import { WatchlistMenuButton } from './ui/watchlist-menu-button';
+import { LogMatchMenuButton } from './ui/log-match-menu-button';
 import { ClientDate } from './client-date';
 
 // Variante compacte de la carte unique, 4 par grille sur le profil (handoff design) : fiche
@@ -30,7 +31,10 @@ export function ProfileMatchCard({ review }: { review: ReviewWithMatch }) {
     <Link href={`/matches/${match.id}`} style={{ ...cardShellStyle(16), flexDirection: 'column' }} className="fb-card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <LeagueStripe league={match.league} />
-        <WatchlistMenuButton matchId={match.id} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <LogMatchMenuButton match={match} />
+          <WatchlistMenuButton matchId={match.id} />
+        </div>
       </div>
       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
         <CrestPair home={match.homeTeam} away={match.awayTeam} size={28} />

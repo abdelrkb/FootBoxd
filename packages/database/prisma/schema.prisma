@@ -372,6 +372,14 @@ model Review {
   // pas faire "remonter" silencieusement le numéro des visionnages suivants.
   watchNumber Int @default(1) @map("watch_number")
 
+  // "Noter sans logger" (issue #15, 2026-10-22) : note posée depuis une mini-card (accueil,
+  // page ligue, etc.) sans passer par la fiche du match. C'est une Review comme une autre
+  // (compte dans les stats, la moyenne du match, "matchs préférés"…), la SEULE différence est
+  // qu'elle n'apparaît pas dans les flux de logs (populaire/amis/"derniers matchs loggés" du
+  // profil) — décision produit explicite, pas une review "light" à part. Devient un vrai log
+  // (flag repassé à false) si l'utilisateur complète ensuite avec un commentaire.
+  quickRating Boolean @default(false) @map("quick_rating")
+
   user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   match    Match        @relation(fields: [matchId], references: [id], onDelete: Cascade)
   comments Comment[]

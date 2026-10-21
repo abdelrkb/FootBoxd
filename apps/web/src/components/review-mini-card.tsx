@@ -7,6 +7,7 @@ import { CrestPair, TeamNamePair } from './ui/crest';
 import { StarsDisplay } from './ui/stars';
 import { ScoreChip } from './ui/badges';
 import { cardShellStyle, LeagueStripe } from './ui/card-shell';
+import { LogMatchMenuButton } from './ui/log-match-menu-button';
 
 export function ReviewMiniCard({ review }: { review: ReviewWithMatch }) {
   const { match } = review;
@@ -19,6 +20,7 @@ export function ReviewMiniCard({ review }: { review: ReviewWithMatch }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
           <TeamNamePair home={match.homeTeam} away={match.awayTeam} className="fb-card-title" />
           <ScoreChip home={match.homeScore} away={match.awayScore} live={match.status === 'live'} />
+          <LogMatchMenuButton match={match} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <StarsDisplay rating={Number(review.rating)} />
