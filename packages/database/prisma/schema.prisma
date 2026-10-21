@@ -187,6 +187,7 @@ model League {
 
   matches         Match[]
   favoritedBy     FavoriteLeague[]
+  standings       Standing[]
 
   @@map("leagues")
 }
@@ -211,13 +212,81 @@ model Team {
   externalId String  @unique @map("external_id")
   name       String
   logoUrl    String? @map("logo_url")
+  // Page équipe (issue #7, 2026-10-20) : horodatage du dernier sync d'effectif (list/players),
+  // null tant que jamais synchronisé. Utilisé par apps/worker/src/sync/squad-sync.ts pour
+  // prioriser les équipes jamais vues puis rafraîchir les plus anciennes — pas un sync aveugle
+  // de tout le monde (des milliers d'équipes existent, la plupart jamais consultées).
+  squadSyncedAt DateTime? @map("squad_synced_at")
+  // Même logique que squadSyncedAt mais pour eventsnext.php (section "Calendrier" de la page
+  // équipe) — le sync de calendrier global (eventsday.php) ne couvre que les 5 prochains jours,
+  // insuffisant pour une page équipe qui veut montrer plus de matchs à venir.
+  nextFixturesSyncedAt DateTime? @map("next_fixtures_synced_at")
+  // Horodatage posé par l'API quand une page équipe est consultée (voir TeamsService.getOverview)
+  // — signal non bloquant pour next-fixtures-sync.ts : avec ~7000 équipes en base et un lot de 5
+  // par tick, une équipe jamais visitée pouvait rester des jours dans la file sans jamais être
+  // choisie (observé en réel le 2026-10-21 : Real Madrid toujours à 2 matchs à venir après
+  // plusieurs ticks). Priorise les équipes réellement consultées plutôt qu'un ordre arbitraire.
+  nextFixturesRequestedAt DateTime? @map("next_fixtures_requested_at")
 
   homeMatches Match[] @relation("HomeTeam")
   awayMatches Match[] @relation("AwayTeam")
   matchEvents MatchEvent[]
   favoritedByUsers User[] @relation("FavoriteTeam")
+  players     Player[]
+  standings   Standing[]
 
   @@map("teams")
+}
+
+// Effectif (issue #7) — liste simple pour l'instant, pas de fiche joueur individuelle (décision
+// produit du 2026-10-20). Resynchronisé par lot (squad-sync.ts) : à chaque passage, les joueurs
+// de l'équipe sont entièrement remplacés (delete + recreate) plutôt que diffés un par un — un
+// effectif n'est jamais référencé ailleurs (pas de FK entrante), donc sans risque.
+model Player {
+  id         String    @id @default(uuid()) @db.Uuid
+  externalId String    @unique @map("external_id")
+  teamId     String    @map("team_id") @db.Uuid
+  name       String
+  position   String?
+  photoUrl   String?   @map("photo_url")
+  birthDate  DateTime? @map("birth_date")
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@map("players")
+}
+
+// Classement (issue #7) — alimenté par apps/worker/src/sync/standings-sync.ts, déclenché à la
+// fin d'un match et pendant qu'un match est en direct (décision produit du 2026-10-20), pas par
+// un sync périodique aveugle de toutes les ligues. Une ligne par (ligue, équipe, saison) ;
+// `lookuptable.php` fournit directement MJ/buts/pts calculés par TheSportsDB, jamais recalculés
+// à la main ici (gère déjà les cas particuliers : pénalités de points, etc.).
+model Standing {
+  id             String   @id @default(uuid()) @db.Uuid
+  leagueId       String   @map("league_id") @db.Uuid
+  teamId         String   @map("team_id") @db.Uuid
+  season         String
+  rank           Int
+  played         Int
+  win            Int
+  draw           Int
+  loss           Int
+  goalsFor       Int      @map("goals_for")
+  goalsAgainst   Int      @map("goals_against")
+  goalDifference Int      @map("goal_difference")
+  points         Int
+  // Zone de qualif/relégation en texte libre fourni par l'API (ex. "Promotion - Champions
+  // League (League phase)", "Relegation - Championship"), vide/absent pour le milieu de
+  // tableau — vérifié en réel le 2026-10-21. Pas d'enum fermé : le texte varie trop selon la
+  // compétition, le front catégorise à l'affichage plutôt que de figer une liste ici.
+  description String?  @map("description")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([leagueId, teamId, season])
+  @@map("standings")
 }
 
 model Match {

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Match } from '@football-app/shared-types';
 import { Crest } from '../../../components/ui/crest';
 import { EmptyContent } from '../../../components/ui/empty-state';
@@ -34,12 +35,15 @@ export function Lineups({ match }: { match: Match }) {
           { team: match.awayTeam, players: away },
         ].map(({ team, players }) => (
           <div key={team.id} style={{ background: 'var(--fb-surface)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <Link
+              href={`/teams/${team.id}`}
+              style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none', color: 'inherit' }}
+            >
               <Crest src={team.logoUrl} alt={team.name} size={22} />
               <span className="fb-label" style={{ color: 'var(--fb-text-2)', fontSize: 11.5 }}>
                 {team.name}
               </span>
-            </div>
+            </Link>
             {players.map((p) => (
               <span key={p.idPlayer} style={{ fontSize: 14, color: '#E6EAF1' }}>
                 {p.strPlayer}

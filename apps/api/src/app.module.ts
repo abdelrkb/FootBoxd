@@ -15,6 +15,7 @@ import { TagsModule } from './tags/tags.module.js';
 import { WatchlistModule } from './watchlist/watchlist.module.js';
 import { BlocksModule } from './blocks/blocks.module.js';
 import { ReportsModule } from './reports/reports.module.js';
+import { TeamsModule } from './teams/teams.module.js';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ReportsModule } from './reports/reports.module.js';
     WatchlistModule,
     BlocksModule,
     ReportsModule,
+    TeamsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

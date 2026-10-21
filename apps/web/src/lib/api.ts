@@ -18,6 +18,10 @@ import type {
   WatchlistEntry,
   BlockStatus,
   CreateReportInput,
+  Player,
+  Standing,
+  TeamOverview,
+  TeamStats,
 } from '@football-app/shared-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -235,3 +239,18 @@ export const getBlockedAccounts = () => apiFetch<UserSummary[]>('/users/me/block
 
 export const createReport = (input: CreateReportInput) =>
   apiFetch<{ success: boolean }>('/reports', { method: 'POST', body: JSON.stringify(input) });
+
+// --- Équipes (issue #7, 2026-10-20) ---
+
+export const searchTeams = (query: string) => apiFetch<Team[]>(`/teams/search?q=${encodeURIComponent(query)}`);
+
+export const getTeamOverview = (teamId: string) => apiFetch<TeamOverview>(`/teams/${teamId}`);
+
+export const getTeamStandings = (teamId: string) => apiFetch<Standing[]>(`/teams/${teamId}/standings`);
+
+export const getTeamMatches = (teamId: string, scope: 'upcoming' | 'past') =>
+  apiFetch<Match[]>(`/teams/${teamId}/matches?scope=${scope}`);
+
+export const getTeamSquad = (teamId: string) => apiFetch<Player[]>(`/teams/${teamId}/squad`);
+
+export const getTeamStats = (teamId: string) => apiFetch<TeamStats>(`/teams/${teamId}/stats`);

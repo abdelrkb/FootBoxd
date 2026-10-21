@@ -8,7 +8,7 @@ import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import { ClientDate } from '../../../components/client-date';
 import { DateSelector } from '../../../components/ui/date-selector';
-import { Crest, CrestPair } from '../../../components/ui/crest';
+import { Crest, CrestPair, TeamNamePair } from '../../../components/ui/crest';
 import { ScoreChip } from '../../../components/ui/badges';
 import { StatusLabel } from '../../../components/ui/status-label';
 import { EmptyContent } from '../../../components/ui/empty-state';
@@ -133,9 +133,12 @@ export default function LeagueDetailPage({ params }: PageProps<'/leagues/[id]'>)
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
               <CrestPair home={match.homeTeam} away={match.awayTeam} size={34} />
-              <span className="fb-card-title" style={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {match.homeTeam.name} — {match.awayTeam.name}
-              </span>
+              <TeamNamePair
+                home={match.homeTeam}
+                away={match.awayTeam}
+                className="fb-card-title"
+                style={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
               <MatchRight match={match} />

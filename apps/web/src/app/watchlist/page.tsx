@@ -7,7 +7,7 @@ import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 import { useWatchlist } from '../../lib/watchlist-context';
 import { ClientDate } from '../../components/client-date';
-import { CrestPair } from '../../components/ui/crest';
+import { CrestPair, TeamNamePair } from '../../components/ui/crest';
 import { KickoffCountdown } from '../../components/ui/kickoff-countdown';
 import { Switch } from '../../components/ui/switch';
 import { EmptySocial, EmptyContent } from '../../components/ui/empty-state';
@@ -96,9 +96,12 @@ export default function WatchlistPage() {
             >
               <CrestPair home={match.homeTeam} away={match.awayTeam} size={34} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-                <span className="fb-card-title" style={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {match.homeTeam.name} — {match.awayTeam.name}
-                </span>
+                <TeamNamePair
+                  home={match.homeTeam}
+                  away={match.awayTeam}
+                  className="fb-card-title"
+                  style={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                />
                 <span className="fb-meta" style={{ fontSize: 12 }}>
                   <ClientDate iso={match.kickoffAt} options={{ dateStyle: 'medium', timeStyle: 'short' }} fallback="" />
                 </span>

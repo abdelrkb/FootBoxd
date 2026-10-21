@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { League, UserSummary } from '@football-app/shared-types';
+import type { League, Team, UserSummary } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { Crest } from '../../components/ui/crest';
 import { EmptyContent } from '../../components/ui/empty-state';
@@ -13,7 +13,7 @@ const DEBOUNCE_MS = 300;
 const RESULTS_LIMIT = 4;
 const MOBILE_QUERY = '(max-width: 600px)';
 
-type Category = 'leagues' | 'users';
+type Category = 'leagues' | 'teams' | 'users';
 
 function Chevron({ open }: { open: boolean }) {
   return (
@@ -97,6 +97,30 @@ function LeagueRow({ league }: { league: League }) {
   );
 }
 
+function TeamRow({ team }: { team: Team }) {
+  return (
+    <Link
+      href={`/teams/${team.id}`}
+      className="fb-card"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        padding: 12,
+        border: '1px solid var(--fb-border)',
+        borderRadius: 12,
+        textDecoration: 'none',
+        color: 'inherit',
+      }}
+    >
+      <Crest src={team.logoUrl} alt={team.name} size={42} />
+      <span className="fb-card-title" style={{ fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {team.name}
+      </span>
+    </Link>
+  );
+}
+
 function UserRow({ user }: { user: UserSummary }) {
   return (
     <Link
@@ -126,13 +150,14 @@ function UserRow({ user }: { user: UserSummary }) {
   );
 }
 
-const TAB_LABEL: Record<Category, string> = { leagues: 'Ligues', users: 'Utilisateurs' };
+const TAB_LABEL: Record<Category, string> = { leagues: 'Ligues', teams: 'Équipes', users: 'Utilisateurs' };
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [leagueResults, setLeagueResults] = useState<League[] | null>(null);
+  const [teamResults, setTeamResults] = useState<Team[] | null>(null);
   const [userResults, setUserResults] = useState<UserSummary[] | null>(null);
-  const [expanded, setExpanded] = useState<Record<Category, boolean>>({ leagues: false, users: false });
+  const [expanded, setExpanded] = useState<Record<Category, boolean>>({ leagues: false, teams: false, users: false });
   const [selectedTab, setSelectedTab] = useState<Category | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -154,15 +179,20 @@ export default function SearchPage() {
     const q = query.trim();
     if (q.length < 2) {
       setLeagueResults(null);
+      setTeamResults(null);
       setUserResults(null);
       return;
     }
     let cancelled = false;
     setLeagueResults(null);
+    setTeamResults(null);
     setUserResults(null);
     const timer = setTimeout(() => {
       api.searchLeagues(q).then((r) => {
         if (!cancelled) setLeagueResults(r);
+      });
+      api.searchTeams(q).then((r) => {
+        if (!cancelled) setTeamResults(r);
       });
       api.searchUsers(q).then((r) => {
         if (!cancelled) setUserResults(r);
@@ -175,8 +205,8 @@ export default function SearchPage() {
   }, [query]);
 
   const searching = query.trim().length >= 2;
-  const loading = searching && (leagueResults === null || userResults === null);
-  const noResults = searching && leagueResults?.length === 0 && userResults?.length === 0;
+  const loading = searching && (leagueResults === null || teamResults === null || userResults === null);
+  const noResults = searching && leagueResults?.length === 0 && teamResults?.length === 0 && userResults?.length === 0;
 
   function toggleExpanded(cat: Category) {
     setExpanded((prev) => ({ ...prev, [cat]: !prev[cat] }));
@@ -196,7 +226,7 @@ export default function SearchPage() {
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Ligue, pseudo ou nom…"
+        placeholder="Ligue, équipe, pseudo ou nom…"
         style={{
           width: '100%',
           height: 46,
@@ -268,6 +298,28 @@ export default function SearchPage() {
             </div>
           )}
 
+          {teamResults !== null && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <SectionHeader title="Équipes" count={teamResults.length} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {teamResults.length === 0 ? (
+                  <p className="fb-meta" style={{ fontSize: 13 }}>
+                    Aucune équipe ne correspond.
+                  </p>
+                ) : (
+                  teamResults.slice(0, expanded.teams ? undefined : RESULTS_LIMIT).map((t) => <TeamRow key={t.id} team={t} />)
+                )}
+              </div>
+              {teamResults.length > RESULTS_LIMIT && (
+                <ShowMoreButton
+                  expanded={expanded.teams}
+                  remaining={teamResults.length - RESULTS_LIMIT}
+                  onToggle={() => toggleExpanded('teams')}
+                />
+              )}
+            </div>
+          )}
+
           {userResults !== null && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <SectionHeader title="Utilisateurs" count={userResults.length} />
@@ -287,6 +339,23 @@ export default function SearchPage() {
                   onToggle={() => toggleExpanded('users')}
                 />
               )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {searching && !loading && selectedTab === 'teams' && teamResults !== null && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <SectionHeader title="Équipes" count={teamResults.length} />
+          {teamResults.length === 0 ? (
+            <p className="fb-meta" style={{ fontSize: 13 }}>
+              Aucune équipe ne correspond.
+            </p>
+          ) : (
+            <div className={styles.resultsGrid}>
+              {teamResults.map((t) => (
+                <TeamRow key={t.id} team={t} />
+              ))}
             </div>
           )}
         </div>

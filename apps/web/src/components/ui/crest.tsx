@@ -1,4 +1,7 @@
-import type { CSSProperties } from 'react';
+'use client';
+
+import type { CSSProperties, MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
@@ -41,20 +44,76 @@ export function Crest({
 }
 
 // Paire d'écussons superposés (repère visuel constant de l'app — voir README du handoff).
+// Toujours utilisée pour une paire domicile/extérieur dans le contexte d'un match (jamais pour
+// autre chose) — chaque écusson mène à sa page équipe (issue #7, 2026-10-20). Souvent affichée
+// à l'intérieur d'une ligne de match elle-même cliquable (→ la page du match) : un <Link>
+// imbriqué dans un <Link> serait du HTML invalide, donc navigation manuelle + stopPropagation
+// sur un simple <span>, plutôt qu'un vrai <Link> ici.
 export function CrestPair({
   home,
   away,
   size,
 }: {
-  home: { logoUrl: string | null; name: string };
-  away: { logoUrl: string | null; name: string };
+  home: { id: string; logoUrl: string | null; name: string };
+  away: { id: string; logoUrl: string | null; name: string };
   size: number;
 }) {
+  const router = useRouter();
   const overlap = Math.round(size * 0.34);
+
+  function goToTeam(teamId: string) {
+    return (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      router.push(`/teams/${teamId}`);
+    };
+  }
+
   return (
     <div style={{ display: 'flex', flexShrink: 0 }}>
-      <Crest src={home.logoUrl} alt={home.name} size={size} />
-      <Crest src={away.logoUrl} alt={away.name} size={size} style={{ marginLeft: -overlap }} />
+      <span onClick={goToTeam(home.id)} style={{ cursor: 'pointer' }}>
+        <Crest src={home.logoUrl} alt={home.name} size={size} />
+      </span>
+      <span onClick={goToTeam(away.id)} style={{ cursor: 'pointer', marginLeft: -overlap }}>
+        <Crest src={away.logoUrl} alt={away.name} size={size} />
+      </span>
     </div>
+  );
+}
+
+// "{domicile} — {extérieur}" avec chaque nom cliquable vers sa page équipe (issue #7) — même
+// contrainte que CrestPair (souvent nichée dans une ligne de match déjà cliquable), même
+// technique de navigation manuelle + stopPropagation plutôt que des <Link> imbriqués.
+export function TeamNamePair({
+  home,
+  away,
+  className,
+  style,
+}: {
+  home: { id: string; name: string };
+  away: { id: string; name: string };
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const router = useRouter();
+
+  function goToTeam(teamId: string) {
+    return (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      router.push(`/teams/${teamId}`);
+    };
+  }
+
+  return (
+    <span className={className} style={style}>
+      <span onClick={goToTeam(home.id)} style={{ cursor: 'pointer' }}>
+        {home.name}
+      </span>
+      {' — '}
+      <span onClick={goToTeam(away.id)} style={{ cursor: 'pointer' }}>
+        {away.name}
+      </span>
+    </span>
   );
 }

@@ -210,3 +210,44 @@ export interface CreateReportInput {
   reason: ReportReason;
   details?: string;
 }
+
+// --- Page équipe (issue #7, 2026-10-20) ---
+
+export interface Player {
+  id: string;
+  externalId: string;
+  teamId: string;
+  name: string;
+  position: string | null;
+  photoUrl: string | null;
+  birthDate: string | null;
+}
+
+export interface Standing {
+  id: string;
+  leagueId: string;
+  teamId: string;
+  season: string;
+  rank: number;
+  played: number;
+  win: number;
+  draw: number;
+  loss: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+  description: string | null;
+  team: { id: string; name: string; logoUrl: string | null };
+}
+
+export interface TeamOverview extends Team {
+  primaryLeague: League | null;
+  standing: Omit<Standing, 'team'> | null;
+}
+
+export interface TeamStats {
+  averageRating: number | null;
+  totalReviews: number;
+  bestRatedMatch: { match: Match; averageRating: number } | null;
+}
