@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { MatchEvent } from '@football-app/shared-types';
 
 // Traitement visuel par type d'événement (handoff design du 2026-09-20). `detail` est la
@@ -29,6 +30,30 @@ function describeEvent(event: MatchEvent) {
   return { shape: '999px', size: 8, color: 'var(--fb-text-3)', label: 'Remplacement', strike: false };
 }
 
+// Vérifié en réel le 2026-10-22 (comparaison event_timeline vs lineup sur un match avec les
+// deux) : sur un remplacement, `playerName` (strPlayer) est le titulaire qui SORT (présent dans
+// le onze de départ), `assistName` (strAssist) est celui qui ENTRE (absent du onze de départ).
+// Affichait auparavant "(passe : X)" comme pour un but — trompeur, ça n'a rien d'une passe
+// décisive (issue #28). Flèche bas = sortie, flèche haut = entrée.
+function describeWho(event: MatchEvent): ReactNode {
+  if (event.type === 'substitution') {
+    return (
+      <>
+        <span style={{ display: 'block' }}>
+          <span style={{ color: 'var(--fb-live-text)' }}>↓</span> {event.playerName ?? '—'}
+        </span>
+        {event.assistName && (
+          <span style={{ display: 'block' }}>
+            <span style={{ color: 'var(--fb-action)' }}>↑</span> {event.assistName}
+          </span>
+        )}
+      </>
+    );
+  }
+  const who = [event.playerName, event.assistName ? `(passe : ${event.assistName})` : null].filter(Boolean).join(' ');
+  return who || '—';
+}
+
 export function MatchEvents({ events }: { events: MatchEvent[] }) {
   if (events.length === 0) return null;
   const sorted = [...events].sort((a, b) => b.minute - a.minute); // "du plus récent au coup d'envoi"
@@ -53,9 +78,7 @@ export function MatchEvents({ events }: { events: MatchEvent[] }) {
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {sorted.map((event) => {
           const d = describeEvent(event);
-          const who = [event.playerName, event.assistName ? `(passe : ${event.assistName})` : null]
-            .filter(Boolean)
-            .join(' ');
+          const who = describeWho(event);
           const dims = typeof d.size === 'number' ? { width: d.size, height: d.size } : { width: 9, height: 13 };
           return (
             <div
@@ -91,7 +114,7 @@ export function MatchEvents({ events }: { events: MatchEvent[] }) {
                 >
                   {d.label}
                 </span>
-                <span style={{ fontSize: 14, color: 'var(--fb-text-strong-2)' }}>{who || '—'}</span>
+                <span style={{ fontSize: 14, color: 'var(--fb-text-strong-2)' }}>{who}</span>
               </div>
               <span className="fb-meta" style={{ flexShrink: 0 }}>
                 {event.team.name}
