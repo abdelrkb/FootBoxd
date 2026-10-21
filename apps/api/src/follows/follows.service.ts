@@ -67,4 +67,79 @@ export class FollowsService {
     });
     return link !== null;
   }
+
+  // "Suggestions de personnes à suivre" (issue #17) : deux sources combinées — supporters du
+  // même club favori, et "amis de tes amis" (personnes suivies par des gens que tu suis, triées
+  // par nombre de contacts en commun qui les suivent). Exclut soi-même, les gens déjà suivis, et
+  // tout utilisateur bloqué dans un sens ou l'autre (même règle que follow()/isEitherBlocked).
+  async getSuggestions(userId: string, limit = 10) {
+    const [me, followingRows, blockedRows, blockedByRows] = await Promise.all([
+      this.prisma.client.user.findUnique({ where: { id: userId }, select: { favoriteTeamId: true } }),
+      this.prisma.client.follow.findMany({ where: { followerId: userId }, select: { followingId: true } }),
+      this.prisma.client.block.findMany({ where: { blockerId: userId }, select: { blockedId: true } }),
+      this.prisma.client.block.findMany({ where: { blockedId: userId }, select: { blockerId: true } }),
+    ]);
+
+    const followingIds = followingRows.map((f) => f.followingId);
+    const excludeIds = [
+      userId,
+      ...followingIds,
+      ...blockedRows.map((b) => b.blockedId),
+      ...blockedByRows.map((b) => b.blockerId),
+    ];
+
+    const [sameClubUsers, friendsOfFriendsRows] = await Promise.all([
+      me?.favoriteTeamId
+        ? this.prisma.client.user.findMany({
+            where: { favoriteTeamId: me.favoriteTeamId, deletedAt: null, id: { notIn: excludeIds } },
+            select: userSummarySelect,
+            take: limit * 2,
+          })
+        : Promise.resolve([]),
+      followingIds.length
+        ? this.prisma.client.follow.findMany({
+            where: { followerId: { in: followingIds }, followingId: { notIn: excludeIds } },
+            select: { followingId: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const mutualCount = new Map<string, number>();
+    for (const row of friendsOfFriendsRows) {
+      mutualCount.set(row.followingId, (mutualCount.get(row.followingId) ?? 0) + 1);
+    }
+    const friendsOfFriendsIds = Array.from(mutualCount.keys()).sort(
+      (a, b) => (mutualCount.get(b) ?? 0) - (mutualCount.get(a) ?? 0),
+    );
+    const friendsOfFriendsUsers = friendsOfFriendsIds.length
+      ? await this.prisma.client.user.findMany({
+          where: { id: { in: friendsOfFriendsIds.slice(0, limit * 2) }, deletedAt: null },
+          select: userSummarySelect,
+        })
+      : [];
+
+    type Reason = 'same_club' | 'mutual_friends' | 'both';
+    const combined = new Map<string, { user: (typeof sameClubUsers)[number]; reason: Reason; mutualFriends: number }>();
+    for (const user of sameClubUsers) {
+      combined.set(user.id, { user, reason: 'same_club', mutualFriends: 0 });
+    }
+    // Préserve l'ordre par nombre de contacts communs décroissant (friendsOfFriendsIds déjà trié).
+    for (const id of friendsOfFriendsIds) {
+      const user = friendsOfFriendsUsers.find((u) => u.id === id);
+      if (!user) continue;
+      const existing = combined.get(id);
+      const mutualFriends = mutualCount.get(id) ?? 0;
+      if (existing) existing.reason = 'both';
+      else combined.set(id, { user, reason: 'mutual_friends', mutualFriends });
+    }
+
+    return Array.from(combined.values())
+      .sort((a, b) => {
+        if (a.reason === 'both' && b.reason !== 'both') return -1;
+        if (b.reason === 'both' && a.reason !== 'both') return 1;
+        return b.mutualFriends - a.mutualFriends;
+      })
+      .slice(0, limit)
+      .map(({ user, reason, mutualFriends }) => ({ ...user, reason, mutualFriends }));
+  }
 }

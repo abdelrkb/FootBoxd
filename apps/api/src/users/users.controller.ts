@@ -21,6 +21,7 @@ import { UsersService } from './users.service.js';
 import { LeaguesService } from '../leagues/leagues.service.js';
 import { WatchlistService } from '../watchlist/watchlist.service.js';
 import { BlocksService } from '../blocks/blocks.service.js';
+import { FollowsService } from '../follows/follows.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { PublicUser } from '../auth/auth.service.js';
@@ -48,11 +49,20 @@ export class UsersController {
     private readonly leaguesService: LeaguesService,
     private readonly watchlistService: WatchlistService,
     private readonly blocksService: BlocksService,
+    private readonly followsService: FollowsService,
   ) {}
 
   @Get('search')
   search(@Query('q') q = '') {
     return this.usersService.search(q);
+  }
+
+  // Route littérale AVANT ':id/...' — même précédent que 'search' (NestJS matcherait
+  // "suggestions" comme un :id sinon).
+  @UseGuards(JwtAuthGuard)
+  @Get('suggestions')
+  suggestions(@CurrentUser() user: PublicUser) {
+    return this.followsService.getSuggestions(user.id);
   }
 
   @Get(':id/profile')

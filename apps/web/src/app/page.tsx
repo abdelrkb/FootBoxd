@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import type { Match, League, PopularReview, PopularMatch, ReviewWithMatch } from '@football-app/shared-types';
+import type { Match, League, PopularReview, PopularMatch, ReviewWithMatch, UserSuggestion } from '@football-app/shared-types';
 import * as api from '../lib/api';
 import { useAuth } from '../lib/auth-context';
 import { ReviewMiniCard } from '../components/review-mini-card';
@@ -13,7 +13,7 @@ import { LiveCountBadge } from '../components/ui/badges';
 import { EmptyContent, EmptySocial } from '../components/ui/empty-state';
 import { SkeletonList } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
-import { leagueAccentColor } from '../components/ui/card-shell';
+import { leagueAccentColor, cardShellStyle } from '../components/ui/card-shell';
 import { todayString } from '../lib/calendar-days';
 
 interface LeagueRow {
@@ -22,10 +22,52 @@ interface LeagueRow {
   isFavorite: boolean;
 }
 
+// "Supporte le même club, amis de tes amis" (issue #17) — raison affichée telle que calculée
+// côté service (follows.service.ts `getSuggestions`), pas reformulée en front.
+function reasonLabel(s: UserSuggestion): string {
+  if (s.reason === 'both') return `Même club favori · ${s.mutualFriends} ami${s.mutualFriends > 1 ? 's' : ''} en commun`;
+  if (s.reason === 'same_club') return 'Même club favori';
+  return `${s.mutualFriends} ami${s.mutualFriends > 1 ? 's' : ''} en commun`;
+}
+
+function SuggestionRow({ suggestion, onFollowed }: { suggestion: UserSuggestion; onFollowed: (id: string) => void }) {
+  const [pending, setPending] = useState(false);
+
+  async function handleFollow() {
+    setPending(true);
+    try {
+      await api.followUser(suggestion.id);
+      onFollowed(suggestion.id);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <div style={{ ...cardShellStyle(), alignItems: 'center' }} className="fb-card">
+      <Link href={`/profile/${suggestion.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1, textDecoration: 'none', color: 'inherit' }}>
+        <Crest src={suggestion.avatarUrl} alt={suggestion.displayName} size={36} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+          <span className="fb-card-title" style={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {suggestion.displayName}
+          </span>
+          <span className="fb-meta" style={{ fontSize: 11.5 }}>
+            {reasonLabel(suggestion)}
+          </span>
+        </div>
+      </Link>
+      <Button size="sm" loading={pending} onClick={handleFollow} style={{ flexShrink: 0 }}>
+        Suivre
+      </Button>
+    </div>
+  );
+}
+
 function Sidebar({ user }: { user: { id: string } | null }) {
   const [popularReviews, setPopularReviews] = useState<PopularReview[] | null>(null);
   const [followingReviews, setFollowingReviews] = useState<ReviewWithMatch[] | null>(null);
   const [popularMatches, setPopularMatches] = useState<PopularMatch[] | null>(null);
+  const [suggestions, setSuggestions] = useState<UserSuggestion[] | null>(null);
 
   useEffect(() => {
     api.getPopularReviews().then(setPopularReviews);
@@ -33,7 +75,10 @@ function Sidebar({ user }: { user: { id: string } | null }) {
   }, []);
 
   useEffect(() => {
-    if (user) api.getFollowingReviews().then(setFollowingReviews);
+    if (user) {
+      api.getFollowingReviews().then(setFollowingReviews);
+      api.getFollowSuggestions().then(setSuggestions);
+    }
   }, [user]);
 
   return (
@@ -93,6 +138,23 @@ function Sidebar({ user }: { user: { id: string } | null }) {
           ))}
         </div>
       </section>
+
+      {user && suggestions !== null && suggestions.length > 0 && (
+        <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <h2 className="fb-section" style={{ margin: 0 }}>
+            Comptes à suivre
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {suggestions.map((s) => (
+              <SuggestionRow
+                key={s.id}
+                suggestion={s}
+                onFollowed={(id) => setSuggestions((prev) => prev?.filter((p) => p.id !== id) ?? null)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <h2 className="fb-section" style={{ margin: 0 }}>
