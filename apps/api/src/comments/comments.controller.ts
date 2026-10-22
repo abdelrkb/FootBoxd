@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Body, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { PublicUser } from '../auth/auth.service.js';
@@ -21,6 +21,22 @@ export class CommentsController {
     @Body() dto: CreateCommentDto,
     @CurrentUser() user: PublicUser,
   ) {
-    return this.commentsService.create(reviewId, user.id, dto.content);
+    return this.commentsService.create(reviewId, user.id, dto.content, dto.parentId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':commentId/like')
+  @HttpCode(200)
+  async like(@Param('commentId', ParseUUIDPipe) commentId: string, @CurrentUser() user: PublicUser) {
+    await this.commentsService.like(commentId, user.id);
+    return { success: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':commentId/like')
+  @HttpCode(200)
+  async unlike(@Param('commentId', ParseUUIDPipe) commentId: string, @CurrentUser() user: PublicUser) {
+    await this.commentsService.unlike(commentId, user.id);
+    return { success: true };
   }
 }

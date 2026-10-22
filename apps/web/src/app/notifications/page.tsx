@@ -16,11 +16,19 @@ const LABELS: Record<Notification['type'], string> = {
   like: 'a aimé ta review',
   follow: 'a commencé à te suivre',
   kickoff_reminder: '',
+  mention: "t'a mentionné dans un commentaire",
+  comment_reply: 'a répondu à ton commentaire',
+  comment_like: 'a aimé ton commentaire',
+  follow_request: 'souhaite s’abonner à toi',
+  follow_accepted: 'a accepté ta demande d’abonnement',
 };
 
 export default function NotificationsPage() {
   const { user, loading: authLoading } = useAuth();
   const [notifications, setNotifications] = useState<Notification[] | null>(null);
+  // follow_request n'a pas de flag "déjà traitée" côté API (pas de liste dédiée, voir issue
+  // #18) — on masque juste localement les boutons Accepter/Refuser après action.
+  const [resolvedRequests, setResolvedRequests] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user) api.getNotifications().then(setNotifications);
@@ -54,8 +62,21 @@ export default function NotificationsPage() {
   }
 
   async function followBack(actorId: string, notifId: string) {
-    await api.followUser(actorId);
-    setNotifications((prev) => prev?.map((n) => (n.id === notifId ? { ...n, isFollowingActor: true } : n)) ?? null);
+    const { status } = await api.followUser(actorId);
+    setNotifications(
+      (prev) => prev?.map((n) => (n.id === notifId ? { ...n, isFollowingActor: status === 'following' } : n)) ?? null,
+    );
+  }
+
+  async function respondToFollowRequest(notif: Notification, accept: boolean) {
+    try {
+      if (accept) await api.acceptFollowRequest(notif.actorId);
+      else await api.rejectFollowRequest(notif.actorId);
+    } catch {
+      // Déjà traitée ailleurs (ex: depuis le profil du demandeur) — pas d'erreur à l'utilisateur,
+      // juste masquer les boutons comme si l'action avait réussi.
+    }
+    setResolvedRequests((prev) => new Set(prev).add(notif.id));
   }
 
   const hasUnread = notifications?.some((n) => !n.isRead) ?? false;
@@ -160,6 +181,16 @@ export default function NotificationsPage() {
               >
                 Suivre
               </Button>
+            )}
+            {n.type === 'follow_request' && !resolvedRequests.has(n.id) && (
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                <Button size="sm" onClick={() => respondToFollowRequest(n, true)}>
+                  Accepter
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => respondToFollowRequest(n, false)}>
+                  Refuser
+                </Button>
+              </div>
             )}
             <span className="fb-meta" style={{ flexShrink: 0 }}>
               <ClientDate iso={n.createdAt} options={{ dateStyle: 'short', timeStyle: 'short' }} fallback="" />

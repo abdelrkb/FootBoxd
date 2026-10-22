@@ -2,11 +2,43 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import type { Profile } from '@football-app/shared-types';
+import type { Compatibility, Profile } from '@football-app/shared-types';
 import { Crest } from './ui/crest';
 import { ProfileMatchCard } from './profile-match-card';
 import { EmptyContent, EmptySocial } from './ui/empty-state';
 import { Button } from './ui/button';
+
+// % de compatibilité (issue #18) : combine accord de notes + club favori + amis en commun —
+// voir users.service.ts `getCompatibility`. Affiché uniquement si au moins un signal existe.
+function CompatibilityBadge({ compatibility }: { compatibility: Compatibility | null }) {
+  if (!compatibility || compatibility.percentage === null) return null;
+  const parts: string[] = [];
+  if (compatibility.commonMatches > 0) parts.push(`${compatibility.commonMatches} match${compatibility.commonMatches > 1 ? 's' : ''} en commun`);
+  if (compatibility.sameFavoriteTeam) parts.push('même club favori');
+  if (compatibility.mutualFriends > 0) parts.push(`${compatibility.mutualFriends} ami${compatibility.mutualFriends > 1 ? 's' : ''} en commun`);
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '6px 12px',
+        border: '1px solid var(--fb-border)',
+        borderRadius: 999,
+        background: 'var(--fb-surface)',
+      }}
+      title={parts.join(' · ')}
+    >
+      <span className="fb-num" style={{ fontSize: 13, fontWeight: 700, color: 'var(--fb-action)' }}>
+        {compatibility.percentage}%
+      </span>
+      <span className="fb-meta" style={{ fontSize: 11.5 }}>
+        compatible{parts.length > 0 ? ` · ${parts.join(' · ')}` : ''}
+      </span>
+    </div>
+  );
+}
 
 function StatCell({ value, label, accent }: { value: number; label: string; accent?: boolean }) {
   return (
@@ -28,25 +60,33 @@ export function ProfileView({
   profile,
   headerAction,
   blockedByOwner,
+  restricted,
+  compatibility,
 }: {
   profile: Profile;
   headerAction: ReactNode;
   // Le PROPRIÉTAIRE du profil a bloqué le visiteur (2026-10-02) : le profil reste trouvable
   // (recherche, lien direct) mais n'affiche plus que ce message, ni stats ni contenu.
   blockedByOwner?: boolean;
+  // Profil privé (issue #18) : le visiteur ne suit pas encore (ou n'est pas le propriétaire) —
+  // même traitement que blockedByOwner, message différent.
+  restricted?: boolean;
+  // % de compatibilité avec le visiteur courant (absent sur son propre profil).
+  compatibility?: Compatibility | null;
 }) {
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 24px 80px', display: 'flex', flexDirection: 'column', gap: 32 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <Crest src={profile.avatarUrl} alt={profile.displayName} size={96} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <h1 className="fb-display" style={{ fontSize: 40, margin: 0 }}>
               {profile.displayName}
             </h1>
             <span className="fb-meta" style={{ fontSize: 13.5 }}>
               @{profile.username}
             </span>
+            <CompatibilityBadge compatibility={compatibility ?? null} />
           </div>
         </div>
         {headerAction}
@@ -63,6 +103,20 @@ export function ProfileView({
           }}
         >
           <p style={{ margin: 0, fontSize: 15, color: 'var(--fb-text-2)' }}>Vous êtes bloqué par cet utilisateur.</p>
+        </div>
+      ) : restricted ? (
+        <div
+          style={{
+            padding: 24,
+            border: '1px dashed var(--fb-border-strong)',
+            borderRadius: 16,
+            background: 'var(--fb-hatch)',
+            textAlign: 'center',
+          }}
+        >
+          <p style={{ margin: 0, fontSize: 15, color: 'var(--fb-text-2)' }}>
+            Ce profil est privé. Abonne-toi pour voir son contenu.
+          </p>
         </div>
       ) : (
         <>

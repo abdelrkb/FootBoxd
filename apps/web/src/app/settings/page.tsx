@@ -56,6 +56,9 @@ export default function SettingsPage() {
 
   const [blockedAccounts, setBlockedAccounts] = useState<UserSummary[] | null>(null);
 
+  const [isPrivate, setIsPrivateState] = useState(false);
+  const [privacySaving, setPrivacySaving] = useState(false);
+
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -75,6 +78,7 @@ export default function SettingsPage() {
     setDisplayName(user.displayName);
     setBio(user.bio ?? '');
     setUsername(user.username);
+    setIsPrivateState(user.isPrivate);
     api.getFavoriteLeagues(user.id).then(async (leagues) => {
       const lists = await Promise.all(leagues.map((l) => api.getTeamsForLeague(l.id)));
       const byId = new Map<string, Team>();
@@ -89,6 +93,20 @@ export default function SettingsPage() {
     await refresh();
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  // Profil privé (issue #18) : appliqué immédiatement, même pattern que la visibilité de la
+  // watchlist (voir watchlist/page.tsx `togglePrivacy`) plutôt que groupé avec "Enregistrer".
+  async function toggleProfilePrivacy() {
+    const next = !isPrivate;
+    setPrivacySaving(true);
+    try {
+      setIsPrivateState(next);
+      await api.setProfilePrivacy(next);
+      await refresh();
+    } finally {
+      setPrivacySaving(false);
+    }
   }
 
   async function saveProfile() {
@@ -262,6 +280,21 @@ export default function SettingsPage() {
           >
             Changer le pseudo
           </Button>
+        </div>
+      </div>
+
+      <div style={sectionStyle()}>
+        <span className="fb-section" style={{ fontSize: 13 }}>
+          Confidentialité
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={{ fontSize: 14 }}>Profil privé</span>
+            <span className="fb-meta" style={{ fontSize: 12 }}>
+              Les nouveaux abonnements doivent être acceptés avant de voir ton contenu.
+            </span>
+          </div>
+          <Switch checked={isPrivate} onChange={toggleProfilePrivacy} />
         </div>
       </div>
 

@@ -12,7 +12,24 @@ export class FollowsController {
   @Post('follow')
   @HttpCode(200)
   async follow(@Param('id', ParseUUIDPipe) targetId: string, @CurrentUser() user: PublicUser) {
-    await this.followsService.follow(user.id, targetId);
+    return this.followsService.follow(user.id, targetId);
+  }
+
+  // :id = l'auteur de la demande (le user courant, destinataire de la notification, est
+  // toujours l'owner) — même convention que 'follow'/'unfollow' où :id est l'AUTRE personne.
+  @UseGuards(JwtAuthGuard)
+  @Post('accept-follow-request')
+  @HttpCode(200)
+  async acceptFollowRequest(@Param('id', ParseUUIDPipe) requesterId: string, @CurrentUser() user: PublicUser) {
+    await this.followsService.acceptFollowRequest(user.id, requesterId);
+    return { success: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('reject-follow-request')
+  @HttpCode(200)
+  async rejectFollowRequest(@Param('id', ParseUUIDPipe) requesterId: string, @CurrentUser() user: PublicUser) {
+    await this.followsService.rejectFollowRequest(user.id, requesterId);
     return { success: true };
   }
 
@@ -37,6 +54,13 @@ export class FollowsController {
   @UseGuards(JwtAuthGuard)
   @Get('am-i-following')
   async amIFollowing(@Param('id', ParseUUIDPipe) targetId: string, @CurrentUser() user: PublicUser) {
-    return { following: await this.followsService.isFollowing(user.id, targetId) };
+    // incomingRequest = targetId m'a envoyé une demande (profil privé, voir issue #18) —
+    // affiché avec Accepter/Refuser sur SON profil (profile/[id]/page.tsx).
+    const [following, pendingRequest, incomingRequest] = await Promise.all([
+      this.followsService.isFollowing(user.id, targetId),
+      this.followsService.hasPendingRequest(user.id, targetId),
+      this.followsService.hasPendingRequest(targetId, user.id),
+    ]);
+    return { following, pendingRequest, incomingRequest };
   }
 }

@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import type { Profile, BlockStatus } from '@football-app/shared-types';
+import type { Profile, BlockStatus, FollowStatus, Compatibility } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import { ProfileView } from '../../../components/profile-view';
@@ -16,7 +16,8 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
   const router = useRouter();
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [followStatus, setFollowStatus] = useState<FollowStatus | null>(null);
+  const [compatibility, setCompatibility] = useState<Compatibility | null>(null);
   const [blockStatus, setBlockStatus] = useState<BlockStatus | null>(null);
   const [pending, setPending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -36,18 +37,38 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
 
   useEffect(() => {
     if (!user || user.id === id) return;
-    api.amIFollowing(id).then(setIsFollowing);
+    api.amIFollowing(id).then(setFollowStatus);
     api.getBlockStatus(id).then(setBlockStatus);
+    api.getCompatibility(id).then(setCompatibility);
   }, [user, id]);
 
   async function toggleFollow() {
     setPending(true);
     try {
-      if (isFollowing) await api.unfollowUser(id);
-      else await api.followUser(id);
-      setIsFollowing((prev) => !prev);
+      if (followStatus?.following || followStatus?.pendingRequest) {
+        await api.unfollowUser(id);
+        setFollowStatus((prev) => (prev ? { ...prev, following: false, pendingRequest: false } : prev));
+      } else {
+        const { status } = await api.followUser(id);
+        setFollowStatus((prev) =>
+          prev ? { ...prev, following: status === 'following', pendingRequest: status === 'requested' } : prev,
+        );
+      }
       const fresh = await api.getProfile(id);
       setProfile(fresh);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  // "Accepter/refuser se fait... depuis le profil du demandeur" (issue #18, réponse explicite
+  // du 2026-10-22) : affiché ici quand CETTE personne (:id) m'a envoyé une demande.
+  async function respondToIncomingRequest(accept: boolean) {
+    setPending(true);
+    try {
+      if (accept) await api.acceptFollowRequest(id);
+      else await api.rejectFollowRequest(id);
+      setFollowStatus((prev) => (prev ? { ...prev, incomingRequest: false } : prev));
     } finally {
       setPending(false);
     }
@@ -63,7 +84,7 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
       } else {
         await api.blockUser(id);
         // Bloquer coupe le follow dans les deux sens côté API (voir blocks.service.ts).
-        setIsFollowing(false);
+        setFollowStatus((prev) => (prev ? { ...prev, following: false, pendingRequest: false } : prev));
         setBlockStatus({ blockedByOwner: blockStatus?.blockedByOwner ?? false, viewerHasBlocked: true });
       }
     } finally {
@@ -73,14 +94,58 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
 
   if (!profile) return <SkeletonList />;
 
+  // Profil privé (issue #18) : contenu masqué pour un visiteur qui ne suit pas encore (sauf
+  // le propriétaire lui-même) — même principe d'affichage que blockedByOwner dans ProfileView.
+  const isOwner = user?.id === id;
+  const hasAccess = isOwner || !profile.isPrivate || followStatus?.following === true;
+  const followLabel = blockStatus?.viewerHasBlocked
+    ? 'Débloquer'
+    : followStatus?.following
+      ? 'Suivi(e)'
+      : followStatus?.pendingRequest
+        ? 'Demande envoyée'
+        : profile.isPrivate
+          ? 'Demander à suivre'
+          : 'Suivre';
+
   return (
     <>
+      {followStatus?.incomingRequest && (
+        <div
+          style={{
+            maxWidth: 960,
+            margin: '20px auto 0',
+            padding: '14px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            flexWrap: 'wrap',
+            border: '1px solid var(--fb-border)',
+            borderRadius: 12,
+            background: 'var(--fb-surface)',
+          }}
+        >
+          <span style={{ fontSize: 14, color: 'var(--fb-text-2)' }}>
+            {profile.displayName} souhaite s&rsquo;abonner à toi.
+          </span>
+          <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+            <Button size="sm" loading={pending} onClick={() => respondToIncomingRequest(true)}>
+              Accepter
+            </Button>
+            <Button size="sm" variant="secondary" loading={pending} onClick={() => respondToIncomingRequest(false)}>
+              Refuser
+            </Button>
+          </div>
+        </div>
+      )}
       <ProfileView
         profile={profile}
         blockedByOwner={blockStatus?.blockedByOwner}
+        restricted={!hasAccess}
+        compatibility={compatibility}
         headerAction={
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            {!blockStatus?.blockedByOwner && profile.isWatchlistPublic && (
+            {!blockStatus?.blockedByOwner && hasAccess && profile.isWatchlistPublic && (
               <Link href={`/profile/${id}/watchlist`}>
                 <Button variant="secondary">Watchlist</Button>
               </Link>
@@ -89,11 +154,11 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
               <>
                 {!blockStatus?.blockedByOwner && (
                   <Button
-                    variant={blockStatus?.viewerHasBlocked ? 'secondary' : isFollowing ? 'secondary' : 'primary'}
+                    variant={blockStatus?.viewerHasBlocked || followStatus?.following || followStatus?.pendingRequest ? 'secondary' : 'primary'}
                     loading={pending}
                     onClick={blockStatus?.viewerHasBlocked ? toggleBlock : toggleFollow}
                   >
-                    {blockStatus?.viewerHasBlocked ? 'Débloquer' : isFollowing ? 'Suivi(e)' : 'Suivre'}
+                    {followLabel}
                   </Button>
                 )}
                 <div style={{ position: 'relative' }}>
