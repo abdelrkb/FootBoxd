@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { Suspense, use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { Match, League } from '@football-app/shared-types';
@@ -38,7 +38,17 @@ function MatchRight({ match }: { match: Match }) {
   return <StatusLabel status={match.status} />;
 }
 
+// useSearchParams() doit être sous un Suspense pour le build de prod (next build échoue sinon
+// à la prérender statique — vérifié en réel au premier build de prod du projet, 2026-10-22).
 export default function LeagueDetailPage({ params }: PageProps<'/leagues/[id]'>) {
+  return (
+    <Suspense fallback={null}>
+      <LeagueDetailPageInner params={params} />
+    </Suspense>
+  );
+}
+
+function LeagueDetailPageInner({ params }: { params: PageProps<'/leagues/[id]'>['params'] }) {
   const { id } = use(params);
   const { user } = useAuth();
   const searchParams = useSearchParams();
