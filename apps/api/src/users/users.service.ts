@@ -153,9 +153,22 @@ export class UsersService {
       .sort((a, b) => Number(b.rating) - Number(a.rating))
       .slice(0, 4);
 
-    const [followersCount, followingCount] = await Promise.all([
+    // Club de cœur + équipes suivies sur le profil (issue #53) : le club de cœur reste unique
+    // (User.favoriteTeamId), les équipes suivies viennent de la table favorite_teams.
+    const [followersCount, followingCount, favoriteTeam, favoriteTeamRows] = await Promise.all([
       this.followsService.countFollowers(userId),
       this.followsService.countFollowing(userId),
+      user.favoriteTeamId
+        ? this.prisma.client.team.findUnique({
+            where: { id: user.favoriteTeamId },
+            select: { id: true, externalId: true, name: true, logoUrl: true },
+          })
+        : Promise.resolve(null),
+      this.prisma.client.favoriteTeam.findMany({
+        where: { userId },
+        include: { team: { select: { id: true, externalId: true, name: true, logoUrl: true } } },
+        orderBy: { createdAt: 'asc' },
+      }),
     ]);
 
     return {
@@ -170,6 +183,10 @@ export class UsersService {
       // — compte dans les stats ci-dessus et peut rester un match préféré, mais pas ici.
       lastReviews: reviewsThisSeason.filter((r) => !r.quickRating).slice(0, 4),
       favoriteMatches,
+      favoriteTeam,
+      // Le club de cœur n'est pas répété dans la liste des équipes suivies : il a sa propre
+      // place sur le profil.
+      favoriteTeams: favoriteTeamRows.map((r) => r.team).filter((t) => t.id !== user.favoriteTeamId),
       followersCount,
       followingCount,
       isWatchlistPublic: user.isWatchlistPublic,

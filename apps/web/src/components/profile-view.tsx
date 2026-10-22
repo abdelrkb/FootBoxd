@@ -3,11 +3,35 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import type { Profile } from '@football-app/shared-types';
+import type { Profile, Team } from '@football-app/shared-types';
 import { Crest } from './ui/crest';
 import { ProfileMatchCard } from './profile-match-card';
 import { EmptyContent, EmptySocial } from './ui/empty-state';
 import { Button } from './ui/button';
+
+// Club de cœur + équipes suivies (issue #53) : le club de cœur est mis en avant (écusson plus
+// grand, libellé dédié), les autres équipes suivies suivent en pastilles.
+function TeamChip({ team, primary }: { team: Team; primary?: boolean }) {
+  return (
+    <Link
+      href={`/teams/${team.id}`}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: primary ? '7px 14px' : '6px 12px',
+        borderRadius: 999,
+        border: `1px solid ${primary ? 'var(--fb-rating)' : 'var(--fb-border)'}`,
+        background: primary ? 'var(--fb-rating-bg)' : 'var(--fb-surface)',
+        color: primary ? 'var(--fb-rating)' : 'var(--fb-text-2)',
+        textDecoration: 'none',
+      }}
+    >
+      <Crest src={team.logoUrl} alt={team.name} size={primary ? 24 : 20} />
+      <span style={{ fontSize: primary ? 13.5 : 12.5, fontWeight: primary ? 700 : 600 }}>{team.name}</span>
+    </Link>
+  );
+}
 
 function StatCell({ value, label, accent }: { value: number; label: string; accent?: boolean }) {
   return (
@@ -90,6 +114,20 @@ export function ProfileView({
             <p className="fb-body" style={{ margin: 0, maxWidth: 640, whiteSpace: 'pre-wrap' }}>
               {profile.bio}
             </p>
+          )}
+
+          {(profile.favoriteTeam || profile.favoriteTeams.length > 0) && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <h2 className="fb-section" style={{ margin: 0, fontSize: 13 }}>
+                {profile.favoriteTeam ? t('favoriteClubSection') : t('followedTeamsSection')}
+              </h2>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                {profile.favoriteTeam && <TeamChip team={profile.favoriteTeam} primary />}
+                {profile.favoriteTeams.map((team) => (
+                  <TeamChip key={team.id} team={team} />
+                ))}
+              </div>
+            </div>
           )}
 
           <div

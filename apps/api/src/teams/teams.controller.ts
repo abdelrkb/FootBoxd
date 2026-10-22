@@ -1,4 +1,7 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import type { PublicUser } from '../auth/auth.service.js';
 import { TeamsService } from './teams.service.js';
 
 @Controller('teams')
@@ -35,5 +38,21 @@ export class TeamsController {
   @Get(':id/stats')
   stats(@Param('id', ParseUUIDPipe) id: string) {
     return this.teamsService.getStats(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/favorite')
+  @HttpCode(200)
+  async favorite(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: PublicUser) {
+    await this.teamsService.addFavorite(user.id, id);
+    return { success: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/favorite')
+  @HttpCode(200)
+  async unfavorite(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: PublicUser) {
+    await this.teamsService.removeFavorite(user.id, id);
+    return { success: true };
   }
 }
