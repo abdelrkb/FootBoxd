@@ -35,12 +35,13 @@ Les **pré-releases** (case « Set as a pre-release ») et les **brouillons** ne
 `main` peut contenir des PR de la prochaine version qui ne sont pas encore livrées : on ne veut pas les embarquer dans un correctif urgent. On part donc du **tag actuellement en prod**, pas de `main`.
 
 ```bash
-git fetch --tags
-git checkout -b hotfix/v1.3.1 v1.3.0        # v1.3.0 = version actuellement en prod
+scripts/hotfix.sh v1.3.0 v1.3.1             # v1.3.0 = version actuellement en prod
 # … corriger, tester …
 git commit -am "fix: description du correctif"
 git push -u origin hotfix/v1.3.1
 ```
+
+(`scripts/hotfix.sh` fait le `git fetch --tags` + `checkout -b hotfix/v1.3.1 v1.3.0` et rappelle les étapes suivantes.)
 
 1. Ouvrir une PR `hotfix/v1.3.1` (relecture), **sans la merger dans `main` tout de suite**. Le label `hotfix` la classe dans les notes.
 2. **Releases → Draft a new release** : tag `v1.3.1`, **cible : la branche `hotfix/v1.3.1`** (pas `main`) → Publish. Le workflow build ce commit et le déploie.
@@ -62,7 +63,7 @@ Rollback ou hotfix ? Rollback = retour immédiat à une version connue saine. Ho
 
 ## Réglages GitHub (une seule fois)
 
-- Créer les labels utilisés par les notes de release : `feature`, `enhancement`, `bug`, `fix`, `hotfix`, `breaking`, `ignore-for-release` (optionnel : sans label, une PR va dans « Autres changements »).
+- Créer les labels utilisés par les notes de release : `feature`, `enhancement`, `bug`, `fix`, `hotfix`, `breaking`, `ignore-for-release` (fait, voir issue #45 — optionnel : sans label, une PR va dans « Autres changements »).
 - Secrets du déploiement : `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`.
 - Aucun réglage « Allow GitHub Actions to create pull requests » n'est nécessaire (plus de bot de release).
 
