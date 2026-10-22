@@ -17,6 +17,20 @@ import { leagueAccentColor } from '../../components/ui/card-shell';
 // que 2 en détail).
 const STEPS = ['Tes ligues', 'Réglages', 'C\'est parti'] as const;
 
+// Suggestions à la création de compte (issue #46) : les compétitions les plus suivies, pour
+// éviter d'avoir à les chercher dans la liste complète (des centaines de ligues, TheSportsDB).
+// Identifiées par externalId, pas par nom (le nom peut légèrement varier selon la source).
+const POPULAR_LEAGUE_EXTERNAL_IDS = new Set([
+  '4328', // English Premier League
+  '4335', // Spanish La Liga
+  '4332', // Italian Serie A
+  '4331', // German Bundesliga
+  '4334', // French Ligue 1
+  '4480', // UEFA Champions League
+  '4481', // UEFA Europa League
+  '5071', // UEFA Conference League
+]);
+
 function ProgressBar({ step }: { step: number }) {
   return (
     <div style={{ display: 'flex', gap: 6 }}>
@@ -36,6 +50,7 @@ export default function OnboardingPage() {
   const { user, loading: authLoading } = useAuth();
   const [step, setStep] = useState(0);
   const [leagues, setLeagues] = useState<League[] | null>(null);
+  const [leagueFilter, setLeagueFilter] = useState('');
   const [selectedLeagueIds, setSelectedLeagueIds] = useState<Set<string>>(new Set());
   const [teams, setTeams] = useState<Team[]>([]);
   const [favoriteTeamId, setFavoriteTeamId] = useState<string | null>(null);
@@ -90,6 +105,51 @@ export default function OnboardingPage() {
 
   const sortedLeagues = useMemo(() => (leagues ? [...leagues].sort((a, b) => a.name.localeCompare(b.name)) : []), [leagues]);
 
+  const suggestedLeagues = useMemo(
+    () =>
+      sortedLeagues
+        .filter((l) => POPULAR_LEAGUE_EXTERNAL_IDS.has(l.externalId))
+        .sort(
+          (a, b) =>
+            [...POPULAR_LEAGUE_EXTERNAL_IDS].indexOf(a.externalId) - [...POPULAR_LEAGUE_EXTERNAL_IDS].indexOf(b.externalId),
+        ),
+    [sortedLeagues],
+  );
+
+  const filteredLeagues = useMemo(() => {
+    const q = leagueFilter.trim().toLowerCase();
+    if (!q) return sortedLeagues;
+    return sortedLeagues.filter((l) => l.name.toLowerCase().includes(q) || (l.country ?? '').toLowerCase().includes(q));
+  }, [sortedLeagues, leagueFilter]);
+
+  function LeagueTile({ league }: { league: League }) {
+    const selected = selectedLeagueIds.has(league.id);
+    return (
+      <button
+        onClick={() => toggleLeague(league.id)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: 14,
+          border: `1px solid ${selected ? 'var(--fb-rating)' : 'var(--fb-border)'}`,
+          borderRadius: 12,
+          background: selected ? 'var(--fb-rating-bg)' : 'var(--fb-surface)',
+          textAlign: 'left',
+        }}
+      >
+        <span style={{ width: 3, height: 20, borderRadius: 999, background: leagueAccentColor(league), flexShrink: 0 }} />
+        <Crest src={league.logoUrl} alt={league.name} size={28} />
+        <span style={{ fontSize: 14, fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {league.name}
+        </span>
+        <span style={{ color: selected ? 'var(--fb-rating)' : 'var(--fb-text-3)', flexShrink: 0 }}>
+          {selected ? '★' : '☆'}
+        </span>
+      </button>
+    );
+  }
+
   return (
     <div style={{ maxWidth: 880, margin: '48px auto', padding: '0 24px 80px', display: 'flex', flexDirection: 'column', gap: 28 }}>
       <ProgressBar step={step} />
@@ -105,42 +165,72 @@ export default function OnboardingPage() {
             </p>
           </div>
 
+          <input
+            value={leagueFilter}
+            onChange={(e) => setLeagueFilter(e.target.value)}
+            placeholder={t('filterPlaceholder')}
+            className="fb-label"
+            style={{
+              height: 46,
+              padding: '0 16px',
+              borderRadius: 999,
+              border: '1px solid var(--fb-border)',
+              background: 'var(--fb-bg)',
+              color: 'var(--fb-text)',
+              fontSize: 13,
+              textTransform: 'none',
+              letterSpacing: 'normal',
+            }}
+          />
+
           {leagues === null ? (
             <p className="fb-meta">{t('loading')}</p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(268px, 1fr))', gap: 14 }}>
-              {sortedLeagues.map((league) => {
-                const selected = selectedLeagueIds.has(league.id);
-                return (
-                  <button
-                    key={league.id}
-                    onClick={() => toggleLeague(league.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: 14,
-                      border: `1px solid ${selected ? 'var(--fb-rating)' : 'var(--fb-border)'}`,
-                      borderRadius: 12,
-                      background: selected ? 'var(--fb-rating-bg)' : 'var(--fb-surface)',
-                      textAlign: 'left',
-                    }}
-                  >
-                    <span style={{ width: 3, height: 20, borderRadius: 999, background: leagueAccentColor(league), flexShrink: 0 }} />
-                    <Crest src={league.logoUrl} alt={league.name} size={28} />
-                    <span style={{ fontSize: 14, fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {league.name}
-                    </span>
-                    <span style={{ color: selected ? 'var(--fb-rating)' : 'var(--fb-text-3)', flexShrink: 0 }}>
-                      {selected ? '★' : '☆'}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            <>
+              {!leagueFilter.trim() && suggestedLeagues.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <span className="fb-section" style={{ fontSize: 13 }}>
+                    {t('suggestions')}
+                  </span>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(268px, 1fr))', gap: 14 }}>
+                    {suggestedLeagues.map((league) => (
+                      <LeagueTile key={league.id} league={league} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {!leagueFilter.trim() && suggestedLeagues.length > 0 && (
+                  <span className="fb-section" style={{ fontSize: 13 }}>
+                    {t('allCompetitions')}
+                  </span>
+                )}
+                {filteredLeagues.length === 0 ? (
+                  <p className="fb-meta">{t('noLeagueMatches')}</p>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(268px, 1fr))', gap: 14 }}>
+                    {filteredLeagues.map((league) => (
+                      <LeagueTile key={league.id} league={league} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{
+              position: 'sticky',
+              bottom: 0,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '14px 0',
+              background: 'var(--fb-bg)',
+              borderTop: '1px solid var(--fb-border)',
+            }}
+          >
             <span className="fb-num" style={{ color: selectedLeagueIds.size === 0 ? 'var(--fb-live-text)' : 'var(--fb-text-2)' }}>
               {t('selectedCount', { count: selectedLeagueIds.size })}
             </span>

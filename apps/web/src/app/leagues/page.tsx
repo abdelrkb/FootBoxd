@@ -67,7 +67,8 @@ export default function AllLeaguesPage() {
 
   function LeagueRow({ league }: { league: League }) {
     return (
-      <div
+      <Link
+        href={`/leagues/${league.id}`}
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -76,6 +77,7 @@ export default function AllLeaguesPage() {
           border: '1px solid var(--fb-border)',
           borderRadius: 12,
           gap: 12,
+          color: 'inherit',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
@@ -96,7 +98,11 @@ export default function AllLeaguesPage() {
           {(liveCounts.get(league.id) ?? 0) > 0 && <LiveCountBadge count={liveCounts.get(league.id)!} />}
           {user && (
             <button
-              onClick={() => toggleFavorite(league.id)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFavorite(league.id);
+              }}
               className="fb-label"
               style={{
                 height: 36,
@@ -113,7 +119,7 @@ export default function AllLeaguesPage() {
             </button>
           )}
         </div>
-      </div>
+      </Link>
     );
   }
 
