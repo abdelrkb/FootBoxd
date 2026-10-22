@@ -3,6 +3,13 @@ import { Prisma } from '@football-app/database';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { BlocksService } from '../blocks/blocks.service.js';
+import {
+  averageRatingByMatch,
+  compatibilityPercentage,
+  mutualFriendsScore,
+  ratingAgreement,
+  sameClubScore,
+} from '../users/compatibility.js';
 
 const PRISMA_UNIQUE_VIOLATION = 'P2002';
 const userSummarySelect = { id: true, username: true, displayName: true, avatarUrl: true } as const;
@@ -184,13 +191,95 @@ export class FollowsService {
       else combined.set(id, { user, reason: 'mutual_friends', mutualFriends });
     }
 
-    return Array.from(combined.values())
+    const ranked = Array.from(combined.values())
       .sort((a, b) => {
         if (a.reason === 'both' && b.reason !== 'both') return -1;
         if (b.reason === 'both' && a.reason !== 'both') return 1;
         return b.mutualFriends - a.mutualFriends;
       })
-      .slice(0, limit)
-      .map(({ user, reason, mutualFriends }) => ({ ...user, reason, mutualFriends }));
+      .slice(0, limit);
+
+    const compatibilityByUser = await this.compatibilityFor(
+      userId,
+      me?.favoriteTeamId ?? null,
+      followingIds,
+      ranked.map((r) => r.user.id),
+    );
+
+    return ranked.map(({ user, reason, mutualFriends }) => ({
+      ...user,
+      reason,
+      mutualFriends,
+      compatibility: compatibilityByUser.get(user.id) ?? null,
+    }));
+  }
+
+  // % de compatibilité des suggestions (issue #55) : affiché sur l'accueil à côté de la raison
+  // de la suggestion. Calculé en lot — un appel par utilisateur suggéré ferait 6 requêtes
+  // chacun, ici c'est 4 requêtes quel que soit le nombre de suggestions.
+  private async compatibilityFor(
+    viewerId: string,
+    viewerTeamId: string | null,
+    viewerFollowingIds: string[],
+    otherIds: string[],
+  ) {
+    const result = new Map<string, number | null>();
+    if (otherIds.length === 0) return result;
+
+    const [viewerReviews, otherReviews, others, otherFollowCounts, sharedFollowRows] = await Promise.all([
+      this.prisma.client.review.findMany({
+        where: { userId: viewerId, deletedAt: null },
+        select: { matchId: true, rating: true },
+      }),
+      this.prisma.client.review.findMany({
+        where: { userId: { in: otherIds }, deletedAt: null },
+        select: { userId: true, matchId: true, rating: true },
+      }),
+      this.prisma.client.user.findMany({
+        where: { id: { in: otherIds } },
+        select: { id: true, favoriteTeamId: true },
+      }),
+      this.prisma.client.follow.groupBy({
+        by: ['followerId'],
+        where: { followerId: { in: otherIds } },
+        _count: { followingId: true },
+      }),
+      viewerFollowingIds.length
+        ? this.prisma.client.follow.findMany({
+            where: { followerId: { in: otherIds }, followingId: { in: viewerFollowingIds } },
+            select: { followerId: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const viewerByMatch = averageRatingByMatch(viewerReviews);
+    const reviewsByUser = new Map<string, { matchId: string; rating: Prisma.Decimal }[]>();
+    for (const r of otherReviews) {
+      const list = reviewsByUser.get(r.userId) ?? [];
+      list.push({ matchId: r.matchId, rating: r.rating });
+      reviewsByUser.set(r.userId, list);
+    }
+    const followCountByUser = new Map(otherFollowCounts.map((row) => [row.followerId, row._count.followingId]));
+    const sharedFollowsByUser = new Map<string, number>();
+    for (const row of sharedFollowRows) {
+      sharedFollowsByUser.set(row.followerId, (sharedFollowsByUser.get(row.followerId) ?? 0) + 1);
+    }
+
+    for (const other of others) {
+      const agreement = ratingAgreement(viewerByMatch, averageRatingByMatch(reviewsByUser.get(other.id) ?? []));
+      result.set(
+        other.id,
+        compatibilityPercentage([
+          agreement.score,
+          sameClubScore(viewerTeamId, other.favoriteTeamId),
+          mutualFriendsScore(
+            viewerFollowingIds.length,
+            followCountByUser.get(other.id) ?? 0,
+            sharedFollowsByUser.get(other.id) ?? 0,
+          ),
+        ]),
+      );
+    }
+    return result;
   }
 }

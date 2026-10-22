@@ -3,44 +3,11 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import type { Compatibility, Profile } from '@football-app/shared-types';
+import type { Profile } from '@football-app/shared-types';
 import { Crest } from './ui/crest';
 import { ProfileMatchCard } from './profile-match-card';
 import { EmptyContent, EmptySocial } from './ui/empty-state';
 import { Button } from './ui/button';
-
-// % de compatibilité (issue #18) : combine accord de notes + club favori + amis en commun —
-// voir users.service.ts `getCompatibility`. Affiché uniquement si au moins un signal existe.
-function CompatibilityBadge({ compatibility }: { compatibility: Compatibility | null }) {
-  const t = useTranslations('ProfileView');
-  if (!compatibility || compatibility.percentage === null) return null;
-  const parts: string[] = [];
-  if (compatibility.commonMatches > 0) parts.push(t('compatibleCommonMatches', { count: compatibility.commonMatches }));
-  if (compatibility.sameFavoriteTeam) parts.push(t('compatibleSameClub'));
-  if (compatibility.mutualFriends > 0) parts.push(t('compatibleMutualFriends', { count: compatibility.mutualFriends }));
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '6px 12px',
-        border: '1px solid var(--fb-border)',
-        borderRadius: 999,
-        background: 'var(--fb-surface)',
-      }}
-      title={parts.join(' · ')}
-    >
-      <span className="fb-num" style={{ fontSize: 13, fontWeight: 700, color: 'var(--fb-action)' }}>
-        {compatibility.percentage}%
-      </span>
-      <span className="fb-meta" style={{ fontSize: 11.5 }}>
-        {t('compatibleLabel')}{parts.length > 0 ? ` · ${parts.join(' · ')}` : ''}
-      </span>
-    </div>
-  );
-}
 
 function StatCell({ value, label, accent }: { value: number; label: string; accent?: boolean }) {
   return (
@@ -63,7 +30,6 @@ export function ProfileView({
   headerAction,
   blockedByOwner,
   restricted,
-  compatibility,
 }: {
   profile: Profile;
   headerAction: ReactNode;
@@ -73,8 +39,6 @@ export function ProfileView({
   // Profil privé (issue #18) : le visiteur ne suit pas encore (ou n'est pas le propriétaire) —
   // même traitement que blockedByOwner, message différent.
   restricted?: boolean;
-  // % de compatibilité avec le visiteur courant (absent sur son propre profil).
-  compatibility?: Compatibility | null;
 }) {
   const t = useTranslations('ProfileView');
   return (
@@ -89,7 +53,6 @@ export function ProfileView({
             <span className="fb-meta" style={{ fontSize: 13.5 }}>
               @{profile.username}
             </span>
-            <CompatibilityBadge compatibility={compatibility ?? null} />
           </div>
         </div>
         {headerAction}

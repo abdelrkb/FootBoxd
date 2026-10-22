@@ -55,6 +55,14 @@ function SuggestionRow({ suggestion, onFollowed }: { suggestion: UserSuggestion;
             {suggestion.displayName}
           </span>
           <span className="fb-meta" style={{ fontSize: 11.5 }}>
+            {suggestion.compatibility !== null && (
+              <>
+                <span className="fb-num" style={{ fontWeight: 700, color: 'var(--fb-action)' }}>
+                  {t('compatiblePercent', { percent: suggestion.compatibility })}
+                </span>
+                {' · '}
+              </>
+            )}
             {reasonLabel(t, suggestion)}
           </span>
         </div>

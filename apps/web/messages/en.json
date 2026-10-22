@@ -28,7 +28,8 @@
     "follow": "Follow",
     "sameClub": "Same favorite club",
     "mutualFriends": "{count, plural, one {# mutual friend} other {# mutual friends}}",
-    "sameClubAndMutualFriends": "Same favorite club · {count, plural, one {# mutual friend} other {# mutual friends}}"
+    "sameClubAndMutualFriends": "Same favorite club · {count, plural, one {# mutual friend} other {# mutual friends}}",
+    "compatiblePercent": "{percent}% compatible"
   },
   "SettingsLanguage": {
     "title": "Language",
@@ -99,10 +100,6 @@
     "logAction": "Log"
   },
   "ProfileView": {
-    "compatibleCommonMatches": "{count, plural, one {# match in common} other {# matches in common}}",
-    "compatibleSameClub": "same favorite club",
-    "compatibleMutualFriends": "{count, plural, one {# mutual friend} other {# mutual friends}}",
-    "compatibleLabel": "compatible",
     "blockedMessage": "You are blocked by this user.",
     "restrictedMessage": "This profile is private. Follow to see its content.",
     "followers": "Followers",

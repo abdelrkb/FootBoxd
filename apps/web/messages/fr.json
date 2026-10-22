@@ -28,7 +28,8 @@
     "follow": "Suivre",
     "sameClub": "Même club favori",
     "mutualFriends": "{count, plural, one {# ami en commun} other {# amis en commun}}",
-    "sameClubAndMutualFriends": "Même club favori · {count, plural, one {# ami en commun} other {# amis en commun}}"
+    "sameClubAndMutualFriends": "Même club favori · {count, plural, one {# ami en commun} other {# amis en commun}}",
+    "compatiblePercent": "{percent}% compatible"
   },
   "SettingsLanguage": {
     "title": "Langue",
@@ -99,10 +100,6 @@
     "logAction": "Logger"
   },
   "ProfileView": {
-    "compatibleCommonMatches": "{count, plural, one {# match en commun} other {# matchs en commun}}",
-    "compatibleSameClub": "même club favori",
-    "compatibleMutualFriends": "{count, plural, one {# ami en commun} other {# amis en commun}}",
-    "compatibleLabel": "compatible",
     "blockedMessage": "Vous êtes bloqué par cet utilisateur.",
     "restrictedMessage": "Ce profil est privé. Abonne-toi pour voir son contenu.",
     "followers": "Followers",

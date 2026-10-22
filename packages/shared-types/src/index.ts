@@ -62,6 +62,9 @@ export interface UserSummary {
 export interface UserSuggestion extends UserSummary {
   reason: 'same_club' | 'mutual_friends' | 'both';
   mutualFriends: number;
+  // % de compatibilité (issue #55) : affiché ici plutôt que sur le profil. null quand aucun
+  // signal n'est mesurable pour ce couple.
+  compatibility: number | null;
 }
 
 export interface League {

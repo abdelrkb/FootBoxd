@@ -4,7 +4,7 @@ import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import type { Profile, BlockStatus, FollowStatus, Compatibility } from '@football-app/shared-types';
+import type { Profile, BlockStatus, FollowStatus } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import { ProfileView } from '../../../components/profile-view';
@@ -19,7 +19,6 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [followStatus, setFollowStatus] = useState<FollowStatus | null>(null);
-  const [compatibility, setCompatibility] = useState<Compatibility | null>(null);
   const [blockStatus, setBlockStatus] = useState<BlockStatus | null>(null);
   const [pending, setPending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -41,7 +40,6 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
     if (!user || user.id === id) return;
     api.amIFollowing(id).then(setFollowStatus);
     api.getBlockStatus(id).then(setBlockStatus);
-    api.getCompatibility(id).then(setCompatibility);
   }, [user, id]);
 
   async function toggleFollow() {
@@ -144,7 +142,6 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
         profile={profile}
         blockedByOwner={blockStatus?.blockedByOwner}
         restricted={!hasAccess}
-        compatibility={compatibility}
         headerAction={
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             {!blockStatus?.blockedByOwner && hasAccess && profile.isWatchlistPublic && (
