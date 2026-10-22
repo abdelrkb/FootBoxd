@@ -24,7 +24,9 @@ import { BlocksService } from '../blocks/blocks.service.js';
 import { FollowsService } from '../follows/follows.service.js';
 import { TeamsService } from '../teams/teams.service.js';
 import { ReviewsService } from '../reviews/reviews.service.js';
+import { ProfileAccessService } from './profile-access.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { PublicUser } from '../auth/auth.service.js';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
@@ -57,6 +59,7 @@ export class UsersController {
     private readonly followsService: FollowsService,
     private readonly teamsService: TeamsService,
     private readonly reviewsService: ReviewsService,
+    private readonly profileAccess: ProfileAccessService,
   ) {}
 
   @Get('search')
@@ -72,9 +75,12 @@ export class UsersController {
     return this.followsService.getSuggestions(user.id);
   }
 
+  // Auth facultative : le profil reste consultable sans compte, mais un profil privé ne
+  // renvoie son contenu qu'à un visiteur autorisé (issue #54).
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':id/profile')
-  profile(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.getProfile(id);
+  profile(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() viewer?: PublicUser) {
+    return this.usersService.getProfile(id, viewer?.id ?? null);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -93,8 +99,14 @@ export class UsersController {
     return this.teamsService.findFavoritesForUser(id);
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':id/reviews')
-  userReviews(@Param('id', ParseUUIDPipe) id: string, @Query() query: ListUserReviewsDto) {
+  async userReviews(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ListUserReviewsDto,
+    @CurrentUser() viewer?: PublicUser,
+  ) {
+    await this.profileAccess.assertCanViewContent(viewer?.id ?? null, id);
     return this.reviewsService.findForUser(id, {
       scope: query.scope ?? 'all',
       page: query.page ?? 0,

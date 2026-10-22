@@ -430,5 +430,23 @@
     "noReviews": "Tu n'as encore noté aucun match.",
     "loadMore": "Voir plus",
     "done": "Terminé"
+  },
+  "UserRelationList": {
+    "followersTitle": "Abonnés",
+    "followingTitle": "Abonnements",
+    "noFollowers": "Aucun abonné pour le moment.",
+    "noFollowing": "Ne suit personne pour le moment.",
+    "restricted": "Ce profil est privé — tu n'as pas accès à cette liste.",
+    "youFollow": "Tu le suis",
+    "followsYou": "Te suit",
+    "you": "Toi"
+  },
+  "UserReviewsPage": {
+    "titleAll": "Matchs notés",
+    "titleSeason": "Vus cette saison",
+    "empty": "Aucun match noté.",
+    "restricted": "Ce profil est privé — tu n'as pas accès à ses matchs notés.",
+    "count": "{count, plural, one {# match} other {# matchs}}",
+    "loadMore": "Voir plus"
   }
 }

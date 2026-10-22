@@ -59,6 +59,14 @@ export interface UserSummary {
 
 // Suggestions de personnes à suivre (issue #17) : `reason` dit pourquoi cette personne est
 // suggérée (club favori commun, amis en commun, ou les deux), affiché tel quel côté front.
+// Personne dans une liste d'abonnés/abonnements (issue #54), annotée de sa relation avec le
+// visiteur pour l'afficher à côté du pseudo.
+export interface UserWithRelation extends UserSummary {
+  youFollow: boolean;
+  followsYou: boolean;
+  isSelf: boolean;
+}
+
 export interface UserSuggestion extends UserSummary {
   reason: 'same_club' | 'mutual_friends' | 'both';
   mutualFriends: number;

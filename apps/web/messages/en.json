@@ -430,5 +430,23 @@
     "noReviews": "You haven't rated any match yet.",
     "loadMore": "Load more",
     "done": "Done"
+  },
+  "UserRelationList": {
+    "followersTitle": "Followers",
+    "followingTitle": "Following",
+    "noFollowers": "No followers yet.",
+    "noFollowing": "Not following anyone yet.",
+    "restricted": "This profile is private — you don't have access to this list.",
+    "youFollow": "You follow",
+    "followsYou": "Follows you",
+    "you": "You"
+  },
+  "UserReviewsPage": {
+    "titleAll": "Matches rated",
+    "titleSeason": "Seen this season",
+    "empty": "No rated match.",
+    "restricted": "This profile is private — you don't have access to their rated matches.",
+    "count": "{count, plural, one {# match} other {# matches}}",
+    "loadMore": "Load more"
   }
 }

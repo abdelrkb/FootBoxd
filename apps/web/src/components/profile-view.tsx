@@ -33,16 +33,35 @@ function TeamChip({ team, primary }: { team: Team; primary?: boolean }) {
   );
 }
 
-function StatCell({ value, label, accent }: { value: number; label: string; accent?: boolean }) {
-  return (
-    <div style={{ background: 'var(--fb-surface)', padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+// `href` fourni = la tuile devient cliquable (issues #54 et #56 : abonnés/abonnements et
+// matchs notés ouvrent leur liste).
+function StatCell({ value, label, accent, href }: { value: number; label: string; accent?: boolean; href?: string }) {
+  const content = (
+    <>
       <span className="fb-num" style={{ fontSize: 24, fontWeight: 600, color: accent ? 'var(--fb-action)' : 'var(--fb-text)' }}>
         {value}
       </span>
       <span className="fb-label" style={{ fontSize: 10.5, color: 'var(--fb-text-2)', textAlign: 'center' }}>
         {label}
       </span>
-    </div>
+    </>
+  );
+  const style = {
+    background: 'var(--fb-surface)',
+    padding: '16px 12px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 4,
+    alignItems: 'center',
+    textDecoration: 'none',
+    color: 'inherit',
+  };
+
+  if (!href) return <div style={style}>{content}</div>;
+  return (
+    <Link href={href} style={style} className="fb-card">
+      {content}
+    </Link>
   );
 }
 
@@ -144,10 +163,15 @@ export function ProfileView({
               overflow: 'hidden',
             }}
           >
-            <StatCell value={profile.followersCount} label={t('followers')} />
-            <StatCell value={profile.followingCount} label={t('following')} />
-            <StatCell value={profile.totalReviewsCount} label={t('matchesRated')} />
-            <StatCell value={profile.reviewsThisSeasonCount} label={t('seenThisSeason')} accent />
+            <StatCell value={profile.followersCount} label={t('followers')} href={`/profile/${profile.id}/followers`} />
+            <StatCell value={profile.followingCount} label={t('following')} href={`/profile/${profile.id}/following`} />
+            <StatCell value={profile.totalReviewsCount} label={t('matchesRated')} href={`/profile/${profile.id}/reviews`} />
+            <StatCell
+              value={profile.reviewsThisSeasonCount}
+              label={t('seenThisSeason')}
+              accent
+              href={`/profile/${profile.id}/reviews?scope=season`}
+            />
           </div>
 
           <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
