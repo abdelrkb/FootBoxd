@@ -23,6 +23,7 @@ import type {
   TeamOverview,
   TeamStats,
   UserSuggestion,
+  UserWithRelation,
   FollowStatus,
 } from '@football-app/shared-types';
 
@@ -142,9 +143,11 @@ export const followUser = (userId: string) =>
 export const unfollowUser = (userId: string) =>
   apiFetch<{ success: boolean }>(`/users/${userId}/follow`, { method: 'DELETE' });
 
-export const getFollowers = (userId: string) => apiFetch<UserSummary[]>(`/users/${userId}/followers`);
+// Annotés de la relation avec le visiteur depuis l'issue #54 ; 403 si le profil est privé
+// et non suivi.
+export const getFollowers = (userId: string) => apiFetch<UserWithRelation[]>(`/users/${userId}/followers`);
 
-export const getFollowing = (userId: string) => apiFetch<UserSummary[]>(`/users/${userId}/following`);
+export const getFollowing = (userId: string) => apiFetch<UserWithRelation[]>(`/users/${userId}/following`);
 
 export const amIFollowing = (userId: string) => apiFetch<FollowStatus>(`/users/${userId}/am-i-following`);
 

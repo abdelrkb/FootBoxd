@@ -1,12 +1,17 @@
 import { Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { PublicUser } from '../auth/auth.service.js';
 import { FollowsService } from './follows.service.js';
+import { ProfileAccessService } from '../users/profile-access.service.js';
 
 @Controller('users/:id')
 export class FollowsController {
-  constructor(private readonly followsService: FollowsService) {}
+  constructor(
+    private readonly followsService: FollowsService,
+    private readonly profileAccess: ProfileAccessService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('follow')
@@ -41,14 +46,20 @@ export class FollowsController {
     return { success: true };
   }
 
+  // Listes consultables sur n'importe quel profil (issue #54), sauf compte privé auquel le
+  // visiteur n'a pas accès. Chaque personne est annotée de sa relation avec le visiteur.
+  @UseGuards(OptionalJwtAuthGuard)
   @Get('followers')
-  followers(@Param('id', ParseUUIDPipe) id: string) {
-    return this.followsService.findFollowers(id);
+  async followers(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() viewer?: PublicUser) {
+    await this.profileAccess.assertCanViewContent(viewer?.id ?? null, id);
+    return this.followsService.withViewerRelation(viewer?.id ?? null, await this.followsService.findFollowers(id));
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get('following')
-  following(@Param('id', ParseUUIDPipe) id: string) {
-    return this.followsService.findFollowing(id);
+  async following(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() viewer?: PublicUser) {
+    await this.profileAccess.assertCanViewContent(viewer?.id ?? null, id);
+    return this.followsService.withViewerRelation(viewer?.id ?? null, await this.followsService.findFollowing(id));
   }
 
   @UseGuards(JwtAuthGuard)

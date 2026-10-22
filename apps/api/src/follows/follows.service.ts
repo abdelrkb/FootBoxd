@@ -111,6 +111,34 @@ export class FollowsService {
       .then((rows) => rows.map((r) => r.following));
   }
 
+  // Listes d'abonnés/abonnements (issue #54) : on annote chaque personne de la relation avec le
+  // VISITEUR (le suit-il ? est-il suivi par elle ?), pour l'afficher à côté du pseudo. Deux
+  // requêtes quelle que soit la taille de la liste.
+  async withViewerRelation(viewerId: string | null, users: { id: string }[]) {
+    if (!viewerId || users.length === 0) {
+      return users.map((u) => ({ ...u, youFollow: false, followsYou: false, isSelf: false }));
+    }
+    const ids = users.map((u) => u.id);
+    const [followedByViewer, followingViewer] = await Promise.all([
+      this.prisma.client.follow.findMany({
+        where: { followerId: viewerId, followingId: { in: ids } },
+        select: { followingId: true },
+      }),
+      this.prisma.client.follow.findMany({
+        where: { followerId: { in: ids }, followingId: viewerId },
+        select: { followerId: true },
+      }),
+    ]);
+    const youFollow = new Set(followedByViewer.map((f) => f.followingId));
+    const followsYou = new Set(followingViewer.map((f) => f.followerId));
+    return users.map((u) => ({
+      ...u,
+      youFollow: youFollow.has(u.id),
+      followsYou: followsYou.has(u.id),
+      isSelf: u.id === viewerId,
+    }));
+  }
+
   countFollowers(userId: string) {
     return this.prisma.client.follow.count({ where: { followingId: userId } });
   }

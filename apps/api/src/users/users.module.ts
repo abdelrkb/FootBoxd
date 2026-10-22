@@ -7,9 +7,10 @@ import { WatchlistModule } from '../watchlist/watchlist.module.js';
 import { BlocksModule } from '../blocks/blocks.module.js';
 import { TeamsModule } from '../teams/teams.module.js';
 import { ReviewsModule } from '../reviews/reviews.module.js';
+import { ProfileAccessModule } from './profile-access.module.js';
 
 @Module({
-  imports: [FollowsModule, LeaguesModule, WatchlistModule, BlocksModule, TeamsModule, ReviewsModule],
+  imports: [FollowsModule, LeaguesModule, WatchlistModule, BlocksModule, TeamsModule, ReviewsModule, ProfileAccessModule],
   providers: [UsersService],
   controllers: [UsersController],
   exports: [UsersService],

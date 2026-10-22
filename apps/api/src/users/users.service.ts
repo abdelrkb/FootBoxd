@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException,
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { FollowsService } from '../follows/follows.service.js';
+import { ProfileAccessService } from './profile-access.service.js';
 import { toPublicUser } from './to-public-user.js';
 import {
   averageRatingByMatch,
@@ -23,6 +24,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly followsService: FollowsService,
+    private readonly profileAccess: ProfileAccessService,
   ) {}
 
   findByEmail(email: string) {
@@ -131,9 +133,31 @@ export class UsersService {
   // Écran Profil (section 7). "Saison en cours" = league.currentSeason, alimenté par le
   // worker (voir architecture.md section 8) — pas de comparaison de colonnes via relation
   // possible nativement en Prisma, donc filtrage en mémoire (volume par utilisateur trivial).
-  async getProfile(userId: string) {
+  async getProfile(userId: string, viewerId: string | null = null) {
     const user = await this.findById(userId);
     if (!user) throw new NotFoundException('Utilisateur introuvable');
+
+    // Profil privé / visiteur bloqué : on renvoie de quoi afficher l'en-tête (le front montre
+    // un message dédié) mais aucun contenu.
+    if (!(await this.profileAccess.canViewContent(viewerId, userId))) {
+      return {
+        id: user.id,
+        username: user.username,
+        displayName: user.displayName,
+        bio: null,
+        avatarUrl: user.avatarUrl,
+        totalReviewsCount: 0,
+        reviewsThisSeasonCount: 0,
+        lastReviews: [],
+        favoriteMatches: [],
+        favoriteTeam: null,
+        favoriteTeams: [],
+        followersCount: 0,
+        followingCount: 0,
+        isWatchlistPublic: user.isWatchlistPublic,
+        isPrivate: user.isPrivate,
+      };
+    }
 
     const activeReviews = await this.prisma.client.review.findMany({
       where: { userId, deletedAt: null },
