@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { League, Team, UserSummary } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { Crest } from '../../components/ui/crest';
@@ -41,6 +42,7 @@ function SectionHeader({ title, count }: { title: string; count: number }) {
 }
 
 function ShowMoreButton({ expanded, remaining, onToggle }: { expanded: boolean; remaining: number; onToggle: () => void }) {
+  const t = useTranslations('SearchPage');
   return (
     <button
       onClick={onToggle}
@@ -60,7 +62,7 @@ function ShowMoreButton({ expanded, remaining, onToggle }: { expanded: boolean; 
         fontWeight: 700,
       }}
     >
-      {expanded ? 'Voir moins' : `Voir ${remaining} de plus`}
+      {expanded ? t('showLess') : t('showMore', { count: remaining })}
       <Chevron open={expanded} />
     </button>
   );
@@ -150,9 +152,9 @@ function UserRow({ user }: { user: UserSummary }) {
   );
 }
 
-const TAB_LABEL: Record<Category, string> = { leagues: 'Ligues', teams: 'Équipes', users: 'Utilisateurs' };
-
 export default function SearchPage() {
+  const t = useTranslations('SearchPage');
+  const TAB_LABEL: Record<Category, string> = { leagues: t('leagues'), teams: t('teams'), users: t('users') };
   const [query, setQuery] = useState('');
   const [leagueResults, setLeagueResults] = useState<League[] | null>(null);
   const [teamResults, setTeamResults] = useState<Team[] | null>(null);
@@ -220,13 +222,13 @@ export default function SearchPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={`fb-display ${styles.title}`}>Rechercher</h1>
+      <h1 className={`fb-display ${styles.title}`}>{t('title')}</h1>
 
       <input
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Ligue, équipe, pseudo ou nom…"
+        placeholder={t('placeholder')}
         style={{
           width: '100%',
           height: 46,
@@ -266,23 +268,23 @@ export default function SearchPage() {
 
       {query.trim().length > 0 && query.trim().length < 2 && (
         <p className="fb-meta" style={{ fontSize: 12 }}>
-          Encore un caractère…
+          {t('oneMoreCharacter')}
         </p>
       )}
 
       {loading && <SkeletonList />}
 
-      {noResults && <EmptyContent title="Aucun résultat" subtitle="Vérifie l'orthographe." />}
+      {noResults && <EmptyContent title={t('noResults')} subtitle={t('checkSpelling')} />}
 
       {searching && !loading && selectedTab === null && (
         <div className={styles.dualLayout}>
           {leagueResults !== null && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <SectionHeader title="Ligues" count={leagueResults.length} />
+              <SectionHeader title={t('leagues')} count={leagueResults.length} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {leagueResults.length === 0 ? (
                   <p className="fb-meta" style={{ fontSize: 13 }}>
-                    Aucune ligue ne correspond.
+                    {t('noLeagueMatches')}
                   </p>
                 ) : (
                   leagueResults.slice(0, expanded.leagues ? undefined : RESULTS_LIMIT).map((l) => <LeagueRow key={l.id} league={l} />)
@@ -300,11 +302,11 @@ export default function SearchPage() {
 
           {teamResults !== null && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <SectionHeader title="Équipes" count={teamResults.length} />
+              <SectionHeader title={t('teams')} count={teamResults.length} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {teamResults.length === 0 ? (
                   <p className="fb-meta" style={{ fontSize: 13 }}>
-                    Aucune équipe ne correspond.
+                    {t('noTeamMatches')}
                   </p>
                 ) : (
                   teamResults.slice(0, expanded.teams ? undefined : RESULTS_LIMIT).map((t) => <TeamRow key={t.id} team={t} />)
@@ -322,11 +324,11 @@ export default function SearchPage() {
 
           {userResults !== null && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <SectionHeader title="Utilisateurs" count={userResults.length} />
+              <SectionHeader title={t('users')} count={userResults.length} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {userResults.length === 0 ? (
                   <p className="fb-meta" style={{ fontSize: 13 }}>
-                    Personne ne porte ce nom.
+                    {t('noUserMatches')}
                   </p>
                 ) : (
                   userResults.slice(0, expanded.users ? undefined : RESULTS_LIMIT).map((u) => <UserRow key={u.id} user={u} />)
@@ -346,10 +348,10 @@ export default function SearchPage() {
 
       {searching && !loading && selectedTab === 'teams' && teamResults !== null && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <SectionHeader title="Équipes" count={teamResults.length} />
+          <SectionHeader title={t('teams')} count={teamResults.length} />
           {teamResults.length === 0 ? (
             <p className="fb-meta" style={{ fontSize: 13 }}>
-              Aucune équipe ne correspond.
+              {t('noTeamMatches')}
             </p>
           ) : (
             <div className={styles.resultsGrid}>
@@ -363,10 +365,10 @@ export default function SearchPage() {
 
       {searching && !loading && selectedTab === 'leagues' && leagueResults !== null && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <SectionHeader title="Ligues" count={leagueResults.length} />
+          <SectionHeader title={t('leagues')} count={leagueResults.length} />
           {leagueResults.length === 0 ? (
             <p className="fb-meta" style={{ fontSize: 13 }}>
-              Aucune ligue ne correspond.
+              {t('noLeagueMatches')}
             </p>
           ) : (
             <div className={styles.resultsGrid}>
@@ -380,10 +382,10 @@ export default function SearchPage() {
 
       {searching && !loading && selectedTab === 'users' && userResults !== null && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <SectionHeader title="Utilisateurs" count={userResults.length} />
+          <SectionHeader title={t('users')} count={userResults.length} />
           {userResults.length === 0 ? (
             <p className="fb-meta" style={{ fontSize: 13 }}>
-              Personne ne porte ce nom.
+              {t('noUserMatches')}
             </p>
           ) : (
             <div className={styles.resultsGrid}>

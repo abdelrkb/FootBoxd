@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Match, Review, MatchEvent, RatingDistribution, TagSelection } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
@@ -23,6 +24,9 @@ import { WatchlistMenuButton } from '../../../components/ui/watchlist-menu-butto
 import { leagueAccentColor } from '../../../components/ui/card-shell';
 
 export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) {
+  const t = useTranslations('MatchDetailPage');
+  const tNav = useTranslations('Nav');
+  const tCommon = useTranslations('Common');
   const { id } = use(params);
   const { user } = useAuth();
   const [match, setMatch] = useState<Match | null>(null);
@@ -83,7 +87,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
       setShowLogForm(false);
       loadReviews();
     } catch (err) {
-      setError(err instanceof api.ApiError ? err.message : 'Erreur inconnue');
+      setError(err instanceof api.ApiError ? err.message : tCommon('unknownError'));
     }
   }
 
@@ -99,7 +103,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
   return (
     <div style={{ maxWidth: 1240, margin: '0 auto', padding: '24px 24px 80px', display: 'flex', flexDirection: 'column', gap: 32 }}>
       <Link href="/" className="fb-label" style={{ fontSize: 12, color: 'var(--fb-text-2)' }}>
-        ← Accueil
+        ← {tNav('home')}
       </Link>
 
       <div
@@ -192,7 +196,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
           )}
           <span style={{ width: 4, height: 4, borderRadius: 999, background: 'var(--fb-border-strong)' }} />
           <span className="fb-num" style={{ color: 'var(--fb-text-2)' }}>
-            {reviews?.length ?? 0} reviews
+            {t('reviewsCount', { count: reviews?.length ?? 0 })}
           </span>
           {match.highlightUrl && (
             <a
@@ -209,7 +213,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
                 whiteSpace: 'nowrap',
               }}
             >
-              Voir les highlights ↗
+              {t('viewHighlights')} ↗
             </a>
           )}
         </div>
@@ -231,10 +235,10 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
               }}
             >
               <span className="fb-card-title" style={{ fontSize: 18 }}>
-                Connecte-toi pour noter ce match
+                {t('loginToRate')}
               </span>
               <Link href="/login">
-                <Button>Connexion</Button>
+                <Button>{t('login')}</Button>
               </Link>
             </div>
           )}
@@ -257,18 +261,16 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
                 {Number(latestMyReview.rating).toFixed(1)}
               </span>
               <span style={{ fontSize: 15, color: 'var(--fb-text-2)' }}>
-                {latestMyReview.quickRating
-                  ? 'Tu as déjà noté ce match rapidement.'
-                  : `Tu as déjà loggé ce match${myReviews.length > 1 ? ` (${myReviews.length} fois)` : ''}.`}
+                {latestMyReview.quickRating ? t('alreadyQuickRated') : t('alreadyLogged', { count: myReviews.length })}
               </span>
               <div style={{ display: 'flex', gap: 10, marginLeft: 'auto' }}>
                 {latestMyReview.quickRating && (
                   <Button variant="secondary" size="sm" onClick={() => openCompleteQuickRating(latestMyReview)}>
-                    Compléter cette note
+                    {t('completeThisRating')}
                   </Button>
                 )}
                 <Button variant="secondary" size="sm" onClick={openNewLog}>
-                  {latestMyReview.quickRating ? 'Logger un nouveau visionnage' : 'Reloguer ce match'}
+                  {latestMyReview.quickRating ? t('logNewWatch') : t('rewatchThisMatch')}
                 </Button>
               </div>
             </div>
@@ -298,7 +300,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
                 }}
               >
                 <h2 className="fb-card-title" style={{ fontSize: 20, margin: 0 }}>
-                  Logger le match
+                  {t('logTheMatch')}
                 </h2>
                 <StarsSelector value={3} onChange={() => {}} size={38} />
                 <div
@@ -338,7 +340,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
               >
                 <LockIcon size={26} color="var(--fb-text)" />
                 <p className="fb-card-title" style={{ fontSize: 15, margin: 0, maxWidth: 260 }}>
-                  Regarde ce match jusqu&rsquo;au bout pour pouvoir le logger
+                  {t('watchUntilEndToLog')}
                 </p>
               </div>
             </div>
@@ -359,7 +361,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                 <h2 className="fb-card-title" style={{ fontSize: 20, margin: 0 }}>
-                  {completingQuick ? 'Compléter ma note' : myReviews.length > 0 ? 'Reloguer ce match' : 'Logger le match'}
+                  {completingQuick ? t('completeMyRating') : myReviews.length > 0 ? t('rewatchThisMatch') : t('logTheMatch')}
                 </h2>
                 {myReviews.length > 0 && (
                   <Button
@@ -371,13 +373,13 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
                       setShowLogForm(false);
                     }}
                   >
-                    Annuler
+                    {t('cancel')}
                   </Button>
                 )}
               </div>
               <StarsSelector value={rating} onChange={setRating} size={38} />
               <textarea
-                placeholder="Ton commentaire (optionnel)"
+                placeholder={t('commentPlaceholder')}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 style={{
@@ -398,7 +400,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
               <TagInput value={tags} onChange={setTags} />
               {error && <p style={{ color: 'var(--fb-live-text)', fontSize: 13 }}>{error}</p>}
               <Button type="submit" style={{ width: 'fit-content' }}>
-                Logger
+                {tCommon('log')}
               </Button>
             </form>
           )}
@@ -414,13 +416,13 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
               }}
             >
               <h2 className="fb-section" style={{ fontSize: 14, margin: 0 }}>
-                Reviews
+                {t('reviews')}
               </h2>
               <span className="fb-meta">{reviews?.length ?? 0}</span>
             </div>
 
             {reviews?.length === 0 && (
-              <EmptyContent title="Personne n'a encore loggé ce match" subtitle="Sois le premier à donner ta note." />
+              <EmptyContent title={t('nobodyLoggedYet')} subtitle={t('beTheFirst')} />
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Comment, Review, TagSelection } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
@@ -39,6 +40,7 @@ export function DevelopedReviewCard({
   );
   const { user } = useAuth();
   const [report, setReport] = useState<{ targetType: 'review' | 'comment'; targetId: string } | null>(null);
+  const t = useTranslations('DevelopedReviewCard');
 
   async function toggleLike() {
     setLiked((prev) => !prev);
@@ -121,7 +123,7 @@ export function DevelopedReviewCard({
           <textarea
             value={editComment}
             onChange={(e) => setEditComment(e.target.value)}
-            placeholder="Ton commentaire (optionnel)"
+            placeholder={t('commentPlaceholder')}
             style={{
               width: '100%',
               minHeight: 104,
@@ -140,10 +142,10 @@ export function DevelopedReviewCard({
           <TagInput value={editTags} onChange={setEditTags} />
           <div style={{ display: 'flex', gap: 10 }}>
             <Button size="sm" onClick={saveEdit}>
-              Enregistrer
+              {t('save')}
             </Button>
             <Button size="sm" variant="tertiary" onClick={() => setEditing(false)}>
-              Annuler
+              {t('cancel')}
             </Button>
           </div>
         </div>
@@ -203,7 +205,7 @@ export function DevelopedReviewCard({
               color: 'var(--fb-text-2)',
             }}
           >
-            💬 {review._count.comments} {threadOpen ? 'replier' : 'déplier'}
+            💬 {review._count.comments} {threadOpen ? t('collapse') : t('expand')}
           </button>
           {isMine && (
             <div style={{ position: 'relative', marginLeft: 'auto' }}>
@@ -260,7 +262,7 @@ export function DevelopedReviewCard({
                       textAlign: 'left',
                     }}
                   >
-                    Modifier ma note
+                    {t('editMyRating')}
                   </button>
                   <button
                     onClick={handleDelete}
@@ -276,7 +278,7 @@ export function DevelopedReviewCard({
                       textAlign: 'left',
                     }}
                   >
-                    Supprimer
+                    {t('delete')}
                   </button>
                 </div>
               )}
@@ -335,7 +337,7 @@ export function DevelopedReviewCard({
                       width: '100%',
                     }}
                   >
-                    Signaler cette review
+                    {t('reportThisReview')}
                   </button>
                 </div>
               )}
@@ -365,7 +367,7 @@ export function DevelopedReviewCard({
           {replyTo && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span className="fb-meta" style={{ fontSize: 12 }}>
-                Réponse à {replyTo.user.displayName}
+                {t('replyingTo', { name: replyTo.user.displayName })}
               </span>
               <button
                 onClick={() => {
@@ -382,7 +384,7 @@ export function DevelopedReviewCard({
             <input
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Ajoute un commentaire… (@pseudo pour mentionner)"
+              placeholder={t('addCommentPlaceholder')}
               style={{
                 flex: 1,
                 minWidth: 0,
@@ -411,7 +413,7 @@ export function DevelopedReviewCard({
                 whiteSpace: 'nowrap',
               }}
             >
-              Envoyer
+              {t('send')}
             </button>
           </div>
         </div>

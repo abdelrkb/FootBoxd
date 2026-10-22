@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Compatibility, Profile } from '@football-app/shared-types';
 import { Crest } from './ui/crest';
 import { ProfileMatchCard } from './profile-match-card';
@@ -11,11 +12,12 @@ import { Button } from './ui/button';
 // % de compatibilité (issue #18) : combine accord de notes + club favori + amis en commun —
 // voir users.service.ts `getCompatibility`. Affiché uniquement si au moins un signal existe.
 function CompatibilityBadge({ compatibility }: { compatibility: Compatibility | null }) {
+  const t = useTranslations('ProfileView');
   if (!compatibility || compatibility.percentage === null) return null;
   const parts: string[] = [];
-  if (compatibility.commonMatches > 0) parts.push(`${compatibility.commonMatches} match${compatibility.commonMatches > 1 ? 's' : ''} en commun`);
-  if (compatibility.sameFavoriteTeam) parts.push('même club favori');
-  if (compatibility.mutualFriends > 0) parts.push(`${compatibility.mutualFriends} ami${compatibility.mutualFriends > 1 ? 's' : ''} en commun`);
+  if (compatibility.commonMatches > 0) parts.push(t('compatibleCommonMatches', { count: compatibility.commonMatches }));
+  if (compatibility.sameFavoriteTeam) parts.push(t('compatibleSameClub'));
+  if (compatibility.mutualFriends > 0) parts.push(t('compatibleMutualFriends', { count: compatibility.mutualFriends }));
 
   return (
     <div
@@ -34,7 +36,7 @@ function CompatibilityBadge({ compatibility }: { compatibility: Compatibility | 
         {compatibility.percentage}%
       </span>
       <span className="fb-meta" style={{ fontSize: 11.5 }}>
-        compatible{parts.length > 0 ? ` · ${parts.join(' · ')}` : ''}
+        {t('compatibleLabel')}{parts.length > 0 ? ` · ${parts.join(' · ')}` : ''}
       </span>
     </div>
   );
@@ -74,6 +76,7 @@ export function ProfileView({
   // % de compatibilité avec le visiteur courant (absent sur son propre profil).
   compatibility?: Compatibility | null;
 }) {
+  const t = useTranslations('ProfileView');
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 24px 80px', display: 'flex', flexDirection: 'column', gap: 32 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
@@ -102,7 +105,7 @@ export function ProfileView({
             textAlign: 'center',
           }}
         >
-          <p style={{ margin: 0, fontSize: 15, color: 'var(--fb-text-2)' }}>Vous êtes bloqué par cet utilisateur.</p>
+          <p style={{ margin: 0, fontSize: 15, color: 'var(--fb-text-2)' }}>{t('blockedMessage')}</p>
         </div>
       ) : restricted ? (
         <div
@@ -115,7 +118,7 @@ export function ProfileView({
           }}
         >
           <p style={{ margin: 0, fontSize: 15, color: 'var(--fb-text-2)' }}>
-            Ce profil est privé. Abonne-toi pour voir son contenu.
+            {t('restrictedMessage')}
           </p>
         </div>
       ) : (
@@ -137,23 +140,23 @@ export function ProfileView({
               overflow: 'hidden',
             }}
           >
-            <StatCell value={profile.followersCount} label="Followers" />
-            <StatCell value={profile.followingCount} label="Suivi(e)s" />
-            <StatCell value={profile.totalReviewsCount} label="Matchs notés" />
-            <StatCell value={profile.reviewsThisSeasonCount} label="Vus cette saison" accent />
+            <StatCell value={profile.followersCount} label={t('followers')} />
+            <StatCell value={profile.followingCount} label={t('following')} />
+            <StatCell value={profile.totalReviewsCount} label={t('matchesRated')} />
+            <StatCell value={profile.reviewsThisSeasonCount} label={t('seenThisSeason')} accent />
           </div>
 
           <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <h2 className="fb-section" style={{ margin: 0 }}>
-              Matchs préférés
+              {t('favoriteMatches')}
             </h2>
             {profile.favoriteMatches.length === 0 ? (
               <EmptySocial
-                title="Ta saison commence ici"
-                subtitle="Logge un match pour voir apparaître tes préférés."
+                title={t('seasonStartsHereTitle')}
+                subtitle={t('seasonStartsHereSubtitle')}
                 action={
                   <Link href="/">
-                    <Button size="sm">Voir les matchs du jour</Button>
+                    <Button size="sm">{t('viewTodayMatches')}</Button>
                   </Link>
                 }
               />
@@ -168,10 +171,10 @@ export function ProfileView({
 
           <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <h2 className="fb-section" style={{ margin: 0 }}>
-              Derniers matchs loggés
+              {t('lastLoggedMatches')}
             </h2>
             {profile.lastReviews.length === 0 ? (
-              <EmptyContent title="Aucun match loggé cette saison" />
+              <EmptyContent title={t('noMatchLoggedThisSeason')} />
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 16 }}>
                 {profile.lastReviews.map((review) => (

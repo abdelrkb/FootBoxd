@@ -1,33 +1,38 @@
+'use client';
+
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import type { MatchEvent } from '@football-app/shared-types';
+
+type T = ReturnType<typeof useTranslations>;
 
 // Traitement visuel par type d'événement (handoff design du 2026-09-20). `detail` est la
 // valeur brute TheSportsDB (ex: "Normal Goal", "Yellow Card") — pas un enum fermé côté API,
 // donc on gère les variantes connues et on retombe sur un traitement neutre sinon plutôt que
 // de planter.
-function describeEvent(event: MatchEvent) {
+function describeEvent(t: T, event: MatchEvent) {
   const detail = (event.detail ?? '').toLowerCase();
 
   if (event.type === 'goal') {
     if (detail.includes('missed')) {
-      return { shape: '999px', size: 10, color: 'var(--fb-text-3)', label: 'Penalty manqué', strike: true };
+      return { shape: '999px', size: 10, color: 'var(--fb-text-3)', label: t('missedPenalty'), strike: true };
     }
     if (detail.includes('own')) {
-      return { shape: '999px', size: 10, color: 'var(--fb-action)', label: 'But contre son camp', strike: false };
+      return { shape: '999px', size: 10, color: 'var(--fb-action)', label: t('ownGoal'), strike: false };
     }
     if (detail.includes('penalty')) {
-      return { shape: '999px', size: 10, color: 'var(--fb-action)', label: 'But (penalty)', strike: false };
+      return { shape: '999px', size: 10, color: 'var(--fb-action)', label: t('penaltyGoal'), strike: false };
     }
-    return { shape: '999px', size: 10, color: 'var(--fb-action)', label: 'But', strike: false };
+    return { shape: '999px', size: 10, color: 'var(--fb-action)', label: t('goal'), strike: false };
   }
   if (event.type === 'card') {
     if (detail.includes('red')) {
-      return { shape: '2px', size: '9px 13px', color: 'var(--fb-live)', label: 'Carton rouge', strike: false };
+      return { shape: '2px', size: '9px 13px', color: 'var(--fb-live)', label: t('redCard'), strike: false };
     }
-    return { shape: '2px', size: '9px 13px', color: 'var(--fb-rating)', label: 'Carton jaune', strike: false };
+    return { shape: '2px', size: '9px 13px', color: 'var(--fb-rating)', label: t('yellowCard'), strike: false };
   }
   // substitution
-  return { shape: '999px', size: 8, color: 'var(--fb-text-3)', label: 'Remplacement', strike: false };
+  return { shape: '999px', size: 8, color: 'var(--fb-text-3)', label: t('substitution'), strike: false };
 }
 
 // Vérifié en réel le 2026-10-22 (comparaison event_timeline vs lineup sur un match avec les
@@ -35,7 +40,7 @@ function describeEvent(event: MatchEvent) {
 // le onze de départ), `assistName` (strAssist) est celui qui ENTRE (absent du onze de départ).
 // Affichait auparavant "(passe : X)" comme pour un but — trompeur, ça n'a rien d'une passe
 // décisive (issue #28). Flèche bas = sortie, flèche haut = entrée.
-function describeWho(event: MatchEvent): ReactNode {
+function describeWho(t: T, event: MatchEvent): ReactNode {
   if (event.type === 'substitution') {
     return (
       <>
@@ -50,11 +55,14 @@ function describeWho(event: MatchEvent): ReactNode {
       </>
     );
   }
-  const who = [event.playerName, event.assistName ? `(passe : ${event.assistName})` : null].filter(Boolean).join(' ');
+  const who = [event.playerName, event.assistName ? t('assistedBy', { name: event.assistName }) : null]
+    .filter(Boolean)
+    .join(' ');
   return who || '—';
 }
 
 export function MatchEvents({ events }: { events: MatchEvent[] }) {
+  const t = useTranslations('MatchEvents');
   if (events.length === 0) return null;
   const sorted = [...events].sort((a, b) => b.minute - a.minute); // "du plus récent au coup d'envoi"
 
@@ -71,14 +79,14 @@ export function MatchEvents({ events }: { events: MatchEvent[] }) {
         }}
       >
         <span className="fb-section" style={{ fontSize: 13 }}>
-          Faits de match
+          {t('title')}
         </span>
-        <span className="fb-meta">du plus récent au coup d'envoi</span>
+        <span className="fb-meta">{t('mostRecentFirst')}</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {sorted.map((event) => {
-          const d = describeEvent(event);
-          const who = describeWho(event);
+          const d = describeEvent(t, event);
+          const who = describeWho(t, event);
           const dims = typeof d.size === 'number' ? { width: d.size, height: d.size } : { width: 9, height: 13 };
           return (
             <div

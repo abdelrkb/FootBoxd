@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Profile, BlockStatus, FollowStatus, Compatibility } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
@@ -12,6 +13,7 @@ import { Button } from '../../../components/ui/button';
 import { SkeletonList } from '../../../components/ui/skeleton';
 
 export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) {
+  const t = useTranslations('UserProfilePage');
   const { id } = use(params);
   const router = useRouter();
   const { user } = useAuth();
@@ -99,14 +101,14 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
   const isOwner = user?.id === id;
   const hasAccess = isOwner || !profile.isPrivate || followStatus?.following === true;
   const followLabel = blockStatus?.viewerHasBlocked
-    ? 'Débloquer'
+    ? t('unblock')
     : followStatus?.following
-      ? 'Suivi(e)'
+      ? t('following')
       : followStatus?.pendingRequest
-        ? 'Demande envoyée'
+        ? t('requestSent')
         : profile.isPrivate
-          ? 'Demander à suivre'
-          : 'Suivre';
+          ? t('requestToFollow')
+          : t('follow');
 
   return (
     <>
@@ -126,14 +128,14 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
           }}
         >
           <span style={{ fontSize: 14, color: 'var(--fb-text-2)' }}>
-            {profile.displayName} souhaite s&rsquo;abonner à toi.
+            {t('wantsToFollowYou', { name: profile.displayName })}
           </span>
           <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
             <Button size="sm" loading={pending} onClick={() => respondToIncomingRequest(true)}>
-              Accepter
+              {t('accept')}
             </Button>
             <Button size="sm" variant="secondary" loading={pending} onClick={() => respondToIncomingRequest(false)}>
-              Refuser
+              {t('decline')}
             </Button>
           </div>
         </div>
@@ -147,7 +149,7 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             {!blockStatus?.blockedByOwner && hasAccess && profile.isWatchlistPublic && (
               <Link href={`/profile/${id}/watchlist`}>
-                <Button variant="secondary">Watchlist</Button>
+                <Button variant="secondary">{t('watchlist')}</Button>
               </Link>
             )}
             {user && user.id !== id ? (
@@ -211,7 +213,7 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
                             textAlign: 'left',
                           }}
                         >
-                          Signaler
+                          {t('report')}
                         </button>
                       )}
                       {!blockStatus?.viewerHasBlocked && (
@@ -230,7 +232,7 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
                             textAlign: 'left',
                           }}
                         >
-                          Bloquer
+                          {t('block')}
                         </button>
                       )}
                     </div>
@@ -239,7 +241,7 @@ export default function UserProfilePage({ params }: PageProps<'/profile/[id]'>) 
               </>
             ) : !user ? (
               <Link href="/login">
-                <Button variant="secondary">Connexion pour suivre</Button>
+                <Button variant="secondary">{t('loginToFollow')}</Button>
               </Link>
             ) : null}
           </div>

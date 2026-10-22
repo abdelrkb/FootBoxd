@@ -3,6 +3,7 @@
 import { Suspense, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 import { Field } from '../../components/ui/field';
@@ -19,6 +20,8 @@ export default function ResetPasswordPage() {
 }
 
 function ResetPasswordForm() {
+  const t = useTranslations('ResetPasswordPage');
+  const tCommon = useTranslations('Common');
   const searchParams = useSearchParams();
   const [email, setEmail] = useState(searchParams.get('email') ?? '');
   const [code, setCode] = useState('');
@@ -37,7 +40,7 @@ function ResetPasswordForm() {
       await refresh();
       router.push('/');
     } catch (err) {
-      setError(err instanceof api.ApiError ? err.message : 'Erreur inconnue');
+      setError(err instanceof api.ApiError ? err.message : tCommon('unknownError'));
     } finally {
       setSubmitting(false);
     }
@@ -46,13 +49,13 @@ function ResetPasswordForm() {
   return (
     <div style={{ maxWidth: 420, margin: '64px auto', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <h1 className="fb-display" style={{ fontSize: 34, margin: 0 }}>
-        Nouveau mot de passe
+        {t('title')}
       </h1>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <Field label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <Field label={t('email')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <Field
-          label="Code reçu par email"
-          hint="6 chiffres, valable 15 minutes"
+          label={t('codeLabel')}
+          hint={t('codeHint')}
           type="text"
           inputMode="numeric"
           pattern="\d{6}"
@@ -61,8 +64,8 @@ function ResetPasswordForm() {
           required
         />
         <Field
-          label="Nouveau mot de passe"
-          hint="8 caractères minimum"
+          label={t('newPassword')}
+          hint={t('passwordHint')}
           type="password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
@@ -70,12 +73,12 @@ function ResetPasswordForm() {
           required
         />
         <Button type="submit" loading={submitting} style={{ width: '100%' }}>
-          Réinitialiser
+          {t('submit')}
         </Button>
       </form>
       <p style={{ fontSize: 14, color: 'var(--fb-text-2)' }}>
         <Link href="/forgot-password" style={{ color: 'var(--fb-nav)' }}>
-          Redemander un code
+          {t('requestNewCode')}
         </Link>
       </p>
     </div>

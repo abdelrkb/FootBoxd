@@ -3,12 +3,15 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 import { Field } from '../../components/ui/field';
 import { Button } from '../../components/ui/button';
 
 export default function RegisterPage() {
+  const t = useTranslations('RegisterPage');
+  const tCommon = useTranslations('Common');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -29,7 +32,7 @@ export default function RegisterPage() {
       // choix des ligues + réglages, une seule fois pour un nouveau compte.
       router.push('/onboarding');
     } catch (err) {
-      setError(err instanceof api.ApiError ? err.message : 'Erreur inconnue');
+      setError(err instanceof api.ApiError ? err.message : tCommon('unknownError'));
     } finally {
       setSubmitting(false);
     }
@@ -38,12 +41,12 @@ export default function RegisterPage() {
   return (
     <div style={{ maxWidth: 420, margin: '64px auto', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <h1 className="fb-display" style={{ fontSize: 34, margin: 0 }}>
-        Inscription
+        {t('title')}
       </h1>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Field
-          label="Pseudo"
-          hint="Unique, 3-20 caractères (minuscules, chiffres, _) — pour que tes amis te retrouvent."
+          label={t('username')}
+          hint={t('usernameHint')}
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value.toLowerCase())}
@@ -51,17 +54,17 @@ export default function RegisterPage() {
           required
         />
         <Field
-          label="Nom affiché"
-          hint="C'est ce que les autres verront sur tes notes."
+          label={t('displayName')}
+          hint={t('displayNameHint')}
           type="text"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           required
         />
-        <Field label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <Field label={t('email')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <Field
-          label="Mot de passe"
-          hint="8 caractères minimum"
+          label={t('password')}
+          hint={t('passwordHint')}
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -69,13 +72,13 @@ export default function RegisterPage() {
           required
         />
         <Button type="submit" loading={submitting} style={{ width: '100%' }}>
-          Créer mon compte
+          {t('submit')}
         </Button>
       </form>
       <p style={{ fontSize: 14, color: 'var(--fb-text-2)' }}>
-        Déjà un compte ?{' '}
+        {t('alreadyHaveAccount')}{' '}
         <Link href="/login" style={{ color: 'var(--fb-nav)' }}>
-          Se connecter
+          {t('login')}
         </Link>
       </p>
     </div>

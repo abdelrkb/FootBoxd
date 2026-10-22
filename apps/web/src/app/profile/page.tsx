@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Profile } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -10,6 +11,7 @@ import { Button } from '../../components/ui/button';
 import { SkeletonList } from '../../components/ui/skeleton';
 
 export default function ProfilePage() {
+  const t = useTranslations('OwnProfilePage');
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -21,7 +23,7 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <p style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <Link href="/login">Connectez-vous</Link> pour voir votre profil.
+        <Link href="/login">{t('loginLink')}</Link> {t('toSeeProfile')}
       </p>
     );
   }
@@ -33,10 +35,10 @@ export default function ProfilePage() {
       headerAction={
         <div style={{ display: 'flex', gap: 10 }}>
           <Link href="/watchlist">
-            <Button variant="secondary">Watchlist</Button>
+            <Button variant="secondary">{t('watchlist')}</Button>
           </Link>
           <Link href="/settings">
-            <Button variant="secondary">Modifier le profil</Button>
+            <Button variant="secondary">{t('editProfile')}</Button>
           </Link>
         </div>
       }

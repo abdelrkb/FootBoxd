@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { TAG_PALETTE, tagBackground } from '../../lib/tag-colors';
 
 // Carré de couleur du champ Tag, à côté de "« … » (créer le tag)" : ouvre une modale pour
@@ -19,6 +20,7 @@ export function TagColorPicker({
   onToggle: () => void;
   onChange: (color: string, colorEnd: string | null) => void;
 }) {
+  const t = useTranslations('TagInput');
   const [gradient, setGradient] = useState(Boolean(colorEnd));
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export function TagColorPicker({
       <button
         type="button"
         onClick={onToggle}
-        title="Choisir une couleur"
+        title={t('chooseColor')}
         style={{
           width: 24,
           height: 24,
@@ -78,7 +80,7 @@ export function TagColorPicker({
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h3 className="fb-card-title" style={{ fontSize: 15, margin: 0 }}>
-                Couleur du tag
+                {t('tagColor')}
               </h3>
               <span
                 style={{
@@ -112,7 +114,7 @@ export function TagColorPicker({
             </div>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--fb-text-2)' }}>
-              <span>Couleur</span>
+              <span>{t('color')}</span>
               <input
                 type="color"
                 value={color}
@@ -131,12 +133,12 @@ export function TagColorPicker({
                   onChange(color, next ? colorEnd ?? color : null);
                 }}
               />
-              <span>Dégradé</span>
+              <span>{t('gradient')}</span>
             </label>
 
             {gradient && (
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--fb-text-2)' }}>
-                <span>Couleur 2</span>
+                <span>{t('color2')}</span>
                 <input
                   type="color"
                   value={colorEnd ?? color}
@@ -160,7 +162,7 @@ export function TagColorPicker({
                 cursor: 'pointer',
               }}
             >
-              Valider
+              {t('confirm')}
             </button>
           </div>
         </div>

@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Match } from '@football-app/shared-types';
 import { Crest } from '../../../components/ui/crest';
 import { EmptyContent } from '../../../components/ui/empty-state';
@@ -12,10 +15,11 @@ interface LineupRow {
 // L'API ne fournit ni formation tactique ni remplaçants (vérifié en réel, voir
 // architecture.md section 2) — pas de terrain tactique, juste les 11 titulaires à plat.
 export function Lineups({ match }: { match: Match }) {
+  const t = useTranslations('Lineups');
   const rows = match.lineups as LineupRow[] | null;
 
   if (!rows || rows.length === 0) {
-    return <EmptyContent title="Compositions indisponibles" subtitle="Cette ligue ne fournit pas les feuilles de match." />;
+    return <EmptyContent title={t('unavailable')} subtitle={t('unavailableHint')} />;
   }
 
   const home = rows.filter((p) => p.strHome === 'Yes');
@@ -25,9 +29,9 @@ export function Lineups({ match }: { match: Match }) {
     <div style={{ border: '1px solid var(--fb-border)', borderRadius: 16, background: 'var(--fb-surface)', overflow: 'hidden' }}>
       <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--fb-border)', display: 'flex', alignItems: 'baseline', gap: 10 }}>
         <span className="fb-section" style={{ fontSize: 13 }}>
-          Compositions
+          {t('title')}
         </span>
-        <span className="fb-meta">11 titulaires</span>
+        <span className="fb-meta">{t('startersCount')}</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'var(--fb-border)' }}>
         {[

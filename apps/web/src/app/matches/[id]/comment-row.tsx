@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Comment } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
@@ -62,6 +63,7 @@ export function CommentRow({
   onReport: (commentId: string) => void;
   depth?: number;
 }) {
+  const t = useTranslations('CommentRow');
   const { user } = useAuth();
 
   return (
@@ -85,7 +87,7 @@ export function CommentRow({
                 className="fb-meta"
                 style={{ background: 'none', border: 'none', fontSize: 12, color: 'var(--fb-text-3)', padding: 0 }}
               >
-                Répondre
+                {t('reply')}
               </button>
             )}
           </div>
@@ -96,7 +98,7 @@ export function CommentRow({
             className="fb-meta"
             style={{ background: 'none', border: 'none', fontSize: 11.5, flexShrink: 0, color: 'var(--fb-text-3)' }}
           >
-            Signaler
+            {t('report')}
           </button>
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import type { League, Team } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -30,6 +31,7 @@ function ProgressBar({ step }: { step: number }) {
 }
 
 export default function OnboardingPage() {
+  const t = useTranslations('OnboardingPage');
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [step, setStep] = useState(0);
@@ -96,15 +98,15 @@ export default function OnboardingPage() {
         <>
           <div>
             <h1 className="fb-display" style={{ fontSize: 32, margin: 0 }}>
-              Tes ligues
+              {t('yourLeagues')}
             </h1>
             <p style={{ color: 'var(--fb-text-2)', fontSize: 15, marginTop: 8 }}>
-              Choisis les compétitions que tu veux suivre — tu pourras en ajouter d'autres plus tard.
+              {t('chooseCompetitions')}
             </p>
           </div>
 
           {leagues === null ? (
-            <p className="fb-meta">Chargement…</p>
+            <p className="fb-meta">{t('loading')}</p>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(268px, 1fr))', gap: 14 }}>
               {sortedLeagues.map((league) => {
@@ -140,10 +142,10 @@ export default function OnboardingPage() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="fb-num" style={{ color: selectedLeagueIds.size === 0 ? 'var(--fb-live-text)' : 'var(--fb-text-2)' }}>
-              {selectedLeagueIds.size} sélectionnée(s)
+              {t('selectedCount', { count: selectedLeagueIds.size })}
             </span>
             <Button disabled={selectedLeagueIds.size === 0 || saving} loading={saving} onClick={goToStep2}>
-              Continuer
+              {t('continue')}
             </Button>
           </div>
         </>
@@ -153,16 +155,16 @@ export default function OnboardingPage() {
         <>
           <div>
             <h1 className="fb-display" style={{ fontSize: 32, margin: 0 }}>
-              Réglages
+              {t('settings')}
             </h1>
           </div>
 
           {teams.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <span className="fb-section" style={{ fontSize: 13 }}>
-                Club de cœur (optionnel)
+                {t('favoriteClub')}
               </span>
-              <p style={{ fontSize: 13, color: 'var(--fb-text-2)', margin: 0 }}>Ses matchs seront épinglés en haut de l'accueil.</p>
+              <p style={{ fontSize: 13, color: 'var(--fb-text-2)', margin: 0 }}>{t('favoriteClubHint')}</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {teams.map((team) => {
                   const selected = favoriteTeamId === team.id;
@@ -194,11 +196,11 @@ export default function OnboardingPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {[
-              { key: 'notifyOnLike' as const, label: "J'aime" },
-              { key: 'notifyOnComment' as const, label: 'Réponses' },
-              { key: 'notifyOnNewFollower' as const, label: 'Nouveaux abonnés' },
-              { key: 'notifyKickoffReminder' as const, label: 'Rappel au coup d\'envoi (ligues favorites)' },
-              { key: 'hideScoresUntilClick' as const, label: 'Masquer les scores jusqu\'au clic' },
+              { key: 'notifyOnLike' as const, label: t('prefLikes') },
+              { key: 'notifyOnComment' as const, label: t('prefReplies') },
+              { key: 'notifyOnNewFollower' as const, label: t('prefNewFollowers') },
+              { key: 'notifyKickoffReminder' as const, label: t('prefKickoffReminder') },
+              { key: 'hideScoresUntilClick' as const, label: t('prefHideScores') },
             ].map(({ key, label }) => (
               <div
                 key={key}
@@ -218,7 +220,7 @@ export default function OnboardingPage() {
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button loading={saving} onClick={goToStep3}>
-              Continuer
+              {t('continue')}
             </Button>
           </div>
         </>
@@ -227,13 +229,12 @@ export default function OnboardingPage() {
       {step === 2 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'flex-start' }}>
           <h1 className="fb-display" style={{ fontSize: 32, margin: 0 }}>
-            C'est parti
+            {t('letsGo')}
           </h1>
           <p style={{ color: 'var(--fb-text-2)', fontSize: 15 }}>
-            {selectedLeagueIds.size} ligue(s) suivie(s){favoriteTeamId ? ', un club de cœur épinglé' : ''}. Tu peux tout
-            modifier plus tard depuis ton profil.
+            {t('summary', { count: selectedLeagueIds.size, hasFavoriteTeam: favoriteTeamId ? 1 : 0 })}
           </p>
-          <Button onClick={finish}>Voir mes ligues</Button>
+          <Button onClick={finish}>{t('viewMyLeagues')}</Button>
         </div>
       )}
     </div>

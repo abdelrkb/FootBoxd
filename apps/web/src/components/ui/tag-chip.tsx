@@ -1,4 +1,7 @@
+'use client';
+
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { hexToRgba, tagHoloBackground, tagHoloBorder } from '../../lib/tag-colors';
 
 // Rendu du tag à la fois dans le champ (avec croix pour retirer) et à l'affichage sous le
@@ -16,6 +19,7 @@ export function TagChip({
   onRemove?: () => void;
   children: ReactNode;
 }) {
+  const t = useTranslations('TagInput');
   return (
     <span
       className="fb-label"
@@ -42,7 +46,7 @@ export function TagChip({
         <button
           type="button"
           onClick={onRemove}
-          aria-label="Retirer le tag"
+          aria-label={t('removeTag')}
           style={{
             width: 16,
             height: 16,

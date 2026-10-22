@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 // Badge live circulaire (compteur de matchs en direct par ligue). N'apparaît que si count > 0
 // — c'est à l'appelant de conditionner le rendu.
 export function LiveCountBadge({ count }: { count: number }) {
@@ -76,6 +80,7 @@ export function ScoreChip({ home, away, live }: { home: number | null; away: num
 
 // Pastille "En direct" avec point clignotant (le libellé est toujours écrit — accessibilité).
 export function LivePill({ minute }: { minute?: string | null }) {
+  const t = useTranslations('MatchStatus');
   return (
     <span
       className="fb-status fb-status--live"
@@ -97,13 +102,14 @@ export function LivePill({ minute }: { minute?: string | null }) {
           animation: 'fb-blink 1.1s steps(1, end) infinite',
         }}
       />
-      En direct{minute ? ` ${minute}'` : ''}
+      {t('live')}{minute ? ` ${minute}'` : ''}
     </span>
   );
 }
 
 // Pastille "Ta note" sur sa propre review (handoff design).
 export function OwnRatingPill() {
+  const t = useTranslations('Common');
   return (
     <span
       className="fb-label"
@@ -116,7 +122,7 @@ export function OwnRatingPill() {
         fontSize: 10.5,
       }}
     >
-      Ta note
+      {t('yourRating')}
     </span>
   );
 }
@@ -124,10 +130,11 @@ export function OwnRatingPill() {
 // Visionnage répété d'un même match par le même utilisateur (issue #14, 2026-10-02, façon
 // Letterboxd) — affiché à partir du 2e log (watchNumber > 1).
 export function RewatchBadge({ watchNumber }: { watchNumber: number }) {
+  const t = useTranslations('Common');
   return (
     <span
       className="fb-label"
-      title={`${watchNumber}e visionnage`}
+      title={t('nthWatch', { count: watchNumber })}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -140,7 +147,7 @@ export function RewatchBadge({ watchNumber }: { watchNumber: number }) {
         fontSize: 10.5,
       }}
     >
-      ↻ Revu
+      ↻ {t('rewatched')}
     </span>
   );
 }

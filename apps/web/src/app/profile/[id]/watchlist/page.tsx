@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { WatchlistEntry } from '@football-app/shared-types';
 import * as api from '../../../../lib/api';
 import { ClientDate } from '../../../../components/client-date';
@@ -12,6 +13,8 @@ import { SkeletonList } from '../../../../components/ui/skeleton';
 import { MatchCardMenu } from '../../../../components/ui/match-card-menu';
 
 export default function UserWatchlistPage({ params }: PageProps<'/profile/[id]/watchlist'>) {
+  const t = useTranslations('UserWatchlistPage');
+  const tProfile = useTranslations('ProfilePage');
   const { id } = use(params);
   const [entries, setEntries] = useState<WatchlistEntry[] | null>(null);
   const [forbidden, setForbidden] = useState(false);
@@ -28,16 +31,16 @@ export default function UserWatchlistPage({ params }: PageProps<'/profile/[id]/w
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 80px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <Link href={`/profile/${id}`} className="fb-label" style={{ fontSize: 12, color: 'var(--fb-text-2)' }}>
-        ← Profil
+        ← {tProfile('backToProfile')}
       </Link>
 
       <h1 className="fb-display" style={{ fontSize: 32, margin: 0 }}>
-        Watchlist
+        {t('title')}
       </h1>
 
-      {forbidden && <EmptyContent title="Cette watchlist est privée" />}
+      {forbidden && <EmptyContent title={t('privateWatchlist')} />}
       {!forbidden && entries === null && <SkeletonList />}
-      {!forbidden && entries?.length === 0 && <EmptyContent title="Aucun match dans cette watchlist" />}
+      {!forbidden && entries?.length === 0 && <EmptyContent title={t('noMatches')} />}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {entries?.map(({ match }) => (

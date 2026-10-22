@@ -13,15 +13,6 @@ import { Field } from '../../components/ui/field';
 import { Switch } from '../../components/ui/switch';
 import { Button } from '../../components/ui/button';
 
-const PREF_LABELS = [
-  { key: 'notifyOnLike' as const, label: "J'aime" },
-  { key: 'notifyOnComment' as const, label: 'Réponses' },
-  { key: 'notifyOnNewFollower' as const, label: 'Nouveaux abonnés' },
-  { key: 'notifyKickoffReminder' as const, label: 'Rappel au coup d\'envoi (ligues favorites)' },
-  { key: 'notifyWatchlistKickoff' as const, label: 'Rappel 30 min avant le coup d\'envoi (watchlist)' },
-  { key: 'hideScoresUntilClick' as const, label: 'Masquer les scores jusqu\'au clic' },
-];
-
 const USERNAME_COOLDOWN_DAYS = 14;
 
 function sectionStyle() {
@@ -29,10 +20,17 @@ function sectionStyle() {
 }
 
 export default function SettingsPage() {
-  // Seul le nouveau sélecteur de langue est traduit pour l'instant (issue #27) — le reste de
-  // cette page très longue (dizaines de chaînes) suit dans une passe ultérieure, une fois le
-  // modèle validé sur la page d'accueil et ce sélecteur.
-  const t = useTranslations('SettingsLanguage');
+  const t = useTranslations('SettingsPage');
+  const tLang = useTranslations('SettingsLanguage');
+  const tCommon = useTranslations('Common');
+  const PREF_LABELS = [
+    { key: 'notifyOnLike' as const, label: t('prefLikes') },
+    { key: 'notifyOnComment' as const, label: t('prefReplies') },
+    { key: 'notifyOnNewFollower' as const, label: t('prefNewFollowers') },
+    { key: 'notifyKickoffReminder' as const, label: t('prefKickoffReminder') },
+    { key: 'notifyWatchlistKickoff' as const, label: t('prefWatchlistKickoffReminder') },
+    { key: 'hideScoresUntilClick' as const, label: t('prefHideScores') },
+  ];
   const { user, loading: authLoading, refresh, logout } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -155,7 +153,7 @@ export default function SettingsPage() {
       await api.updateUsername(username);
       await refresh();
     } catch (err) {
-      setUsernameError(err instanceof api.ApiError ? err.message : 'Erreur inconnue');
+      setUsernameError(err instanceof api.ApiError ? err.message : tCommon('unknownError'));
     } finally {
       setUsernameSaving(false);
     }
@@ -197,7 +195,7 @@ export default function SettingsPage() {
       await logout();
       router.push('/');
     } catch (err) {
-      setDeleteError(err instanceof api.ApiError ? err.message : 'Erreur inconnue');
+      setDeleteError(err instanceof api.ApiError ? err.message : tCommon('unknownError'));
     } finally {
       setDeleting(false);
     }
@@ -207,7 +205,7 @@ export default function SettingsPage() {
   if (!user) {
     return (
       <p style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <Link href="/login">Connecte-toi</Link> pour accéder aux réglages.
+        <Link href="/login">{t('loginLink')}</Link> {t('toAccessSettings')}
       </p>
     );
   }
@@ -221,39 +219,39 @@ export default function SettingsPage() {
   return (
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '32px 24px 80px', display: 'flex', flexDirection: 'column', gap: 28 }}>
       <h1 className="fb-display" style={{ fontSize: 32, margin: 0 }}>
-        Réglages
+        {t('title')}
       </h1>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <span className="fb-section" style={{ fontSize: 13 }}>
-          Profil
+          {t('profile')}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Crest src={user.avatarUrl} alt={user.displayName} size={72} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={handleAvatarChange} />
             <Button size="sm" variant="secondary" loading={avatarUploading} onClick={() => fileInputRef.current?.click()}>
-              Changer l'avatar
+              {t('changeAvatar')}
             </Button>
             <button
               onClick={handleRemoveAvatar}
               className="fb-meta"
               style={{ background: 'none', border: 'none', fontSize: 12, textAlign: 'left', color: 'var(--fb-text-3)' }}
             >
-              Retirer l'avatar
+              {t('removeAvatar')}
             </button>
           </div>
         </div>
-        <Field label="Nom affiché" value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={50} />
+        <Field label={t('displayName')} value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={50} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
           <label className="fb-label" style={{ fontSize: 11.5, color: 'var(--fb-text-2)' }}>
-            Bio
+            {t('bio')}
           </label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             maxLength={280}
-            placeholder="Quelques mots sur toi…"
+            placeholder={t('bioPlaceholder')}
             style={{
               width: '100%',
               minHeight: 90,
@@ -274,15 +272,15 @@ export default function SettingsPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <Button size="sm" loading={profileSaving} onClick={saveProfile}>
-            Enregistrer
+            {t('save')}
           </Button>
-          {profileSaved && <span style={{ color: 'var(--fb-action)', fontSize: 13 }}>Enregistré ✓</span>}
+          {profileSaved && <span style={{ color: 'var(--fb-action)', fontSize: 13 }}>{t('saved')}</span>}
         </div>
       </div>
 
       <div style={sectionStyle()}>
         <span className="fb-section" style={{ fontSize: 13 }}>
-          Pseudo
+          {t('username')}
         </span>
         <Field
           label="@"
@@ -291,11 +289,7 @@ export default function SettingsPage() {
           pattern="[a-z0-9_]{3,20}"
           disabled={usernameLocked}
           error={usernameError ?? undefined}
-          hint={
-            usernameLocked
-              ? `Déjà changé récemment — réessaie dans ${usernameCooldownDaysLeft} jour${usernameCooldownDaysLeft > 1 ? 's' : ''}`
-              : 'Une fois tous les 14 jours maximum'
-          }
+          hint={usernameLocked ? t('usernameLocked', { count: usernameCooldownDaysLeft }) : t('usernameHint')}
         />
         <div>
           <Button
@@ -305,20 +299,20 @@ export default function SettingsPage() {
             loading={usernameSaving}
             onClick={saveUsername}
           >
-            Changer le pseudo
+            {t('changeUsername')}
           </Button>
         </div>
       </div>
 
       <div style={sectionStyle()}>
         <span className="fb-section" style={{ fontSize: 13 }}>
-          Confidentialité
+          {t('privacy')}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontSize: 14 }}>Profil privé</span>
+            <span style={{ fontSize: 14 }}>{t('privateProfile')}</span>
             <span className="fb-meta" style={{ fontSize: 12 }}>
-              Les nouveaux abonnements doivent être acceptés avant de voir ton contenu.
+              {t('privateProfileHint')}
             </span>
           </div>
           <Switch checked={isPrivate} onChange={toggleProfilePrivacy} />
@@ -327,13 +321,13 @@ export default function SettingsPage() {
 
       <div style={sectionStyle()}>
         <span className="fb-section" style={{ fontSize: 13 }}>
-          {t('title')}
+          {tLang('title')}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontSize: 14 }}>{t('language')}</span>
+            <span style={{ fontSize: 14 }}>{tLang('language')}</span>
             <span className="fb-meta" style={{ fontSize: 12 }}>
-              {t('hint')}
+              {tLang('hint')}
             </span>
           </div>
           <select
@@ -351,20 +345,21 @@ export default function SettingsPage() {
               fontSize: 14,
             }}
           >
-            <option value="fr">{t('french')}</option>
-            <option value="en">{t('english')}</option>
+            <option value="fr">{tLang('french')}</option>
+            <option value="en">{tLang('english')}</option>
           </select>
         </div>
       </div>
 
       <div style={sectionStyle()}>
         <span className="fb-section" style={{ fontSize: 13 }}>
-          Club de cœur
+          {t('favoriteClub')}
         </span>
         {teams.length === 0 ? (
           <p style={{ fontSize: 13, color: 'var(--fb-text-2)' }}>
-            Ajoute des ligues favorites depuis <Link href="/leagues" style={{ color: 'var(--fb-nav)' }}>Toutes les ligues</Link> pour
-            choisir un club.
+            {t.rich('favoriteClubEmptyHint', {
+              link: (chunks) => <Link href="/leagues" style={{ color: 'var(--fb-nav)' }}>{chunks}</Link>,
+            })}
           </p>
         ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -398,7 +393,7 @@ export default function SettingsPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <span className="fb-section" style={{ fontSize: 13, marginBottom: 8 }}>
-          Notifications
+          {t('notifications')}
         </span>
         {PREF_LABELS.map(({ key, label }) => (
           <div
@@ -418,18 +413,18 @@ export default function SettingsPage() {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <Button onClick={save}>Enregistrer</Button>
-        {saved && <span style={{ color: 'var(--fb-action)', fontSize: 13 }}>Enregistré ✓</span>}
+        <Button onClick={save}>{t('save')}</Button>
+        {saved && <span style={{ color: 'var(--fb-action)', fontSize: 13 }}>{t('saved')}</span>}
       </div>
 
       <div style={sectionStyle()}>
         <span className="fb-section" style={{ fontSize: 13 }}>
-          Comptes bloqués
+          {t('blockedAccounts')}
         </span>
         {blockedAccounts === null ? (
-          <p className="fb-meta">Chargement…</p>
+          <p className="fb-meta">{t('loading')}</p>
         ) : blockedAccounts.length === 0 ? (
-          <p style={{ fontSize: 13, color: 'var(--fb-text-2)' }}>Aucun compte bloqué.</p>
+          <p style={{ fontSize: 13, color: 'var(--fb-text-2)' }}>{t('noBlockedAccounts')}</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {blockedAccounts.map((u) => (
@@ -437,7 +432,7 @@ export default function SettingsPage() {
                 <Crest src={u.avatarUrl} alt={u.displayName} size={32} />
                 <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{u.displayName}</span>
                 <Button size="sm" variant="secondary" onClick={() => handleUnblock(u.id)}>
-                  Débloquer
+                  {t('unblock')}
                 </Button>
               </div>
             ))}
@@ -447,21 +442,20 @@ export default function SettingsPage() {
 
       <div style={{ ...sectionStyle(), borderTop: '1px solid var(--fb-live)' }}>
         <span className="fb-section" style={{ fontSize: 13, color: 'var(--fb-live-text)' }}>
-          Zone dangereuse
+          {t('dangerZone')}
         </span>
         {!confirmingDelete ? (
           <Button variant="destructive" onClick={() => setConfirmingDelete(true)}>
-            Supprimer mon compte
+            {t('deleteAccount')}
           </Button>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <p style={{ fontSize: 13, color: 'var(--fb-text-2)', margin: 0 }}>
-              Ton compte sera anonymisé (pseudo, nom, email, avatar supprimés). Tes reviews et commentaires restent visibles,
-              attribués à "Utilisateur supprimé". Action irréversible.
+              {t('deleteAccountWarning')}
             </p>
             <Field
-              label="Mot de passe"
-              hint="Laisse vide si tu t'es inscrit uniquement avec Google/Apple"
+              label={t('password')}
+              hint={t('passwordHint')}
               type="password"
               value={deletePassword}
               onChange={(e) => setDeletePassword(e.target.value)}
@@ -469,10 +463,10 @@ export default function SettingsPage() {
             />
             <div style={{ display: 'flex', gap: 10 }}>
               <Button variant="destructive" loading={deleting} onClick={handleDeleteAccount}>
-                Confirmer la suppression
+                {t('confirmDeletion')}
               </Button>
               <Button variant="tertiary" onClick={() => setConfirmingDelete(false)}>
-                Annuler
+                {t('cancel')}
               </Button>
             </div>
           </div>

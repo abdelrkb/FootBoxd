@@ -1,6 +1,10 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import type { RatingDistribution } from '@football-app/shared-types';
 
 export function RatingHistogram({ distribution }: { distribution: RatingDistribution }) {
+  const t = useTranslations('RatingHistogram');
   const max = Math.max(1, ...distribution.buckets.map((b) => b.count));
   return (
     <div
@@ -15,14 +19,14 @@ export function RatingHistogram({ distribution }: { distribution: RatingDistribu
       }}
     >
       <span className="fb-section" style={{ fontSize: 13 }}>
-        Notes du match
+        {t('title')}
       </span>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
         <span className="fb-num" style={{ fontWeight: 600, fontSize: 40, color: 'var(--fb-rating)', lineHeight: 1 }}>
           {distribution.average.toFixed(1)}
         </span>
         <span className="fb-label" style={{ fontSize: 11.5, color: 'var(--fb-text-3)' }}>
-          moyenne sur {distribution.totalCount}
+          {t('averageOf', { count: distribution.totalCount })}
         </span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
