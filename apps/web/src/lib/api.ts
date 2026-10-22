@@ -276,6 +276,25 @@ export const createReport = (input: CreateReportInput) =>
 
 export const searchTeams = (query: string) => apiFetch<Team[]>(`/teams/search?q=${encodeURIComponent(query)}`);
 
+// Matchs notés d'un utilisateur, paginés (issues #51 et #56).
+export const getUserReviews = (
+  userId: string,
+  opts: { scope?: 'all' | 'season'; page?: number; pageSize?: number } = {},
+) => {
+  const params = new URLSearchParams();
+  if (opts.scope) params.set('scope', opts.scope);
+  if (opts.page !== undefined) params.set('page', String(opts.page));
+  if (opts.pageSize !== undefined) params.set('pageSize', String(opts.pageSize));
+  const qs = params.toString();
+  return apiFetch<{ items: ReviewWithMatch[]; total: number }>(`/users/${userId}/reviews${qs ? `?${qs}` : ''}`);
+};
+
+export const favoriteReview = (reviewId: string) =>
+  apiFetch<{ success: boolean }>(`/reviews/${reviewId}/favorite`, { method: 'POST' });
+
+export const unfavoriteReview = (reviewId: string) =>
+  apiFetch<{ success: boolean }>(`/reviews/${reviewId}/favorite`, { method: 'DELETE' });
+
 // Équipes suivies (issue #53), distinct du club de cœur unique de `setFavoriteTeam`.
 export const getFavoriteTeams = (userId: string) => apiFetch<Team[]>(`/users/${userId}/favorite-teams`);
 

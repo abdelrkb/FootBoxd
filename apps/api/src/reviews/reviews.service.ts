@@ -150,6 +150,42 @@ export class ReviewsService {
     await this.prisma.client.review.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
+  // "Matchs préférés" choisis à la main (issue #51) : on épingle une de ses propres reviews.
+  // Idempotent — réépingler une review déjà préférée ne change pas sa date d'ajout, donc pas
+  // son rang sur le profil.
+  async setFavorite(id: string, userId: string, favorite: boolean) {
+    const review = await this.prisma.client.review.findUnique({ where: { id } });
+    if (!review || review.deletedAt) throw new NotFoundException('Review introuvable');
+    if (review.userId !== userId) throw new ForbiddenException("Cette review n'est pas la vôtre");
+    if (favorite && review.favoritedAt) return;
+
+    await this.prisma.client.review.update({
+      where: { id },
+      data: { favoritedAt: favorite ? new Date() : null },
+    });
+  }
+
+  // Liste paginée des reviews d'un utilisateur (issues #51 et #56) : sert au sélecteur de
+  // matchs préférés et à la page "matchs notés" ouverte depuis les stats du profil.
+  // `scope: 'season'` ne garde que la saison en cours des compétitions concernées — même
+  // définition que les stats du profil (voir UsersService.getProfile).
+  async findForUser(userId: string, { scope, page, pageSize }: { scope: 'all' | 'season'; page: number; pageSize: number }) {
+    const all = await this.prisma.client.review.findMany({
+      where: { userId, deletedAt: null },
+      include: reviewWithMatchInclude,
+      orderBy: { createdAt: 'desc' },
+    });
+    const filtered =
+      scope === 'season'
+        ? all.filter((r) => r.match.league.currentSeason !== null && r.match.season === r.match.league.currentSeason)
+        : all;
+
+    return {
+      items: filtered.slice(page * pageSize, page * pageSize + pageSize).map(serializeReview),
+      total: filtered.length,
+    };
+  }
+
   // "Modifier ma note" (handoff design du 2026-09-20, menu ··· sur sa propre review).
   // `tags` absent = tags inchangés ; `tags` présent (même vide) = remplace l'ensemble des tags.
   // `quickRating` (issue #15) : absent = inchangé, false explicite = "compléter ma note rapide"

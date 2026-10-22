@@ -147,11 +147,12 @@ export class UsersService {
       (r) => r.match.league.currentSeason !== null && r.match.season === r.match.league.currentSeason,
     );
 
-    // "Matchs préférés" = les mieux notés par l'utilisateur cette saison (décision produit
-    // du 2026-09-17), distinct de "derniers loggés" qui trie par récence.
-    const favoriteMatches = [...reviewsThisSeason]
-      .sort((a, b) => Number(b.rating) - Number(a.rating))
-      .slice(0, 4);
+    // "Matchs préférés" : choisis à la main parmi ses propres reviews depuis l'issue #51
+    // (avant, c'étaient automatiquement les mieux notés de la saison). Pas de limite de
+    // nombre, l'ordre est celui de l'ajout.
+    const favoriteMatches = activeReviews
+      .filter((r) => r.favoritedAt !== null)
+      .sort((a, b) => a.favoritedAt!.getTime() - b.favoritedAt!.getTime());
 
     // Club de cœur + équipes suivies sur le profil (issue #53) : le club de cœur reste unique
     // (User.favoriteTeamId), les équipes suivies viennent de la table favorite_teams.

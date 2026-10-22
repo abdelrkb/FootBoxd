@@ -54,6 +54,7 @@ export function ProfileView({
   headerAction,
   blockedByOwner,
   restricted,
+  onEditFavorites,
 }: {
   profile: Profile;
   headerAction: ReactNode;
@@ -63,6 +64,8 @@ export function ProfileView({
   // Profil privé (issue #18) : le visiteur ne suit pas encore (ou n'est pas le propriétaire) —
   // même traitement que blockedByOwner, message différent.
   restricted?: boolean;
+  // Fourni uniquement sur son propre profil (issue #51) : ouvre le sélecteur de matchs préférés.
+  onEditFavorites?: () => void;
 }) {
   const t = useTranslations('ProfileView');
   return (
@@ -148,17 +151,30 @@ export function ProfileView({
           </div>
 
           <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <h2 className="fb-section" style={{ margin: 0 }}>
-              {t('favoriteMatches')}
-            </h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+              <h2 className="fb-section" style={{ margin: 0 }}>
+                {t('favoriteMatches')}
+              </h2>
+              {onEditFavorites && (
+                <Button variant="secondary" size="sm" onClick={onEditFavorites}>
+                  {t('addFavoriteMatches')}
+                </Button>
+              )}
+            </div>
             {profile.favoriteMatches.length === 0 ? (
               <EmptySocial
                 title={t('seasonStartsHereTitle')}
-                subtitle={t('seasonStartsHereSubtitle')}
+                subtitle={onEditFavorites ? t('pickFavoriteMatchesHint') : t('seasonStartsHereSubtitle')}
                 action={
-                  <Link href="/">
-                    <Button size="sm">{t('viewTodayMatches')}</Button>
-                  </Link>
+                  onEditFavorites ? (
+                    <Button size="sm" onClick={onEditFavorites}>
+                      {t('addFavoriteMatches')}
+                    </Button>
+                  ) : (
+                    <Link href="/">
+                      <Button size="sm">{t('viewTodayMatches')}</Button>
+                    </Link>
+                  )
                 }
               />
             ) : (

@@ -6,9 +6,10 @@ import { LeaguesModule } from '../leagues/leagues.module.js';
 import { WatchlistModule } from '../watchlist/watchlist.module.js';
 import { BlocksModule } from '../blocks/blocks.module.js';
 import { TeamsModule } from '../teams/teams.module.js';
+import { ReviewsModule } from '../reviews/reviews.module.js';
 
 @Module({
-  imports: [FollowsModule, LeaguesModule, WatchlistModule, BlocksModule, TeamsModule],
+  imports: [FollowsModule, LeaguesModule, WatchlistModule, BlocksModule, TeamsModule, ReviewsModule],
   providers: [UsersService],
   controllers: [UsersController],
   exports: [UsersService],

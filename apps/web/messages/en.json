@@ -113,7 +113,9 @@
     "lastLoggedMatches": "Last logged matches",
     "noMatchLoggedThisSeason": "No match logged this season",
     "favoriteClubSection": "Favorite club",
-    "followedTeamsSection": "Followed teams"
+    "followedTeamsSection": "Followed teams",
+    "addFavoriteMatches": "Add matches",
+    "pickFavoriteMatchesHint": "Pick from the matches you've already rated."
   },
   "LoginPage": {
     "title": "Log in",
@@ -421,5 +423,12 @@
     "pointsCount": "{count} pts",
     "noUpcomingMatch": "No upcoming match yet",
     "comingSoon": "Coming soon"
+  },
+  "FavoriteMatchesPicker": {
+    "title": "My favorite matches",
+    "hint": "Pick from the matches you've rated. They'll show up on your profile.",
+    "noReviews": "You haven't rated any match yet.",
+    "loadMore": "Load more",
+    "done": "Done"
   }
 }
