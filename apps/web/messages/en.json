@@ -188,6 +188,8 @@
     "settings": "Settings",
     "favoriteClub": "Favorite club (optional)",
     "favoriteClubHint": "Its matches will be pinned at the top of the home page.",
+    "teamFilterPlaceholder": "Filter by name…",
+    "noTeamMatches": "No team matches.",
     "prefLikes": "Likes",
     "prefReplies": "Replies",
     "prefNewFollowers": "New followers",
