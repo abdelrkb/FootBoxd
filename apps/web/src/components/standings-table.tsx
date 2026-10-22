@@ -37,10 +37,8 @@ export function StandingsTable({ standings, highlightTeamId }: { standings: Stan
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--fb-border)', borderRadius: 12, overflow: 'hidden' }}>
         <div
-          className="fb-label"
+          className="fb-label fb-standings-row"
           style={{
-            display: 'grid',
-            gridTemplateColumns: '28px 1fr 34px 34px 34px 34px',
             gap: 8,
             padding: '8px 14px',
             fontSize: 10.5,
@@ -52,7 +50,7 @@ export function StandingsTable({ standings, highlightTeamId }: { standings: Stan
           <span>{t('team')}</span>
           <span style={{ textAlign: 'right' }}>{t('played')}</span>
           <span style={{ textAlign: 'right' }}>{t('goalDifference')}</span>
-          <span style={{ textAlign: 'right' }}>{t('goalsFor')}</span>
+          <span className="fb-standings-optional" style={{ textAlign: 'right' }}>{t('goalsFor')}</span>
           <span style={{ textAlign: 'right' }}>{t('points')}</span>
         </div>
         {standings.map((row) => {
@@ -62,10 +60,8 @@ export function StandingsTable({ standings, highlightTeamId }: { standings: Stan
               key={row.id}
               href={`/teams/${row.team.id}`}
               title={zone?.label}
-              className="fb-num"
+              className="fb-num fb-standings-row"
               style={{
-                display: 'grid',
-                gridTemplateColumns: '28px 1fr 34px 34px 34px 34px',
                 gap: 8,
                 padding: '10px 14px',
                 fontSize: 13,
@@ -86,7 +82,7 @@ export function StandingsTable({ standings, highlightTeamId }: { standings: Stan
               </span>
               <span style={{ textAlign: 'right' }}>{row.played}</span>
               <span style={{ textAlign: 'right' }}>{row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}</span>
-              <span style={{ textAlign: 'right' }}>{row.goalsFor}</span>
+              <span className="fb-standings-optional" style={{ textAlign: 'right' }}>{row.goalsFor}</span>
               <span style={{ textAlign: 'right', fontWeight: 700 }}>{row.points}</span>
             </Link>
           );

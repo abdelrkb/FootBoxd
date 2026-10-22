@@ -153,9 +153,8 @@ export function ProfileView({
           )}
 
           <div
+            className="fb-stat-grid"
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
               gap: 1,
               background: 'var(--fb-border)',
               border: '1px solid var(--fb-border)',
@@ -202,7 +201,7 @@ export function ProfileView({
                 }
               />
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 16 }}>
+              <div className="fb-card-grid" style={{ gap: 16 }}>
                 {profile.favoriteMatches.map((review) => (
                   <ProfileMatchCard key={review.id} review={review} />
                 ))}
@@ -217,7 +216,7 @@ export function ProfileView({
             {profile.lastReviews.length === 0 ? (
               <EmptyContent title={t('noMatchLoggedThisSeason')} />
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 16 }}>
+              <div className="fb-card-grid" style={{ gap: 16 }}>
                 {profile.lastReviews.map((review) => (
                   <ProfileMatchCard key={review.id} review={review} />
                 ))}

@@ -219,7 +219,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.35fr) minmax(0, 1fr)', gap: 32, alignItems: 'start' }}>
+      <div className="fb-split" style={{ gap: 32, alignItems: 'start' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32, minWidth: 0 }}>
           {!user && (
             <div

@@ -136,3 +136,160 @@ button {
   border-color: var(--fb-border-strong);
   background: var(--fb-surface-3);
 }
+
+/* ——— Responsive (issue #65) ———
+   Le style de l'app est écrit en `style={{…}}` inline, et une déclaration inline ne peut pas
+   contenir de `@media`. Tout ce qui doit changer selon la largeur passe donc par ces classes.
+   Seuil mobile : 720px (téléphone + petites tablettes en portrait). */
+
+/* Mise en page "contenu + colonne latérale" (accueil, fiche match) : une seule colonne. */
+.fb-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+}
+
+/* Grille de cartes de match : 4 colonnes au large, 2 sur mobile (choix produit du 2026-10-22). */
+.fb-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Tuiles de statistiques du profil : 4 de front, 2x2 sur mobile. */
+.fb-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Ligne du tableau de classement : la colonne "buts pour" saute sur mobile, c'est la moins
+   utile des quatre chiffres et elle coûte une colonne entière. */
+.fb-standings-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 34px 34px 34px 34px;
+}
+
+@media (max-width: 1100px) {
+  .fb-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .fb-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fb-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fb-standings-row {
+    grid-template-columns: 24px 1fr 30px 34px 34px;
+    font-size: 12px;
+  }
+
+  .fb-standings-optional {
+    display: none;
+  }
+
+  /* Les titres XXL du desktop débordent sur un écran de 390px. */
+  .fb-display {
+    font-size: 30px;
+  }
+}
+
+/* Noms des deux équipes : sur une ligne au large, empilés sur mobile (issue #65). Les
+   appelants posent souvent `overflow:hidden / text-overflow:ellipsis` en inline sur le
+   conteneur ; en colonne c'est chaque nom qui doit être tronqué, d'où la règle sur les
+   enfants. */
+@media (max-width: 720px) {
+  .fb-team-pair {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.22;
+    min-width: 0;
+  }
+
+  .fb-team-pair > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fb-team-pair-sep {
+    display: none;
+  }
+}
+
+/* Colonne droite d'une ligne de match (score + badge V/N/D) : largeur fixe pour que tout
+   s'aligne d'une ligne à l'autre (issue #52), mais resserrée sur mobile — sinon il ne reste
+   presque rien pour le nom des équipes sur un écran de 390px. */
+.fb-match-right {
+  width: 148px;
+}
+
+@media (max-width: 720px) {
+  .fb-match-right {
+    width: 92px;
+  }
+}
+
+/* Rangée qui défile horizontalement au lieu d'élargir la page (carrousel de dates, onglets).
+   Sans ça, 7 pastilles de date en `nowrap` forcent ~490px et débordent d'un écran de 390px. */
+.fb-hscroll {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fb-hscroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ——— Barre d'onglets mobile (issue #65) ———
+   Sur mobile la navigation passe en bas, au pouce ; la barre du haut ne garde que le logo. */
+.fb-nav-links {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.fb-nav-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.fb-tabbar {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .fb-tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: stretch;
+    background: var(--fb-surface);
+    border-top: 1px solid var(--fb-border);
+    /* Encoche / barre d'accueil iOS. */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Laisse la place à la barre d'onglets pour ne pas masquer le bas du contenu. */
+  main {
+    padding-bottom: 72px;
+  }
+
+  /* Liens et actions de la barre du haut : remplacés par la barre d'onglets. */
+  .fb-nav-links,
+  .fb-nav-actions {
+    display: none;
+  }
+}
