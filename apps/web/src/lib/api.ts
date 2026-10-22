@@ -307,6 +307,12 @@ export const favoriteTeam = (teamId: string) =>
 export const unfavoriteTeam = (teamId: string) =>
   apiFetch<{ success: boolean }>(`/teams/${teamId}/favorite`, { method: 'DELETE' });
 
+// Onglets de la page ligue (issue #58).
+export const getLeagueStandings = (leagueId: string) => apiFetch<Standing[]>(`/leagues/${leagueId}/standings`);
+
+export const getLeagueUpcomingMatches = (leagueId: string) =>
+  apiFetch<Match[]>(`/leagues/${leagueId}/upcoming-matches`);
+
 export const getTeamOverview = (teamId: string) => apiFetch<TeamOverview>(`/teams/${teamId}`);
 
 export const getTeamStandings = (teamId: string) => apiFetch<Standing[]>(`/teams/${teamId}/standings`);

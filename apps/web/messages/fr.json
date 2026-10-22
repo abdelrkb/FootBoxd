@@ -228,7 +228,11 @@
   },
   "LeagueDetailPage": {
     "favorite": "Favori",
-    "add": "Ajouter"
+    "add": "Ajouter",
+    "tabMatches": "Matchs",
+    "tabStandings": "Classement",
+    "tabCalendar": "Calendrier",
+    "noUpcomingMatch": "Aucun match à venir."
   },
   "KickoffCountdown": {
     "kickoff": "Coup d'envoi",
@@ -402,13 +406,6 @@
     "resultWin": "V",
     "resultDraw": "N",
     "resultLoss": "D",
-    "standingsUnavailable": "Classement indisponible",
-    "standingsUnavailableHint": "Pas encore synchronisé pour cette compétition.",
-    "team": "Équipe",
-    "played": "MJ",
-    "goalDifference": "DB",
-    "goalsFor": "B",
-    "points": "Pts",
     "squadUnavailable": "Effectif indisponible",
     "squadUnavailableHint": "Pas encore synchronisé pour cette équipe.",
     "outOfReviews": "sur {count, plural, one {# review} other {# reviews}}",
@@ -448,5 +445,14 @@
     "restricted": "Ce profil est privé — tu n'as pas accès à ses matchs notés.",
     "count": "{count, plural, one {# match} other {# matchs}}",
     "loadMore": "Voir plus"
+  },
+  "StandingsTable": {
+    "team": "Équipe",
+    "played": "MJ",
+    "goalDifference": "DB",
+    "goalsFor": "B",
+    "points": "Pts",
+    "standingsUnavailable": "Classement indisponible",
+    "standingsUnavailableHint": "Pas encore synchronisé pour cette compétition."
   }
 }
