@@ -232,12 +232,11 @@ export default function HomePage() {
 
   return (
     <div
+      className="fb-split"
       style={{
         maxWidth: 1240,
         margin: '0 auto',
         padding: '32px 24px 80px',
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1.35fr) minmax(0, 1fr)',
         gap: 40,
         alignItems: 'start',
       }}

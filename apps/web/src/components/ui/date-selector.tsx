@@ -62,7 +62,7 @@ export function DateSelector({ selected, onSelect }: { selected: string; onSelec
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
       <ArrowButton direction="prev" onClick={() => setStartOffset((o) => o - 1)} />
-      <div style={{ display: 'flex', gap: 5, flex: 1, minWidth: 0, flexWrap: 'nowrap' }}>
+      <div className="fb-hscroll" style={{ gap: 5, flex: 1, minWidth: 0 }}>
         {days.map((d) => (
           <Pill key={d} compact selected={d === selected} onClick={() => onSelect(d)}>
             {d === today ? (

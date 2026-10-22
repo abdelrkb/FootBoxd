@@ -6,7 +6,10 @@
     "verifyEmailCta": "Enter the code",
     "logout": "Log out",
     "login": "Log in",
-    "register": "Sign up"
+    "register": "Sign up",
+    "watchlist": "Watchlist",
+    "notifications": "Alerts",
+    "profile": "Profile"
   },
   "HomePage": {
     "myLeagues": "My leagues",

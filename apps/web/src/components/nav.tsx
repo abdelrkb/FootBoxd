@@ -30,6 +30,81 @@ function BellIcon() {
   );
 }
 
+function TabIcon({ d }: { d: string }) {
+  return (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d={d} />
+    </svg>
+  );
+}
+
+const TAB_ICONS = {
+  home: 'M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5',
+  search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4',
+  watchlist: 'm12 3.5 2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.8l6-.8L12 3.5Z',
+  bell: 'M18 9a6 6 0 1 0-12 0c0 4-1.5 5.5-1.5 5.5h15S18 13 18 9ZM10.2 18a2 2 0 0 0 3.6 0',
+  profile: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20a7.5 7.5 0 0 1 15 0',
+  login: 'M10 4h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-8M14 12H3m0 0 3.5-3.5M3 12l3.5 3.5',
+} as const;
+
+// Navigation mobile (issue #65) : barre d'onglets fixe en bas, atteignable au pouce, à la
+// place des liens de la barre du haut qui passaient sur deux lignes sur un écran de 390px.
+// Masquée au-delà de 720px par `.fb-tabbar` (voir globals.css).
+function MobileTabBar({ unreadCount }: { unreadCount: number }) {
+  const t = useTranslations('Nav');
+  const { user, loading } = useAuth();
+  const pathname = usePathname();
+
+  if (loading) return null;
+
+  const tabs = user
+    ? [
+        { href: '/', label: t('home'), icon: TAB_ICONS.home },
+        { href: '/search', label: t('search'), icon: TAB_ICONS.search },
+        { href: '/watchlist', label: t('watchlist'), icon: TAB_ICONS.watchlist },
+        { href: '/notifications', label: t('notifications'), icon: TAB_ICONS.bell, badge: unreadCount },
+        { href: '/profile', label: t('profile'), icon: TAB_ICONS.profile },
+      ]
+    : [
+        { href: '/', label: t('home'), icon: TAB_ICONS.home },
+        { href: '/search', label: t('search'), icon: TAB_ICONS.search },
+        { href: '/login', label: t('login'), icon: TAB_ICONS.login },
+      ];
+
+  return (
+    <nav className="fb-tabbar">
+      {tabs.map((tab) => {
+        const active = pathname === tab.href;
+        return (
+          <Link
+            key={tab.href}
+            href={tab.href}
+            className="fb-label"
+            style={{
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              padding: '9px 2px 10px',
+              fontSize: 9.5,
+              letterSpacing: '0.06em',
+              color: active ? 'var(--fb-action)' : 'var(--fb-text-2)',
+            }}
+          >
+            <span style={{ position: 'relative', display: 'inline-flex' }}>
+              <TabIcon d={tab.icon} />
+              {'badge' in tab && (tab.badge ?? 0) > 0 && <NotificationBadge count={tab.badge!} />}
+            </span>
+            {tab.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 // Rappel de vérification d'email (2026-10-02) : le compte reste utilisable sans vérifier
 // (décision produit), un simple bandeau suffit — jamais affiché sur /verify-email elle-même.
 function VerifyEmailBanner() {
@@ -95,28 +170,30 @@ export function Nav() {
             flexShrink: 0,
           }}
         />
-        {links.map((link) => {
-          const active = pathname === link.href;
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="fb-label"
-              style={{
-                padding: '9px 14px 7px',
-                borderBottom: active ? '2px solid var(--fb-action)' : '2px solid transparent',
-                fontSize: 13,
-                fontWeight: active ? 700 : 600,
-                color: active ? 'var(--fb-text)' : 'var(--fb-text-2)',
-              }}
-            >
-              {link.label}
-            </Link>
-          );
-        })}
+        <div className="fb-nav-links">
+          {links.map((link) => {
+            const active = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="fb-label"
+                style={{
+                  padding: '9px 14px 7px',
+                  borderBottom: active ? '2px solid var(--fb-action)' : '2px solid transparent',
+                  fontSize: 13,
+                  fontWeight: active ? 700 : 600,
+                  color: active ? 'var(--fb-text)' : 'var(--fb-text-2)',
+                }}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+      <div className="fb-nav-actions">
         {loading ? null : user ? (
           <>
             <Link
@@ -181,6 +258,7 @@ export function Nav() {
         )}
       </div>
     </nav>
+    <MobileTabBar unreadCount={unreadCount} />
     </>
   );
 }

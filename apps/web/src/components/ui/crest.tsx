@@ -105,12 +105,15 @@ export function TeamNamePair({
     };
   }
 
+  // `fb-team-pair` empile les deux noms l'un sous l'autre sur mobile et masque le tiret
+  // (issue #65) : sur une ligne, « Universitatea Craiova — Getafe » n'a qu'une centaine de
+  // pixels sur un écran de 390px et se réduit à « Universit… ».
   return (
-    <span className={className} style={style}>
+    <span className={`fb-team-pair${className ? ` ${className}` : ''}`} style={style}>
       <span onClick={goToTeam(home.id)} style={{ cursor: 'pointer' }}>
         {home.name}
       </span>
-      {' — '}
+      <span className="fb-team-pair-sep">{' — '}</span>
       <span onClick={goToTeam(away.id)} style={{ cursor: 'pointer' }}>
         {away.name}
       </span>

@@ -95,7 +95,7 @@ function MatchRow({ match, perspectiveTeamId }: { match: Match; perspectiveTeamI
       </div>
       {/* Colonne de droite de largeur fixe (issue #52) : sans elle, le score et le badge V/N/D se
           décalent d'une ligne à l'autre selon la longueur du nom des équipes. */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, width: 148, flexShrink: 0 }}>
+      <div className="fb-match-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
         {match.status === 'scheduled' ? (
           <span className="fb-num" style={{ color: 'var(--fb-text-2)' }}>
             <ClientDate iso={match.kickoffAt} options={{ day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }} fallback="" />
