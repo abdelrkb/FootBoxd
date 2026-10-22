@@ -188,6 +188,8 @@
     "settings": "Réglages",
     "favoriteClub": "Club de cœur (optionnel)",
     "favoriteClubHint": "Ses matchs seront épinglés en haut de l'accueil.",
+    "teamFilterPlaceholder": "Filtrer par nom…",
+    "noTeamMatches": "Aucune équipe ne correspond.",
     "prefLikes": "J'aime",
     "prefReplies": "Réponses",
     "prefNewFollowers": "Nouveaux abonnés",

@@ -53,6 +53,7 @@ export default function OnboardingPage() {
   const [leagueFilter, setLeagueFilter] = useState('');
   const [selectedLeagueIds, setSelectedLeagueIds] = useState<Set<string>>(new Set());
   const [teams, setTeams] = useState<Team[]>([]);
+  const [teamFilter, setTeamFilter] = useState('');
   const [favoriteTeamId, setFavoriteTeamId] = useState<string | null>(null);
   const [prefs, setPrefs] = useState({
     notifyOnLike: true,
@@ -122,6 +123,12 @@ export default function OnboardingPage() {
     return sortedLeagues.filter((l) => l.name.toLowerCase().includes(q) || (l.country ?? '').toLowerCase().includes(q));
   }, [sortedLeagues, leagueFilter]);
 
+  const filteredTeams = useMemo(() => {
+    const q = teamFilter.trim().toLowerCase();
+    if (!q) return teams;
+    return teams.filter((t) => t.name.toLowerCase().includes(q));
+  }, [teams, teamFilter]);
+
   function LeagueTile({ league }: { league: League }) {
     const selected = selectedLeagueIds.has(league.id);
     return (
@@ -156,13 +163,18 @@ export default function OnboardingPage() {
 
       {step === 0 && (
         <>
-          <div>
-            <h1 className="fb-display" style={{ fontSize: 32, margin: 0 }}>
-              {t('yourLeagues')}
-            </h1>
-            <p style={{ color: 'var(--fb-text-2)', fontSize: 15, marginTop: 8 }}>
-              {t('chooseCompetitions')}
-            </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+            <div>
+              <h1 className="fb-display" style={{ fontSize: 32, margin: 0 }}>
+                {t('yourLeagues')}
+              </h1>
+              <p style={{ color: 'var(--fb-text-2)', fontSize: 15, marginTop: 8 }}>
+                {t('chooseCompetitions')}
+              </p>
+            </div>
+            <Button disabled={selectedLeagueIds.size === 0 || saving} loading={saving} onClick={goToStep2} style={{ flexShrink: 0 }}>
+              {t('continue')}
+            </Button>
           </div>
 
           <input
@@ -243,10 +255,13 @@ export default function OnboardingPage() {
 
       {step === 1 && (
         <>
-          <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
             <h1 className="fb-display" style={{ fontSize: 32, margin: 0 }}>
               {t('settings')}
             </h1>
+            <Button loading={saving} onClick={goToStep3} style={{ flexShrink: 0 }}>
+              {t('continue')}
+            </Button>
           </div>
 
           {teams.length > 0 && (
@@ -255,8 +270,30 @@ export default function OnboardingPage() {
                 {t('favoriteClub')}
               </span>
               <p style={{ fontSize: 13, color: 'var(--fb-text-2)', margin: 0 }}>{t('favoriteClubHint')}</p>
+              {teams.length > 8 && (
+                <input
+                  value={teamFilter}
+                  onChange={(e) => setTeamFilter(e.target.value)}
+                  placeholder={t('teamFilterPlaceholder')}
+                  className="fb-label"
+                  style={{
+                    height: 42,
+                    padding: '0 16px',
+                    borderRadius: 999,
+                    border: '1px solid var(--fb-border)',
+                    background: 'var(--fb-bg)',
+                    color: 'var(--fb-text)',
+                    fontSize: 13,
+                    textTransform: 'none',
+                    letterSpacing: 'normal',
+                  }}
+                />
+              )}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {teams.map((team) => {
+                {filteredTeams.length === 0 && (
+                  <p className="fb-meta">{t('noTeamMatches')}</p>
+                )}
+                {filteredTeams.map((team) => {
                   const selected = favoriteTeamId === team.id;
                   return (
                     <button
