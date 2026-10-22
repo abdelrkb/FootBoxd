@@ -83,7 +83,7 @@ function MatchRow({ match, perspectiveTeamId }: { match: Match; perspectiveTeamI
         gap: 12,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
         <CrestPair home={match.homeTeam} away={match.awayTeam} size={32} />
         <TeamNamePair
           home={match.homeTeam}
@@ -92,23 +92,29 @@ function MatchRow({ match, perspectiveTeamId }: { match: Match; perspectiveTeamI
           style={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
         />
       </div>
-      {match.status === 'scheduled' ? (
-        <span className="fb-num" style={{ color: 'var(--fb-text-2)', flexShrink: 0 }}>
-          <ClientDate iso={match.kickoffAt} options={{ day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }} fallback="" />
-        </span>
-      ) : match.status === 'live' || match.status === 'finished' ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-          <SpoilerScore>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {result && <ResultBadge result={result} />}
-              <ScoreChip home={match.homeScore} away={match.awayScore} live={match.status === 'live'} />
-            </div>
-          </SpoilerScore>
-          {match.status === 'live' && <StatusLabel status={match.status} minute={match.liveMinute} />}
-        </div>
-      ) : (
-        <StatusLabel status={match.status} />
-      )}
+      {/* Colonne de droite de largeur fixe (issue #52) : sans elle, le score et le badge V/N/D se
+          décalent d'une ligne à l'autre selon la longueur du nom des équipes. */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, width: 148, flexShrink: 0 }}>
+        {match.status === 'scheduled' ? (
+          <span className="fb-num" style={{ color: 'var(--fb-text-2)' }}>
+            <ClientDate iso={match.kickoffAt} options={{ day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }} fallback="" />
+          </span>
+        ) : match.status === 'live' || match.status === 'finished' ? (
+          <>
+            <SpoilerScore>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {/* Emplacement du badge toujours réservé, même sans résultat, pour que le score
+                    reste à la même abscisse. */}
+                <span style={{ width: 20, flexShrink: 0 }}>{result && <ResultBadge result={result} />}</span>
+                <ScoreChip home={match.homeScore} away={match.awayScore} live={match.status === 'live'} />
+              </div>
+            </SpoilerScore>
+            {match.status === 'live' && <StatusLabel status={match.status} minute={match.liveMinute} />}
+          </>
+        ) : (
+          <StatusLabel status={match.status} />
+        )}
+      </div>
       <MatchCardMenu match={match} />
     </Link>
   );

@@ -145,7 +145,7 @@ function LeagueDetailPageInner({ params }: { params: PageProps<'/leagues/[id]'>[
               gap: 12,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
               <CrestPair home={match.homeTeam} away={match.awayTeam} size={34} />
               <TeamNamePair
                 home={match.homeTeam}
@@ -154,7 +154,7 @@ function LeagueDetailPageInner({ params }: { params: PageProps<'/leagues/[id]'>[
                 style={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
               />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
               <MatchRight match={match} />
               <MatchCardMenu match={match} showWatchlist />
             </div>
