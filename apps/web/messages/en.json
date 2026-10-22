@@ -228,7 +228,11 @@
   },
   "LeagueDetailPage": {
     "favorite": "Favorite",
-    "add": "Add"
+    "add": "Add",
+    "tabMatches": "Matches",
+    "tabStandings": "Standings",
+    "tabCalendar": "Calendar",
+    "noUpcomingMatch": "No upcoming match."
   },
   "KickoffCountdown": {
     "kickoff": "Kickoff",
@@ -402,13 +406,6 @@
     "resultWin": "W",
     "resultDraw": "D",
     "resultLoss": "L",
-    "standingsUnavailable": "Standings unavailable",
-    "standingsUnavailableHint": "Not synced yet for this competition.",
-    "team": "Team",
-    "played": "P",
-    "goalDifference": "GD",
-    "goalsFor": "GF",
-    "points": "Pts",
     "squadUnavailable": "Squad unavailable",
     "squadUnavailableHint": "Not synced yet for this team.",
     "outOfReviews": "out of {count, plural, one {# review} other {# reviews}}",
@@ -448,5 +445,14 @@
     "restricted": "This profile is private — you don't have access to their rated matches.",
     "count": "{count, plural, one {# match} other {# matches}}",
     "loadMore": "Load more"
+  },
+  "StandingsTable": {
+    "team": "Team",
+    "played": "P",
+    "goalDifference": "GD",
+    "goalsFor": "GF",
+    "points": "Pts",
+    "standingsUnavailable": "Standings unavailable",
+    "standingsUnavailableHint": "Not synced yet for this competition."
   }
 }

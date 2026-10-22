@@ -29,6 +29,16 @@ export class LeaguesController {
     return this.leaguesService.findTeams(id);
   }
 
+  @Get(':id/standings')
+  standings(@Param('id', ParseUUIDPipe) id: string) {
+    return this.leaguesService.getStandings(id);
+  }
+
+  @Get(':id/upcoming-matches')
+  upcomingMatches(@Param('id', ParseUUIDPipe) id: string) {
+    return this.leaguesService.findUpcomingMatches(id);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post(':id/favorite')
   @HttpCode(200)

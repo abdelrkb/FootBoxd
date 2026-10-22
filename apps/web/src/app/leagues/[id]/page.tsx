@@ -4,7 +4,7 @@ import { Suspense, use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import type { Match, League } from '@football-app/shared-types';
+import type { Match, League, Standing } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import { ClientDate } from '../../../components/client-date';
@@ -16,6 +16,7 @@ import { EmptyContent } from '../../../components/ui/empty-state';
 import { SkeletonList } from '../../../components/ui/skeleton';
 import { SpoilerScore } from '../../../components/ui/spoiler-score';
 import { MatchCardMenu } from '../../../components/ui/match-card-menu';
+import { StandingsTable } from '../../../components/standings-table';
 import { todayString } from '../../../lib/calendar-days';
 
 function MatchRight({ match }: { match: Match }) {
@@ -39,6 +40,48 @@ function MatchRight({ match }: { match: Match }) {
   return <StatusLabel status={match.status} />;
 }
 
+function LeagueMatchRow({ match }: { match: Match }) {
+  return (
+    <Link
+      href={`/matches/${match.id}`}
+      className="fb-card"
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 14,
+        border: '1px solid var(--fb-border)',
+        borderRadius: 12,
+        textDecoration: 'none',
+        color: 'inherit',
+        gap: 12,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
+        <CrestPair home={match.homeTeam} away={match.awayTeam} size={34} />
+        <TeamNamePair
+          home={match.homeTeam}
+          away={match.awayTeam}
+          className="fb-card-title"
+          style={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
+        <MatchRight match={match} />
+        <MatchCardMenu match={match} showWatchlist />
+      </div>
+    </Link>
+  );
+}
+
+type LeagueTab = 'matches' | 'standings' | 'calendar';
+
+const LEAGUE_TABS: { key: LeagueTab; labelKey: 'tabMatches' | 'tabStandings' | 'tabCalendar' }[] = [
+  { key: 'matches', labelKey: 'tabMatches' },
+  { key: 'standings', labelKey: 'tabStandings' },
+  { key: 'calendar', labelKey: 'tabCalendar' },
+];
+
 // useSearchParams() doit être sous un Suspense pour le build de prod (next build échoue sinon
 // à la prérender statique — vérifié en réel au premier build de prod du projet, 2026-10-22).
 export default function LeagueDetailPage({ params }: PageProps<'/leagues/[id]'>) {
@@ -60,6 +103,11 @@ function LeagueDetailPageInner({ params }: { params: PageProps<'/leagues/[id]'>[
   const [league, setLeague] = useState<League | null>(null);
   const [matches, setMatches] = useState<Match[] | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  // Onglets de la page ligue (issue #58) : les matchs du jour ne suffisaient pas, il manquait
+  // le classement et le calendrier de la compétition.
+  const [tab, setTab] = useState<LeagueTab>('matches');
+  const [standings, setStandings] = useState<Standing[] | null>(null);
+  const [upcoming, setUpcoming] = useState<Match[] | null>(null);
 
   useEffect(() => {
     api.getLeague(id).then(setLeague);
@@ -74,6 +122,12 @@ function LeagueDetailPageInner({ params }: { params: PageProps<'/leagues/[id]'>[
     if (!user) return;
     api.getFavoriteLeagues(user.id).then((favs) => setIsFavorite(favs.some((l) => l.id === id)));
   }, [user, id]);
+
+  // Chargés à la première ouverture de leur onglet seulement.
+  useEffect(() => {
+    if (tab === 'standings' && standings === null) api.getLeagueStandings(id).then(setStandings);
+    if (tab === 'calendar' && upcoming === null) api.getLeagueUpcomingMatches(id).then(setUpcoming);
+  }, [tab, id, standings, upcoming]);
 
   async function toggleFavorite() {
     if (!user) return;
@@ -122,45 +176,58 @@ function LeagueDetailPageInner({ params }: { params: PageProps<'/leagues/[id]'>[
         )}
       </div>
 
-      <DateSelector selected={selectedDate} onSelect={setSelectedDate} />
-
-      {matches === null && <SkeletonList />}
-      {matches?.length === 0 && <EmptyContent title={tHome('noMatchesToday')} subtitle={tHome('tryAnotherDay')} />}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {matches?.map((match) => (
-          <Link
-            key={match.id}
-            href={`/matches/${match.id}`}
-            className="fb-card"
+      <div style={{ display: 'flex', gap: 6, borderBottom: '1px solid var(--fb-border)', overflowX: 'auto' }}>
+        {LEAGUE_TABS.map(({ key, labelKey }) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className="fb-label"
             style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: 14,
-              border: '1px solid var(--fb-border)',
-              borderRadius: 12,
-              textDecoration: 'none',
-              color: 'inherit',
-              gap: 12,
+              padding: '10px 14px',
+              background: 'none',
+              border: 'none',
+              borderBottom: tab === key ? '2px solid var(--fb-action)' : '2px solid transparent',
+              color: tab === key ? 'var(--fb-text)' : 'var(--fb-text-2)',
+              fontSize: 13,
+              fontWeight: tab === key ? 700 : 600,
+              whiteSpace: 'nowrap',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: 1 }}>
-              <CrestPair home={match.homeTeam} away={match.awayTeam} size={34} />
-              <TeamNamePair
-                home={match.homeTeam}
-                away={match.awayTeam}
-                className="fb-card-title"
-                style={{ fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-              />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
-              <MatchRight match={match} />
-              <MatchCardMenu match={match} showWatchlist />
-            </div>
-          </Link>
+            {t(labelKey)}
+          </button>
         ))}
       </div>
+
+      {tab === 'standings' &&
+        (standings === null ? <SkeletonList /> : <StandingsTable standings={standings} />)}
+
+      {tab === 'calendar' &&
+        (upcoming === null ? (
+          <SkeletonList />
+        ) : upcoming.length === 0 ? (
+          <EmptyContent title={t('noUpcomingMatch')} />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {upcoming.map((match) => (
+              <LeagueMatchRow key={match.id} match={match} />
+            ))}
+          </div>
+        ))}
+
+      {tab === 'matches' && <DateSelector selected={selectedDate} onSelect={setSelectedDate} />}
+
+      {tab === 'matches' && matches === null && <SkeletonList />}
+      {tab === 'matches' && matches?.length === 0 && (
+        <EmptyContent title={tHome('noMatchesToday')} subtitle={tHome('tryAnotherDay')} />
+      )}
+
+      {tab === 'matches' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {matches?.map((match) => (
+            <LeagueMatchRow key={match.id} match={match} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

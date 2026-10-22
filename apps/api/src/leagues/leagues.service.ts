@@ -31,6 +31,31 @@ export class LeaguesService {
     return league;
   }
 
+  // Classement de la compétition sur sa saison en cours (issue #58). Vide si la ligue n'a pas
+  // de saison courante connue ou si le worker n'a pas encore synchronisé de classement — toutes
+  // les compétitions n'en ont pas (coupes à élimination directe).
+  async getStandings(leagueId: string) {
+    const league = await this.findById(leagueId);
+    if (!league.currentSeason) return [];
+
+    return this.prisma.client.standing.findMany({
+      where: { leagueId, season: league.currentSeason },
+      include: { team: { select: { id: true, name: true, logoUrl: true } } },
+      orderBy: { rank: 'asc' },
+    });
+  }
+
+  // Calendrier de la compétition (issue #58) : les matchs à venir, toutes dates confondues —
+  // la page ligue n'affichait jusqu'ici que la journée sélectionnée dans le carrousel.
+  findUpcomingMatches(leagueId: string, limit = 50) {
+    return this.prisma.client.match.findMany({
+      where: { leagueId, status: { in: ['scheduled', 'postponed', 'suspended'] } },
+      include: { league: true, homeTeam: true, awayTeam: true },
+      orderBy: { kickoffAt: 'asc' },
+      take: limit,
+    });
+  }
+
   findFavoritesForUser(userId: string) {
     return this.prisma.client.favoriteLeague
       .findMany({ where: { userId }, include: { league: true } })
