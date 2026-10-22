@@ -113,7 +113,9 @@
     "lastLoggedMatches": "Derniers matchs loggés",
     "noMatchLoggedThisSeason": "Aucun match loggé cette saison",
     "favoriteClubSection": "Club de cœur",
-    "followedTeamsSection": "Équipes suivies"
+    "followedTeamsSection": "Équipes suivies",
+    "addFavoriteMatches": "Ajouter des matchs",
+    "pickFavoriteMatchesHint": "Choisis parmi les matchs que tu as déjà notés."
   },
   "LoginPage": {
     "title": "Connexion",
@@ -421,5 +423,12 @@
     "pointsCount": "{count} pts",
     "noUpcomingMatch": "Aucun match à venir pour l'instant",
     "comingSoon": "Bientôt disponible"
+  },
+  "FavoriteMatchesPicker": {
+    "title": "Mes matchs préférés",
+    "hint": "Choisis parmi les matchs que tu as notés. Ils apparaîtront sur ton profil.",
+    "noReviews": "Tu n'as encore noté aucun match.",
+    "loadMore": "Voir plus",
+    "done": "Terminé"
   }
 }

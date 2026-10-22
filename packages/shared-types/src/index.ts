@@ -135,6 +135,8 @@ export interface Review {
   // "Noter sans logger" (issue #15) : true si posée depuis une mini-card sans ouvrir la fiche.
   // Compte dans les stats/moyennes comme une review normale, exclue des flux de logs.
   quickRating: boolean;
+  // "Matchs préférés" du profil (issue #51) : épinglé à la main par l'auteur. null = non épinglé.
+  favoritedAt: string | null;
   user: UserSummary;
   _count: { likes: number; comments: number };
   tags: Tag[];

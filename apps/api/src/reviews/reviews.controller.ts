@@ -68,4 +68,20 @@ export class ReviewsController {
     await this.reviewsService.unlike(id, user.id);
     return { success: true };
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/favorite')
+  @HttpCode(200)
+  async favorite(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: PublicUser) {
+    await this.reviewsService.setFavorite(id, user.id, true);
+    return { success: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/favorite')
+  @HttpCode(200)
+  async unfavorite(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: PublicUser) {
+    await this.reviewsService.setFavorite(id, user.id, false);
+    return { success: true };
+  }
 }

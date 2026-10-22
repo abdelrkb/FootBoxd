@@ -23,6 +23,7 @@ import { WatchlistService } from '../watchlist/watchlist.service.js';
 import { BlocksService } from '../blocks/blocks.service.js';
 import { FollowsService } from '../follows/follows.service.js';
 import { TeamsService } from '../teams/teams.service.js';
+import { ReviewsService } from '../reviews/reviews.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { PublicUser } from '../auth/auth.service.js';
@@ -32,6 +33,7 @@ import { SetWatchlistVisibilityDto } from './dto/set-watchlist-visibility.dto.js
 import { SetProfilePrivacyDto } from './dto/set-profile-privacy.dto.js';
 import { SetLocaleDto } from './dto/set-locale.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
+import { ListUserReviewsDto } from './dto/list-user-reviews.dto.js';
 
 // Juste le sous-ensemble de `Express.Multer.File` réellement utilisé (voir
 // users.service.ts `uploadAvatar`) — évite une dépendance à `@types/multer` pour un seul champ
@@ -54,6 +56,7 @@ export class UsersController {
     private readonly blocksService: BlocksService,
     private readonly followsService: FollowsService,
     private readonly teamsService: TeamsService,
+    private readonly reviewsService: ReviewsService,
   ) {}
 
   @Get('search')
@@ -88,6 +91,15 @@ export class UsersController {
   @Get(':id/favorite-teams')
   favoriteTeams(@Param('id', ParseUUIDPipe) id: string) {
     return this.teamsService.findFavoritesForUser(id);
+  }
+
+  @Get(':id/reviews')
+  userReviews(@Param('id', ParseUUIDPipe) id: string, @Query() query: ListUserReviewsDto) {
+    return this.reviewsService.findForUser(id, {
+      scope: query.scope ?? 'all',
+      page: query.page ?? 0,
+      pageSize: query.pageSize ?? 10,
+    });
   }
 
   // Watchlist d'un autre utilisateur — 403 si elle n'est pas publique (voir WatchlistService).
