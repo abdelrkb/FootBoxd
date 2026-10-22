@@ -160,6 +160,9 @@ export const getCompatibility = (userId: string) => apiFetch<Compatibility>(`/us
 export const setProfilePrivacy = (isPrivate: boolean) =>
   apiFetch<PublicUser>('/users/me/profile-privacy', { method: 'PATCH', body: JSON.stringify({ isPrivate }) });
 
+export const setLocale = (locale: 'fr' | 'en') =>
+  apiFetch<PublicUser>('/users/me/locale', { method: 'PATCH', body: JSON.stringify({ locale }) });
+
 export const searchUsers = (query: string) =>
   apiFetch<UserSummary[]>(`/users/search?q=${encodeURIComponent(query)}`);
 

@@ -1,0 +1,40 @@
+{
+  "Nav": {
+    "home": "Accueil",
+    "search": "Recherche",
+    "verifyEmailBanner": "Confirme ton adresse email pour sécuriser ton compte.",
+    "verifyEmailCta": "Entrer le code",
+    "logout": "Déconnexion",
+    "login": "Connexion",
+    "register": "Inscription"
+  },
+  "HomePage": {
+    "myLeagues": "Mes ligues",
+    "allLeagues": "Toutes les ligues",
+    "noMatchesToday": "Aucun match ce jour-là",
+    "tryAnotherDay": "Essaie un autre jour du sélecteur.",
+    "favorite": "Favori",
+    "popularReviews": "Reviews populaires",
+    "friendsReviews": "Reviews de mes amis",
+    "accountsToFollow": "Comptes à suivre",
+    "popularMatches": "Matchs populaires",
+    "nothingPopular": "Rien de populaire pour l'instant",
+    "quietLast48h": "Les 48 dernières heures sont calmes.",
+    "loginToSeeFriends": "Connecte-toi pour voir tes amis",
+    "friendsRatingsHint": "Les notes des gens que tu suis s'affichent ici.",
+    "followPeopleFillFeed": "Suis des gens, remplis ton fil",
+    "notFollowingAnyoneYet": "Tu ne suis personne pour l'instant — leurs notes apparaîtront ici dès que ce sera le cas.",
+    "findPeople": "Trouver des gens",
+    "follow": "Suivre",
+    "sameClub": "Même club favori",
+    "mutualFriends": "{count, plural, one {# ami en commun} other {# amis en commun}}",
+    "sameClubAndMutualFriends": "Même club favori · {count, plural, one {# ami en commun} other {# amis en commun}}"
+  },
+  "SettingsLanguage": {
+    "title": "Langue",
+    "language": "Langue de l'application",
+    "hint": "Détectée automatiquement, modifiable à tout moment.",
+    "french": "Français",
+    "english": "English"
+  }
+}

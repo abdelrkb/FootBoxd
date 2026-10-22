@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Match, League, PopularReview, PopularMatch, ReviewWithMatch, UserSuggestion } from '@football-app/shared-types';
 import * as api from '../lib/api';
 import { useAuth } from '../lib/auth-context';
@@ -23,14 +24,16 @@ interface LeagueRow {
 }
 
 // "Supporte le même club, amis de tes amis" (issue #17) — raison affichée telle que calculée
-// côté service (follows.service.ts `getSuggestions`), pas reformulée en front.
-function reasonLabel(s: UserSuggestion): string {
-  if (s.reason === 'both') return `Même club favori · ${s.mutualFriends} ami${s.mutualFriends > 1 ? 's' : ''} en commun`;
-  if (s.reason === 'same_club') return 'Même club favori';
-  return `${s.mutualFriends} ami${s.mutualFriends > 1 ? 's' : ''} en commun`;
+// côté service (follows.service.ts `getSuggestions`), pas reformulée en front. Le pluriel
+// "ami(s)" est géré par le pluriel ICU du message (issue #27 : différent en anglais).
+function reasonLabel(t: ReturnType<typeof useTranslations>, s: UserSuggestion): string {
+  if (s.reason === 'both') return t('sameClubAndMutualFriends', { count: s.mutualFriends });
+  if (s.reason === 'same_club') return t('sameClub');
+  return t('mutualFriends', { count: s.mutualFriends });
 }
 
 function SuggestionRow({ suggestion, onFollowed }: { suggestion: UserSuggestion; onFollowed: (id: string) => void }) {
+  const t = useTranslations('HomePage');
   const [pending, setPending] = useState(false);
 
   async function handleFollow() {
@@ -52,18 +55,20 @@ function SuggestionRow({ suggestion, onFollowed }: { suggestion: UserSuggestion;
             {suggestion.displayName}
           </span>
           <span className="fb-meta" style={{ fontSize: 11.5 }}>
-            {reasonLabel(suggestion)}
+            {reasonLabel(t, suggestion)}
           </span>
         </div>
       </Link>
       <Button size="sm" loading={pending} onClick={handleFollow} style={{ flexShrink: 0 }}>
-        Suivre
+        {t('follow')}
       </Button>
     </div>
   );
 }
 
 function Sidebar({ user }: { user: { id: string } | null }) {
+  const t = useTranslations('HomePage');
+  const tNav = useTranslations('Nav');
   const [popularReviews, setPopularReviews] = useState<PopularReview[] | null>(null);
   const [followingReviews, setFollowingReviews] = useState<ReviewWithMatch[] | null>(null);
   const [popularMatches, setPopularMatches] = useState<PopularMatch[] | null>(null);
@@ -85,12 +90,12 @@ function Sidebar({ user }: { user: { id: string } | null }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 64 }}>
       <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <h2 className="fb-section" style={{ margin: 0 }}>
-          Reviews populaires
+          {t('popularReviews')}
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {popularReviews === null && <SkeletonList />}
           {popularReviews?.length === 0 && (
-            <EmptyContent title="Rien de populaire pour l'instant" subtitle="Les 48 dernières heures sont calmes." />
+            <EmptyContent title={t('nothingPopular')} subtitle={t('quietLast48h')} />
           )}
           {popularReviews?.map((r) => (
             <ReviewMiniCard key={r.id} review={r} />
@@ -100,21 +105,21 @@ function Sidebar({ user }: { user: { id: string } | null }) {
 
       <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <h2 className="fb-section" style={{ margin: 0 }}>
-          Reviews de mes amis
+          {t('friendsReviews')}
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {!user && (
             <EmptySocial
-              title="Connecte-toi pour voir tes amis"
-              subtitle="Les notes des gens que tu suis s'affichent ici."
+              title={t('loginToSeeFriends')}
+              subtitle={t('friendsRatingsHint')}
               action={
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <Link href="/login">
-                    <Button size="sm">Connexion</Button>
+                    <Button size="sm">{tNav('login')}</Button>
                   </Link>
                   <Link href="/register">
                     <Button size="sm" variant="secondary">
-                      Inscription
+                      {tNav('register')}
                     </Button>
                   </Link>
                 </div>
@@ -124,11 +129,11 @@ function Sidebar({ user }: { user: { id: string } | null }) {
           {user && followingReviews === null && <SkeletonList />}
           {user && followingReviews?.length === 0 && (
             <EmptySocial
-              title="Suis des gens, remplis ton fil"
-              subtitle="Tu ne suis personne pour l'instant — leurs notes apparaîtront ici dès que ce sera le cas."
+              title={t('followPeopleFillFeed')}
+              subtitle={t('notFollowingAnyoneYet')}
               action={
                 <Link href="/search">
-                  <Button size="sm">Trouver des gens</Button>
+                  <Button size="sm">{t('findPeople')}</Button>
                 </Link>
               }
             />
@@ -142,7 +147,7 @@ function Sidebar({ user }: { user: { id: string } | null }) {
       {user && suggestions !== null && suggestions.length > 0 && (
         <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <h2 className="fb-section" style={{ margin: 0 }}>
-            Comptes à suivre
+            {t('accountsToFollow')}
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {suggestions.map((s) => (
@@ -158,12 +163,12 @@ function Sidebar({ user }: { user: { id: string } | null }) {
 
       <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <h2 className="fb-section" style={{ margin: 0 }}>
-          Matchs populaires
+          {t('popularMatches')}
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {popularMatches === null && <SkeletonList />}
           {popularMatches?.length === 0 && (
-            <EmptyContent title="Rien de populaire pour l'instant" subtitle="Les 48 dernières heures sont calmes." />
+            <EmptyContent title={t('nothingPopular')} subtitle={t('quietLast48h')} />
           )}
           {popularMatches?.map((m) => (
             <MatchMiniCard key={m.id} match={m} />
@@ -175,6 +180,7 @@ function Sidebar({ user }: { user: { id: string } | null }) {
 }
 
 export default function HomePage() {
+  const t = useTranslations('HomePage');
   const { user, loading: authLoading } = useAuth();
   const [selectedDate, setSelectedDate] = useState(todayString());
   const [matches, setMatches] = useState<Match[] | null>(null);
@@ -231,10 +237,10 @@ export default function HomePage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h1 className="fb-display" style={{ margin: 0, fontSize: 34 }}>
-            Mes ligues
+            {t('myLeagues')}
           </h1>
           <Link href="/leagues" style={{ color: 'var(--fb-nav)', fontSize: 13 }}>
-            Toutes les ligues
+            {t('allLeagues')}
           </Link>
         </div>
 
@@ -242,7 +248,7 @@ export default function HomePage() {
 
         {loading && <SkeletonList />}
         {!loading && leagueRows.length === 0 && (
-          <EmptyContent title="Aucun match ce jour-là" subtitle="Essaie un autre jour du sélecteur." />
+          <EmptyContent title={t('noMatchesToday')} subtitle={t('tryAnotherDay')} />
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -267,7 +273,7 @@ export default function HomePage() {
                 <span style={{ width: 3, height: 20, borderRadius: 999, background: leagueAccentColor(league), flexShrink: 0 }} />
                 <Crest src={league.logoUrl} alt={league.name} size={24} />
                 {isFavorite && (
-                  <span style={{ color: 'var(--fb-rating)', fontSize: 15, flexShrink: 0 }} aria-label="Favori">
+                  <span style={{ color: 'var(--fb-rating)', fontSize: 15, flexShrink: 0 }} aria-label={t('favorite')}>
                     ★
                   </span>
                 )}

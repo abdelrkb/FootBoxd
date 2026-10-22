@@ -1,8 +1,10 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import type { PublicUser } from '@football-app/shared-types';
 import * as api from './api';
+import { getLocaleCookie, isLocale, setLocaleCookie } from '../i18n/config';
 
 interface AuthContextValue {
   user: PublicUser | null;
@@ -16,10 +18,19 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const refresh = async () => {
     try {
-      setUser(await api.getMe());
+      const fresh = await api.getMe();
+      setUser(fresh);
+      // i18n (issue #27) : la préférence explicite du compte prime sur la détection auto — si
+      // elle diffère du cookie déjà posé (ex. connecté depuis un autre appareil/navigateur), on
+      // aligne et on rafraîchit pour que le rendu serveur reparte avec les bons messages.
+      if (fresh.locale && isLocale(fresh.locale) && getLocaleCookie() !== fresh.locale) {
+        setLocaleCookie(fresh.locale);
+        router.refresh();
+      }
     } catch {
       setUser(null);
     } finally {

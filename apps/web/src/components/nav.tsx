@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '../lib/auth-context';
 import * as api from '../lib/api';
 import { Crest } from './ui/crest';
@@ -12,10 +13,13 @@ import { Button } from './ui/button';
 // Écart assumé du handoff design (2026-09-20) : nav à 2 liens (Accueil, Recherche) au lieu de
 // 4 — le profil se rejoint par l'avatar, les notifications par la cloche. Motif du design :
 // "Profil" en lien texte alors que le nom est déjà cliquable à droite était redondant.
-const LINKS = [
-  { href: '/', label: 'Accueil' },
-  { href: '/search', label: 'Recherche' },
-];
+function useLinks() {
+  const t = useTranslations('Nav');
+  return [
+    { href: '/', label: t('home') },
+    { href: '/search', label: t('search') },
+  ];
+}
 
 function BellIcon() {
   return (
@@ -29,6 +33,7 @@ function BellIcon() {
 // Rappel de vérification d'email (2026-10-02) : le compte reste utilisable sans vérifier
 // (décision produit), un simple bandeau suffit — jamais affiché sur /verify-email elle-même.
 function VerifyEmailBanner() {
+  const t = useTranslations('Nav');
   return (
     <div
       style={{
@@ -43,15 +48,17 @@ function VerifyEmailBanner() {
         flexWrap: 'wrap',
       }}
     >
-      <span>Confirme ton adresse email pour sécuriser ton compte.</span>
+      <span>{t('verifyEmailBanner')}</span>
       <Link href="/verify-email" style={{ color: 'var(--fb-nav)', fontWeight: 700 }}>
-        Entrer le code
+        {t('verifyEmailCta')}
       </Link>
     </div>
   );
 }
 
 export function Nav() {
+  const t = useTranslations('Nav');
+  const links = useLinks();
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -88,7 +95,7 @@ export function Nav() {
             flexShrink: 0,
           }}
         />
-        {LINKS.map((link) => {
+        {links.map((link) => {
           const active = pathname === link.href;
           return (
             <Link
@@ -157,18 +164,18 @@ export function Nav() {
                 router.push('/login');
               }}
             >
-              Déconnexion
+              {t('logout')}
             </button>
           </>
         ) : (
           <>
             <Link href="/login">
               <Button variant="secondary" size="sm">
-                Connexion
+                {t('login')}
               </Button>
             </Link>
             <Link href="/register">
-              <Button size="sm">Inscription</Button>
+              <Button size="sm">{t('register')}</Button>
             </Link>
           </>
         )}

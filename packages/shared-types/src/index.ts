@@ -41,6 +41,9 @@ export interface PublicUser {
   hasCompletedOnboarding: boolean;
   isWatchlistPublic: boolean;
   isPrivate: boolean;
+  // i18n (issue #27) : null = pas de préférence explicite, la langue vient de la détection
+  // automatique (cookie côté front).
+  locale: string | null;
   // Compte & sécurité (2026-10-02).
   bio: string | null;
   emailVerifiedAt: string | null;

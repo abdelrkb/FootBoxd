@@ -287,6 +287,13 @@ export class UsersService {
     return toPublicUser(user);
   }
 
+  // i18n (issue #27) : préférence explicite, prioritaire sur la détection automatique côté
+  // front (cookie posé depuis Accept-Language) — voir middleware.ts et auth-context.tsx (web).
+  async setLocale(userId: string, locale: string) {
+    const user = await this.prisma.client.user.update({ where: { id: userId }, data: { locale } });
+    return toPublicUser(user);
+  }
+
   // --- Compte & sécurité (2026-10-02) ---
 
   async markEmailVerified(userId: string) {

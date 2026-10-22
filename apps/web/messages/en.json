@@ -1,0 +1,40 @@
+{
+  "Nav": {
+    "home": "Home",
+    "search": "Search",
+    "verifyEmailBanner": "Confirm your email address to secure your account.",
+    "verifyEmailCta": "Enter the code",
+    "logout": "Log out",
+    "login": "Log in",
+    "register": "Sign up"
+  },
+  "HomePage": {
+    "myLeagues": "My leagues",
+    "allLeagues": "All leagues",
+    "noMatchesToday": "No matches that day",
+    "tryAnotherDay": "Try another day in the selector.",
+    "favorite": "Favorite",
+    "popularReviews": "Popular reviews",
+    "friendsReviews": "Reviews from friends",
+    "accountsToFollow": "Accounts to follow",
+    "popularMatches": "Popular matches",
+    "nothingPopular": "Nothing popular yet",
+    "quietLast48h": "The last 48 hours have been quiet.",
+    "loginToSeeFriends": "Log in to see your friends",
+    "friendsRatingsHint": "Ratings from people you follow show up here.",
+    "followPeopleFillFeed": "Follow people to fill your feed",
+    "notFollowingAnyoneYet": "You're not following anyone yet — their ratings will show up here once you do.",
+    "findPeople": "Find people",
+    "follow": "Follow",
+    "sameClub": "Same favorite club",
+    "mutualFriends": "{count, plural, one {# mutual friend} other {# mutual friends}}",
+    "sameClubAndMutualFriends": "Same favorite club · {count, plural, one {# mutual friend} other {# mutual friends}}"
+  },
+  "SettingsLanguage": {
+    "title": "Language",
+    "language": "App language",
+    "hint": "Detected automatically, can be changed anytime.",
+    "french": "Français",
+    "english": "English"
+  }
+}

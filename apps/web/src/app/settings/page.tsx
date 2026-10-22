@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import type { Team, UserSummary } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
+import { setLocaleCookie, type Locale } from '../../i18n/config';
 import { Crest } from '../../components/ui/crest';
 import { Field } from '../../components/ui/field';
 import { Switch } from '../../components/ui/switch';
@@ -27,6 +29,10 @@ function sectionStyle() {
 }
 
 export default function SettingsPage() {
+  // Seul le nouveau sélecteur de langue est traduit pour l'instant (issue #27) — le reste de
+  // cette page très longue (dizaines de chaînes) suit dans une passe ultérieure, une fois le
+  // modèle validé sur la page d'accueil et ce sélecteur.
+  const t = useTranslations('SettingsLanguage');
   const { user, loading: authLoading, refresh, logout } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +64,12 @@ export default function SettingsPage() {
 
   const [isPrivate, setIsPrivateState] = useState(false);
   const [privacySaving, setPrivacySaving] = useState(false);
+
+  // Langue active résolue côté serveur (cookie) — reflète la préférence du compte une fois
+  // que auth-context.tsx les a synchronisées (voir son `refresh`). Pas de state séparé : cette
+  // valeur suit déjà le provider, qui se met à jour après le router.refresh() du changement.
+  const activeLocale = useLocale() as Locale;
+  const [localeSaving, setLocaleSaving] = useState(false);
 
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -106,6 +118,21 @@ export default function SettingsPage() {
       await refresh();
     } finally {
       setPrivacySaving(false);
+    }
+  }
+
+  // i18n (issue #27) : sauvegarde la préférence sur le compte, pose le cookie tout de suite
+  // (pas besoin d'attendre le prochain `refresh`) et rafraîchit pour que le rendu serveur
+  // reparte avec les nouveaux messages — même geste que le changement de visibilité ci-dessus.
+  async function changeLocale(next: Locale) {
+    setLocaleSaving(true);
+    try {
+      await api.setLocale(next);
+      setLocaleCookie(next);
+      await refresh();
+      router.refresh();
+    } finally {
+      setLocaleSaving(false);
     }
   }
 
@@ -295,6 +322,38 @@ export default function SettingsPage() {
             </span>
           </div>
           <Switch checked={isPrivate} onChange={toggleProfilePrivacy} />
+        </div>
+      </div>
+
+      <div style={sectionStyle()}>
+        <span className="fb-section" style={{ fontSize: 13 }}>
+          {t('title')}
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={{ fontSize: 14 }}>{t('language')}</span>
+            <span className="fb-meta" style={{ fontSize: 12 }}>
+              {t('hint')}
+            </span>
+          </div>
+          <select
+            value={activeLocale}
+            disabled={localeSaving}
+            onChange={(e) => changeLocale(e.target.value as Locale)}
+            style={{
+              height: 42,
+              padding: '0 14px',
+              border: '1px solid var(--fb-border)',
+              borderRadius: 12,
+              background: 'var(--fb-bg)',
+              color: 'var(--fb-text)',
+              fontFamily: 'var(--fb-font-sans)',
+              fontSize: 14,
+            }}
+          >
+            <option value="fr">{t('french')}</option>
+            <option value="en">{t('english')}</option>
+          </select>
         </div>
       </div>
 
