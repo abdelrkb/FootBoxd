@@ -20,4 +20,7 @@ RUN npm run generate --workspace=@football-app/database
 RUN npm run build --workspace=@football-app/api
 
 EXPOSE 3000
-CMD ["node", "apps/api/dist/main.js"]
+# Le builder SWC (nest-cli.json) imbrique la sortie sous dist/src/ (pas dist/ comme le
+# builder tsc par défaut) — vérifié en réel sur le premier déploiement de prod, 2026-10-22 :
+# le conteneur crashait en boucle avec "Cannot find module '/repo/apps/api/dist/main.js'".
+CMD ["node", "apps/api/dist/src/main.js"]
