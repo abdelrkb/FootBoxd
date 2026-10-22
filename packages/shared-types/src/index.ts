@@ -11,7 +11,16 @@ export type MatchStatus =
   | 'suspended'
   | 'abandoned';
 
-export type NotificationType = 'comment' | 'like' | 'follow' | 'kickoff_reminder';
+export type NotificationType =
+  | 'comment'
+  | 'like'
+  | 'follow'
+  | 'kickoff_reminder'
+  | 'mention'
+  | 'comment_reply'
+  | 'comment_like'
+  | 'follow_request'
+  | 'follow_accepted';
 
 export interface PublicUser {
   id: string;
@@ -31,6 +40,7 @@ export interface PublicUser {
   hideScoresUntilClick: boolean;
   hasCompletedOnboarding: boolean;
   isWatchlistPublic: boolean;
+  isPrivate: boolean;
   // Compte & sécurité (2026-10-02).
   bio: string | null;
   emailVerifiedAt: string | null;
@@ -134,7 +144,12 @@ export interface Comment {
   userId: string;
   content: string;
   createdAt: string;
+  parentId: string | null;
   user: UserSummary;
+  _count: { likes: number };
+  // Un seul niveau de profondeur (issue #18) : les réponses d'un commentaire racine, à plat.
+  // Absent sur une réponse elle-même (seuls les commentaires racines en ont).
+  replies?: Comment[];
 }
 
 export interface Notification {
@@ -194,6 +209,7 @@ export interface Profile {
   followersCount: number;
   followingCount: number;
   isWatchlistPublic: boolean;
+  isPrivate: boolean;
 }
 
 export interface WatchlistEntry {
@@ -209,6 +225,24 @@ export interface WatchlistEntry {
 export interface BlockStatus {
   blockedByOwner: boolean;
   viewerHasBlocked: boolean;
+}
+
+// Profil privé (issue #18) : `incomingRequest` = CET utilisateur (:id) a demandé à me suivre
+// (affiché sur SON profil avec Accepter/Refuser, voir profile/[id]/page.tsx).
+export interface FollowStatus {
+  following: boolean;
+  pendingRequest: boolean;
+  incomingRequest: boolean;
+}
+
+// % de compatibilité (issue #18) : combine accord de notes sur les matchs vus en commun, club
+// favori commun et amis en commun — `percentage` est null s'il n'y a litéralement aucun signal
+// mesurable pour ce couple (aucun match commun, aucun club favori renseigné, aucun following).
+export interface Compatibility {
+  percentage: number | null;
+  commonMatches: number;
+  sameFavoriteTeam: boolean;
+  mutualFriends: number;
 }
 
 export type ReportTargetType = 'user' | 'review' | 'comment';

@@ -13,6 +13,7 @@ import { ClientDate } from '../../../components/client-date';
 import { TagInput } from '../../../components/ui/tag-input';
 import { TagChip } from '../../../components/ui/tag-chip';
 import { ReportDialog } from '../../../components/report-dialog';
+import { CommentRow } from './comment-row';
 
 export function DevelopedReviewCard({
   review,
@@ -28,6 +29,7 @@ export function DevelopedReviewCard({
   const [threadOpen, setThreadOpen] = useState(false);
   const [comments, setComments] = useState<Comment[] | null>(null);
   const [newComment, setNewComment] = useState('');
+  const [replyTo, setReplyTo] = useState<Comment | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editRating, setEditRating] = useState(Number(review.rating));
@@ -52,9 +54,15 @@ export function DevelopedReviewCard({
 
   async function sendComment() {
     if (!newComment.trim()) return;
-    await api.createComment(review.id, newComment);
+    await api.createComment(review.id, newComment, replyTo?.id);
     setNewComment('');
+    setReplyTo(null);
     setComments(await api.getComments(review.id));
+  }
+
+  function startReply(comment: Comment) {
+    setReplyTo(comment);
+    setNewComment(`@${comment.user.username} `);
   }
 
   async function saveEdit() {
@@ -347,32 +355,34 @@ export function DevelopedReviewCard({
           }}
         >
           {comments?.map((c) => (
-            <div key={c.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <Link href={`/profile/${c.user.id}`}>
-                <Crest src={c.user.avatarUrl} alt={c.user.displayName} size={28} />
-              </Link>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0, flex: 1 }}>
-                <Link href={`/profile/${c.user.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <span style={{ fontWeight: 600, fontSize: 14 }}>{c.user.displayName}</span>
-                </Link>
-                <span style={{ fontSize: 14.5, lineHeight: 1.5, color: 'var(--fb-text-strong-2)' }}>{c.content}</span>
-              </div>
-              {user && user.id !== c.user.id && (
-                <button
-                  onClick={() => setReport({ targetType: 'comment', targetId: c.id })}
-                  className="fb-meta"
-                  style={{ background: 'none', border: 'none', fontSize: 11.5, flexShrink: 0, color: 'var(--fb-text-3)' }}
-                >
-                  Signaler
-                </button>
-              )}
-            </div>
+            <CommentRow
+              key={c.id}
+              comment={c}
+              onReply={startReply}
+              onReport={(commentId) => setReport({ targetType: 'comment', targetId: commentId })}
+            />
           ))}
+          {replyTo && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="fb-meta" style={{ fontSize: 12 }}>
+                Réponse à {replyTo.user.displayName}
+              </span>
+              <button
+                onClick={() => {
+                  setReplyTo(null);
+                  setNewComment('');
+                }}
+                style={{ background: 'none', border: 'none', color: 'var(--fb-text-3)', fontSize: 12, cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 10 }}>
             <input
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Ajoute un commentaire…"
+              placeholder="Ajoute un commentaire… (@pseudo pour mentionner)"
               style={{
                 flex: 1,
                 minWidth: 0,

@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { FollowsService } from '../follows/follows.service.js';
 import { toPublicUser } from './to-public-user.js';
 import type { AuthProviderType } from '@football-app/database';
+import type { Prisma } from '@football-app/database';
 
 const DEFAULT_AVATAR_URL = 'https://api.dicebear.com/9.x/thumbs/svg?seed=default';
 const USERNAME_COOLDOWN_MS = 14 * 24 * 60 * 60_000;
@@ -165,6 +166,82 @@ export class UsersService {
       followersCount,
       followingCount,
       isWatchlistPublic: user.isWatchlistPublic,
+      isPrivate: user.isPrivate,
+    };
+  }
+
+  // "% de compatibilité" (issue #18, 2026-10-22) : demandé explicitement pour prendre en
+  // compte plus que le seul accord de notes — club favori commun ET amis en commun en plus des
+  // matchs vus en commun. Chaque signal n'est compté que s'il est réellement mesurable pour CE
+  // couple d'utilisateurs (ex: pas de pénalité si l'un des deux n'a pas de club favori) ; la
+  // moyenne ne porte que sur les signaux disponibles, pondérés également entre eux — pas de
+  // formule officielle à reproduire, choix produit simple et explicable plutôt qu'une pondération
+  // arbitraire plus "fine".
+  async getCompatibility(viewerId: string, otherId: string) {
+    const [viewer, other] = await Promise.all([
+      this.prisma.client.user.findUnique({ where: { id: viewerId }, select: { favoriteTeamId: true } }),
+      this.prisma.client.user.findUnique({ where: { id: otherId }, select: { favoriteTeamId: true } }),
+    ]);
+    if (!other) throw new NotFoundException('Utilisateur introuvable');
+
+    const [viewerReviews, otherReviews, viewerFollowing, otherFollowing] = await Promise.all([
+      this.prisma.client.review.findMany({ where: { userId: viewerId, deletedAt: null }, select: { matchId: true, rating: true } }),
+      this.prisma.client.review.findMany({ where: { userId: otherId, deletedAt: null }, select: { matchId: true, rating: true } }),
+      this.followsService.findFollowing(viewerId),
+      this.followsService.findFollowing(otherId),
+    ]);
+
+    // Rewatch (issue #14) : plusieurs notes actives possibles pour le même match — on moyenne
+    // les notes d'un même utilisateur sur un même match avant de comparer.
+    function averageRatingByMatch(reviews: { matchId: string; rating: Prisma.Decimal }[]) {
+      const sums = new Map<string, { total: number; count: number }>();
+      for (const r of reviews) {
+        const entry = sums.get(r.matchId) ?? { total: 0, count: 0 };
+        entry.total += Number(r.rating);
+        entry.count += 1;
+        sums.set(r.matchId, entry);
+      }
+      return new Map(Array.from(sums, ([matchId, { total, count }]) => [matchId, total / count]));
+    }
+
+    const viewerByMatch = averageRatingByMatch(viewerReviews);
+    const otherByMatch = averageRatingByMatch(otherReviews);
+    const commonMatchIds = Array.from(viewerByMatch.keys()).filter((id) => otherByMatch.has(id));
+
+    let ratingAgreementScore: number | null = null;
+    if (commonMatchIds.length > 0) {
+      const agreeing = commonMatchIds.filter(
+        (id) => Math.abs(viewerByMatch.get(id)! - otherByMatch.get(id)!) <= 0.5,
+      ).length;
+      ratingAgreementScore = (agreeing / commonMatchIds.length) * 100;
+    }
+
+    let sameClubScore: number | null = null;
+    if (viewer?.favoriteTeamId && other.favoriteTeamId) {
+      sameClubScore = viewer.favoriteTeamId === other.favoriteTeamId ? 100 : 0;
+    }
+
+    const viewerFollowingIds = new Set(viewerFollowing.map((u) => u.id));
+    const otherFollowingIds = new Set(otherFollowing.map((u) => u.id));
+    const mutualFriends = Array.from(viewerFollowingIds).filter((id) => otherFollowingIds.has(id)).length;
+    let mutualFriendsScore: number | null = null;
+    if (viewerFollowingIds.size > 0 && otherFollowingIds.size > 0) {
+      mutualFriendsScore = (mutualFriends / Math.min(viewerFollowingIds.size, otherFollowingIds.size)) * 100;
+    }
+
+    const availableScores = [ratingAgreementScore, sameClubScore, mutualFriendsScore].filter(
+      (s): s is number => s !== null,
+    );
+    const percentage =
+      availableScores.length > 0
+        ? Math.round(availableScores.reduce((a, b) => a + b, 0) / availableScores.length)
+        : null;
+
+    return {
+      percentage,
+      commonMatches: commonMatchIds.length,
+      sameFavoriteTeam: sameClubScore === 100,
+      mutualFriends,
     };
   }
 
@@ -199,6 +276,14 @@ export class UsersService {
 
   async setWatchlistVisibility(userId: string, isPublic: boolean) {
     const user = await this.prisma.client.user.update({ where: { id: userId }, data: { isWatchlistPublic: isPublic } });
+    return toPublicUser(user);
+  }
+
+  // Profil privé (issue #18) : passer de privé à public ne touche pas aux FollowRequest déjà
+  // en attente — elles restent visibles côté notification tant qu'elles ne sont pas traitées,
+  // simple et sans surprise (pas de "nettoyage" silencieux de demandes).
+  async setProfilePrivacy(userId: string, isPrivate: boolean) {
+    const user = await this.prisma.client.user.update({ where: { id: userId }, data: { isPrivate } });
     return toPublicUser(user);
   }
 

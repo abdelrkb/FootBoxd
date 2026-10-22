@@ -28,6 +28,7 @@ import type { PublicUser } from '../auth/auth.service.js';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
 import { SetFavoriteTeamDto } from './dto/set-favorite-team.dto.js';
 import { SetWatchlistVisibilityDto } from './dto/set-watchlist-visibility.dto.js';
+import { SetProfilePrivacyDto } from './dto/set-profile-privacy.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 
 // Juste le sous-ensemble de `Express.Multer.File` réellement utilisé (voir
@@ -68,6 +69,12 @@ export class UsersController {
   @Get(':id/profile')
   profile(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.getProfile(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/compatibility')
+  compatibility(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: PublicUser) {
+    return this.usersService.getCompatibility(user.id, id);
   }
 
   @Get(':id/favorite-leagues')
@@ -115,6 +122,12 @@ export class UsersController {
   @Patch('me/watchlist-visibility')
   setWatchlistVisibility(@Body() dto: SetWatchlistVisibilityDto, @CurrentUser() user: PublicUser) {
     return this.usersService.setWatchlistVisibility(user.id, dto.isPublic);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/profile-privacy')
+  setProfilePrivacy(@Body() dto: SetProfilePrivacyDto, @CurrentUser() user: PublicUser) {
+    return this.usersService.setProfilePrivacy(user.id, dto.isPrivate);
   }
 
   @UseGuards(JwtAuthGuard)

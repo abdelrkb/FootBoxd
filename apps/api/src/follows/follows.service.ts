@@ -15,8 +15,11 @@ export class FollowsService {
     private readonly blocksService: BlocksService,
   ) {}
 
-  // Follow public et instantané, pas de système de demande (section 6).
-  async follow(followerId: string, followingId: string) {
+  // Follow public et instantané pour un profil public (section 6). Profil privé (issue #18,
+  // 2026-10-22) : crée une FollowRequest à accepter/refuser au lieu d'un Follow direct — voir
+  // acceptFollowRequest/rejectFollowRequest ci-dessous. Retourne le statut résultant pour que
+  // le front sache afficher "Suivi(e)" ou "Demande envoyée".
+  async follow(followerId: string, followingId: string): Promise<{ status: 'following' | 'requested' }> {
     if (followerId === followingId) {
       throw new BadRequestException('Impossible de se suivre soi-même');
     }
@@ -26,19 +29,67 @@ export class FollowsService {
       throw new ForbiddenException('Impossible de suivre cet utilisateur');
     }
 
+    if (target.isPrivate) {
+      try {
+        await this.prisma.client.followRequest.create({ data: { requesterId: followerId, targetId: followingId } });
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === PRISMA_UNIQUE_VIOLATION) {
+          return { status: 'requested' }; // déjà demandé, idempotent
+        }
+        throw err;
+      }
+      await this.notificationsService.create(followingId, followerId, 'follow_request');
+      return { status: 'requested' };
+    }
+
     try {
       await this.prisma.client.follow.create({ data: { followerId, followingId } });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === PRISMA_UNIQUE_VIOLATION) {
-        return; // déjà suivi, idempotent
+        return { status: 'following' }; // déjà suivi, idempotent
       }
       throw err;
     }
     await this.notificationsService.create(followingId, followerId, 'follow');
+    return { status: 'following' };
   }
 
+  // Annule aussi une demande en attente (même bouton côté front pour "se désabonner" et
+  // "annuler ma demande" — le visiteur n'a qu'une seule action à faire dans les deux cas).
   async unfollow(followerId: string, followingId: string) {
-    await this.prisma.client.follow.deleteMany({ where: { followerId, followingId } });
+    await Promise.all([
+      this.prisma.client.follow.deleteMany({ where: { followerId, followingId } }),
+      this.prisma.client.followRequest.deleteMany({ where: { requesterId: followerId, targetId: followingId } }),
+    ]);
+  }
+
+  // "Version minimale : juste une notification" (issue #18) — pas de liste dédiée, l'owner
+  // accepte/refuse directement depuis le ··· sur la notification follow_request ou le profil
+  // du demandeur (voir notifications/page.tsx et profile/[id]/page.tsx).
+  async acceptFollowRequest(targetId: string, requesterId: string) {
+    const request = await this.prisma.client.followRequest.findUnique({
+      where: { requesterId_targetId: { requesterId, targetId } },
+    });
+    if (!request) throw new NotFoundException('Demande introuvable');
+
+    await this.prisma.client.$transaction([
+      this.prisma.client.followRequest.delete({ where: { requesterId_targetId: { requesterId, targetId } } }),
+      this.prisma.client.follow.create({ data: { followerId: requesterId, followingId: targetId } }),
+    ]);
+    await this.notificationsService.create(requesterId, targetId, 'follow_accepted');
+  }
+
+  // Refus silencieux (pas de notification) — convention courante, éviter l'embarras d'un refus
+  // explicite notifié.
+  async rejectFollowRequest(targetId: string, requesterId: string) {
+    await this.prisma.client.followRequest.deleteMany({ where: { requesterId, targetId } });
+  }
+
+  async hasPendingRequest(requesterId: string, targetId: string): Promise<boolean> {
+    const request = await this.prisma.client.followRequest.findUnique({
+      where: { requesterId_targetId: { requesterId, targetId } },
+    });
+    return request !== null;
   }
 
   findFollowers(userId: string) {

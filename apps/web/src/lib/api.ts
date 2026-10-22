@@ -23,6 +23,8 @@ import type {
   TeamOverview,
   TeamStats,
   UserSuggestion,
+  FollowStatus,
+  Compatibility,
 } from '@football-app/shared-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -112,8 +114,14 @@ export const getTags = () => apiFetch<Tag[]>('/tags');
 // --- Comments ---
 export const getComments = (reviewId: string) => apiFetch<Comment[]>(`/reviews/${reviewId}/comments`);
 
-export const createComment = (reviewId: string, content: string) =>
-  apiFetch<Comment>(`/reviews/${reviewId}/comments`, { method: 'POST', body: JSON.stringify({ content }) });
+export const createComment = (reviewId: string, content: string, parentId?: string) =>
+  apiFetch<Comment>(`/reviews/${reviewId}/comments`, { method: 'POST', body: JSON.stringify({ content, parentId }) });
+
+export const likeComment = (reviewId: string, commentId: string) =>
+  apiFetch<{ success: boolean }>(`/reviews/${reviewId}/comments/${commentId}/like`, { method: 'POST' });
+
+export const unlikeComment = (reviewId: string, commentId: string) =>
+  apiFetch<{ success: boolean }>(`/reviews/${reviewId}/comments/${commentId}/like`, { method: 'DELETE' });
 
 // --- Notifications ---
 export const getNotifications = () => apiFetch<Notification[]>('/notifications');
@@ -127,7 +135,10 @@ export const markAllNotificationsRead = () =>
 // --- Users / Follows ---
 export const getProfile = (userId: string) => apiFetch<Profile>(`/users/${userId}/profile`);
 
-export const followUser = (userId: string) => apiFetch<{ success: boolean }>(`/users/${userId}/follow`, { method: 'POST' });
+// Profil privé (issue #18) : `status` dit si le follow a été direct ou s'est transformé en
+// demande en attente — voir follows.service.ts `follow`.
+export const followUser = (userId: string) =>
+  apiFetch<{ status: 'following' | 'requested' }>(`/users/${userId}/follow`, { method: 'POST' });
 
 export const unfollowUser = (userId: string) =>
   apiFetch<{ success: boolean }>(`/users/${userId}/follow`, { method: 'DELETE' });
@@ -136,8 +147,18 @@ export const getFollowers = (userId: string) => apiFetch<UserSummary[]>(`/users/
 
 export const getFollowing = (userId: string) => apiFetch<UserSummary[]>(`/users/${userId}/following`);
 
-export const amIFollowing = (userId: string) =>
-  apiFetch<{ following: boolean }>(`/users/${userId}/am-i-following`).then((r) => r.following);
+export const amIFollowing = (userId: string) => apiFetch<FollowStatus>(`/users/${userId}/am-i-following`);
+
+export const acceptFollowRequest = (requesterId: string) =>
+  apiFetch<{ success: boolean }>(`/users/${requesterId}/accept-follow-request`, { method: 'POST' });
+
+export const rejectFollowRequest = (requesterId: string) =>
+  apiFetch<{ success: boolean }>(`/users/${requesterId}/reject-follow-request`, { method: 'POST' });
+
+export const getCompatibility = (userId: string) => apiFetch<Compatibility>(`/users/${userId}/compatibility`);
+
+export const setProfilePrivacy = (isPrivate: boolean) =>
+  apiFetch<PublicUser>('/users/me/profile-privacy', { method: 'PATCH', body: JSON.stringify({ isPrivate }) });
 
 export const searchUsers = (query: string) =>
   apiFetch<UserSummary[]>(`/users/search?q=${encodeURIComponent(query)}`);

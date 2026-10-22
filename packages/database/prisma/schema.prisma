@@ -37,6 +37,12 @@ enum NotificationType {
   like
   follow
   kickoff_reminder
+  // Social (issue #18, 2026-10-22) :
+  mention // @pseudo dans un commentaire
+  comment_reply // réponse à MON commentaire (distinct de `comment` = commentaire sur MA review)
+  comment_like // like sur MON commentaire (distinct de `like` = like sur MA review)
+  follow_request // demande d'abonnement sur un profil privé
+  follow_accepted // ma demande d'abonnement a été acceptée
 
   @@map("notification_type")
 }
@@ -132,6 +138,9 @@ model User {
   blocksMade             Block[]          @relation("Blocker")
   blocksReceived         Block[]          @relation("Blocked")
   reportsMade            Report[]
+  commentLikes           CommentLike[]
+  sentFollowRequests     FollowRequest[]  @relation("FollowRequester")
+  receivedFollowRequests FollowRequest[]  @relation("FollowRequestTarget")
 
   // "Club de cœur" — décision produit du 2026-09-20 (handoff design), une seule équipe
   // favorite, ses matchs épinglés en haut de l'accueil.
@@ -153,6 +162,10 @@ model User {
   // Watchlist (2026-09-30) : visibilité par défaut privée, l'utilisateur peut la rendre
   // publique pour que son profil affiche un bouton "Voir la watchlist" à ses visiteurs.
   isWatchlistPublic Boolean @default(false) @map("is_watchlist_public")
+  // Profil privé (issue #18, 2026-10-22) : follow devient une FollowRequest à accepter/refuser
+  // au lieu d'un Follow direct — voir follows.service.ts `follow`. Par défaut public (false),
+  // pas de changement de comportement pour les comptes existants.
+  isPrivate Boolean @default(false) @map("is_private")
   // Distinct de `notifyKickoffReminder` (qui reste dédié aux ligues favorites, toujours sans
   // effet) : celui-ci ne rappelle que les matchs explicitement ajoutés à la watchlist, envoyé
   // par apps/worker/src/sync/kickoff-reminders.ts.
@@ -427,11 +440,31 @@ model Comment {
   userId    String   @map("user_id") @db.Uuid
   content   String
   createdAt DateTime @default(now()) @map("created_at")
+  // "Réponses en fil" (issue #18, 2026-10-22) : un seul niveau de profondeur (comme
+  // Letterboxd/Instagram) — une réponse à une réponse est automatiquement rattachée au
+  // commentaire racine plutôt que de créer un 2e niveau (voir comments.service.ts `create`).
+  parentId String? @map("parent_id") @db.Uuid
 
-  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review  Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+  likes   CommentLike[]
 
   @@map("comments")
+}
+
+// Like sur un commentaire (issue #18) — distinct de ReviewLike (like sur une review).
+model CommentLike {
+  commentId String   @map("comment_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([commentId, userId])
+  @@map("comment_likes")
 }
 
 model ReviewLike {
@@ -456,6 +489,21 @@ model Follow {
 
   @@id([followerId, followingId])
   @@map("follows")
+}
+
+// Profil privé (issue #18) : table séparée de Follow plutôt qu'un statut pending/accepted sur
+// Follow lui-même — Follow reste un lien "accepté" pur, aucune requête existante (compteurs,
+// findFollowers/findFollowing…) n'a besoin d'être changée pour filtrer un statut.
+model FollowRequest {
+  requesterId String   @map("requester_id") @db.Uuid
+  targetId    String   @map("target_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  requester User @relation("FollowRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  target    User @relation("FollowRequestTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@id([requesterId, targetId])
+  @@map("follow_requests")
 }
 
 model Notification {
