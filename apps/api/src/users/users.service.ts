@@ -3,6 +3,13 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { FollowsService } from '../follows/follows.service.js';
 import { toPublicUser } from './to-public-user.js';
+import {
+  averageRatingByMatch,
+  compatibilityPercentage,
+  mutualFriendsScore,
+  ratingAgreement,
+  sameClubScore,
+} from './compatibility.js';
 import type { AuthProviderType } from '@football-app/database';
 import type { Prisma } from '@football-app/database';
 
@@ -191,56 +198,17 @@ export class UsersService {
       this.followsService.findFollowing(otherId),
     ]);
 
-    // Rewatch (issue #14) : plusieurs notes actives possibles pour le même match — on moyenne
-    // les notes d'un même utilisateur sur un même match avant de comparer.
-    function averageRatingByMatch(reviews: { matchId: string; rating: Prisma.Decimal }[]) {
-      const sums = new Map<string, { total: number; count: number }>();
-      for (const r of reviews) {
-        const entry = sums.get(r.matchId) ?? { total: 0, count: 0 };
-        entry.total += Number(r.rating);
-        entry.count += 1;
-        sums.set(r.matchId, entry);
-      }
-      return new Map(Array.from(sums, ([matchId, { total, count }]) => [matchId, total / count]));
-    }
+    const agreement = ratingAgreement(averageRatingByMatch(viewerReviews), averageRatingByMatch(otherReviews));
+    const clubScore = sameClubScore(viewer?.favoriteTeamId ?? null, other.favoriteTeamId);
 
-    const viewerByMatch = averageRatingByMatch(viewerReviews);
-    const otherByMatch = averageRatingByMatch(otherReviews);
-    const commonMatchIds = Array.from(viewerByMatch.keys()).filter((id) => otherByMatch.has(id));
-
-    let ratingAgreementScore: number | null = null;
-    if (commonMatchIds.length > 0) {
-      const agreeing = commonMatchIds.filter(
-        (id) => Math.abs(viewerByMatch.get(id)! - otherByMatch.get(id)!) <= 0.5,
-      ).length;
-      ratingAgreementScore = (agreeing / commonMatchIds.length) * 100;
-    }
-
-    let sameClubScore: number | null = null;
-    if (viewer?.favoriteTeamId && other.favoriteTeamId) {
-      sameClubScore = viewer.favoriteTeamId === other.favoriteTeamId ? 100 : 0;
-    }
-
-    const viewerFollowingIds = new Set(viewerFollowing.map((u) => u.id));
     const otherFollowingIds = new Set(otherFollowing.map((u) => u.id));
-    const mutualFriends = Array.from(viewerFollowingIds).filter((id) => otherFollowingIds.has(id)).length;
-    let mutualFriendsScore: number | null = null;
-    if (viewerFollowingIds.size > 0 && otherFollowingIds.size > 0) {
-      mutualFriendsScore = (mutualFriends / Math.min(viewerFollowingIds.size, otherFollowingIds.size)) * 100;
-    }
-
-    const availableScores = [ratingAgreementScore, sameClubScore, mutualFriendsScore].filter(
-      (s): s is number => s !== null,
-    );
-    const percentage =
-      availableScores.length > 0
-        ? Math.round(availableScores.reduce((a, b) => a + b, 0) / availableScores.length)
-        : null;
+    const mutualFriends = viewerFollowing.filter((u) => otherFollowingIds.has(u.id)).length;
+    const friendsScore = mutualFriendsScore(viewerFollowing.length, otherFollowing.length, mutualFriends);
 
     return {
-      percentage,
-      commonMatches: commonMatchIds.length,
-      sameFavoriteTeam: sameClubScore === 100,
+      percentage: compatibilityPercentage([agreement.score, clubScore, friendsScore]),
+      commonMatches: agreement.commonMatches,
+      sameFavoriteTeam: clubScore === 100,
       mutualFriends,
     };
   }

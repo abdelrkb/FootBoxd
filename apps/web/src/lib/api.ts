@@ -24,7 +24,6 @@ import type {
   TeamStats,
   UserSuggestion,
   FollowStatus,
-  Compatibility,
 } from '@football-app/shared-types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
@@ -155,7 +154,6 @@ export const acceptFollowRequest = (requesterId: string) =>
 export const rejectFollowRequest = (requesterId: string) =>
   apiFetch<{ success: boolean }>(`/users/${requesterId}/reject-follow-request`, { method: 'POST' });
 
-export const getCompatibility = (userId: string) => apiFetch<Compatibility>(`/users/${userId}/compatibility`);
 
 export const setProfilePrivacy = (isPrivate: boolean) =>
   apiFetch<PublicUser>('/users/me/profile-privacy', { method: 'PATCH', body: JSON.stringify({ isPrivate }) });
