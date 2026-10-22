@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { Suspense, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import * as api from '../../lib/api';
@@ -8,7 +8,17 @@ import { useAuth } from '../../lib/auth-context';
 import { Field } from '../../components/ui/field';
 import { Button } from '../../components/ui/button';
 
+// useSearchParams() doit être sous un Suspense pour le build de prod (next build échoue sinon
+// à la prérender statique — vérifié en réel au premier build de prod du projet, 2026-10-22).
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState(searchParams.get('email') ?? '');
   const [code, setCode] = useState('');
