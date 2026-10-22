@@ -125,7 +125,7 @@ export class AuthController {
   googleCallback(@Req() req: Request & { user: PublicUser }, @Res() res: Response) {
     const token = this.authService.issueToken(req.user);
     setAuthCookie(res, token);
-    res.redirect(process.env.WEB_URL ?? 'http://localhost:3010');
+    res.redirect(oauthRedirectPath(req.user));
   }
 
   @UseGuards(AppleAuthGuard)
@@ -140,6 +140,14 @@ export class AuthController {
   appleCallback(@Req() req: Request & { user: PublicUser }, @Res() res: Response) {
     const token = this.authService.issueToken(req.user);
     setAuthCookie(res, token);
-    res.redirect(process.env.WEB_URL ?? 'http://localhost:3010');
+    res.redirect(oauthRedirectPath(req.user));
   }
+}
+
+// Inscription via OAuth (issue #46) : contrairement à /register, le callback OAuth n'a pas
+// d'étape intermédiaire pour lancer l'onboarding (choix des ligues, club, réglages) — on
+// redirige nous-mêmes vers /onboarding tant qu'il n'est pas marqué comme terminé.
+function oauthRedirectPath(user: PublicUser): string {
+  const base = process.env.WEB_URL ?? 'http://localhost:3010';
+  return user.hasCompletedOnboarding ? base : `${base}/onboarding`;
 }
