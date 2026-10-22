@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import "../styles/tokens.css";
 import "./globals.css";
 import { AuthProvider } from "../lib/auth-context";
@@ -10,9 +12,12 @@ export const metadata: Metadata = {
   description: "Letterboxd du sport",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="fr">
+    <html lang={locale}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -22,12 +27,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body>
-        <AuthProvider>
-          <WatchlistProvider>
-            <Nav />
-            <main>{children}</main>
-          </WatchlistProvider>
-        </AuthProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AuthProvider>
+            <WatchlistProvider>
+              <Nav />
+              <main>{children}</main>
+            </WatchlistProvider>
+          </AuthProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

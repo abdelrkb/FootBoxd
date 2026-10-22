@@ -29,6 +29,7 @@ import { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
 import { SetFavoriteTeamDto } from './dto/set-favorite-team.dto.js';
 import { SetWatchlistVisibilityDto } from './dto/set-watchlist-visibility.dto.js';
 import { SetProfilePrivacyDto } from './dto/set-profile-privacy.dto.js';
+import { SetLocaleDto } from './dto/set-locale.dto.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 
 // Juste le sous-ensemble de `Express.Multer.File` réellement utilisé (voir
@@ -128,6 +129,12 @@ export class UsersController {
   @Patch('me/profile-privacy')
   setProfilePrivacy(@Body() dto: SetProfilePrivacyDto, @CurrentUser() user: PublicUser) {
     return this.usersService.setProfilePrivacy(user.id, dto.isPrivate);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/locale')
+  setLocale(@Body() dto: SetLocaleDto, @CurrentUser() user: PublicUser) {
+    return this.usersService.setLocale(user.id, dto.locale);
   }
 
   @UseGuards(JwtAuthGuard)

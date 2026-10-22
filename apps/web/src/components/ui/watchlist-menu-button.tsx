@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '../../lib/auth-context';
 import { useWatchlist } from '../../lib/watchlist-context';
 
@@ -9,6 +10,7 @@ import { useWatchlist } from '../../lib/watchlist-context';
 // preventDefault car ces cartes sont presque toujours un <Link> englobant (même pattern que
 // review-mini-card.tsx pour son lien vers le profil de l'auteur).
 export function WatchlistMenuButton({ matchId }: { matchId: string }) {
+  const t = useTranslations('Common');
   const { user } = useAuth();
   const { isInWatchlist, toggle } = useWatchlist();
   const [open, setOpen] = useState(false);
@@ -51,7 +53,7 @@ export function WatchlistMenuButton({ matchId }: { matchId: string }) {
     >
       <button
         onClick={() => setOpen((o) => !o)}
-        aria-label="Options du match"
+        aria-label={t('matchOptions')}
         aria-haspopup="menu"
         aria-expanded={open}
         style={{
@@ -107,7 +109,7 @@ export function WatchlistMenuButton({ matchId }: { matchId: string }) {
               cursor: pending ? 'progress' : 'pointer',
             }}
           >
-            {inWatchlist ? 'Retirer de la watchlist' : 'Ajouter à la watchlist'}
+            {inWatchlist ? t('removeFromWatchlist') : t('addToWatchlist')}
           </button>
         </div>
       )}

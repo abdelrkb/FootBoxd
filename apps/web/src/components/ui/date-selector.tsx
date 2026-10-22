@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ClientDate } from '../client-date';
 import { Pill } from './pill';
 import { daysFromOffset, offsetFromToday, todayString } from '../../lib/calendar-days';
@@ -9,10 +10,11 @@ const DAYS_BEFORE_TODAY = 2;
 const VISIBLE_DAYS = 7; // 2 jours passés, aujourd'hui, 4 jours à venir
 
 function ArrowButton({ direction, onClick }: { direction: 'prev' | 'next'; onClick: () => void }) {
+  const t = useTranslations('DateSelector');
   return (
     <button
       onClick={onClick}
-      aria-label={direction === 'prev' ? 'Jour précédent' : 'Jour suivant'}
+      aria-label={direction === 'prev' ? t('previousDay') : t('nextDay')}
       style={{
         width: 38,
         height: 38,
@@ -34,6 +36,7 @@ function ArrowButton({ direction, onClick }: { direction: 'prev' | 'next'; onCli
 // Fenêtre de VISIBLE_DAYS jours qui glisse d'un jour à chaque clic sur une flèche (pas de scroll) :
 // par défaut 2 jours passés max visibles avant aujourd'hui.
 export function DateSelector({ selected, onSelect }: { selected: string; onSelect: (day: string) => void }) {
+  const t = useTranslations('DateSelector');
   // "Aujourd'hui" dépend du fuseau LOCAL du navigateur (bug corrigé le 2026-10-22, voir
   // calendar-days.ts) — le serveur ne peut pas le connaître pendant le SSR, donc même
   // principe que ClientDate : rien de daté n'est calculé avant le montage côté client,
@@ -63,7 +66,7 @@ export function DateSelector({ selected, onSelect }: { selected: string; onSelec
         {days.map((d) => (
           <Pill key={d} compact selected={d === selected} onClick={() => onSelect(d)}>
             {d === today ? (
-              "Aujourd'hui"
+              t('today')
             ) : (
               <ClientDate iso={d} options={{ weekday: 'short', day: '2-digit', month: '2-digit' }} fallback={d} />
             )}

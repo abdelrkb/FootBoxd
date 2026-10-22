@@ -166,6 +166,12 @@ model User {
   // au lieu d'un Follow direct — voir follows.service.ts `follow`. Par défaut public (false),
   // pas de changement de comportement pour les comptes existants.
   isPrivate Boolean @default(false) @map("is_private")
+  // i18n (issue #27, 2026-10-22) : préférence explicite de l'utilisateur ('fr'|'en'), null tant
+  // qu'il n'a rien choisi dans les réglages — dans ce cas la langue vient de la détection
+  // automatique côté front (cookie posé depuis l'en-tête Accept-Language, voir middleware.ts
+  // côté web). Pas de contrainte d'enum ici : la liste des langues supportées vit côté front
+  // (apps/web/src/i18n/config.ts), pas en base.
+  locale String? @map("locale")
   // Distinct de `notifyKickoffReminder` (qui reste dédié aux ligues favorites, toujours sans
   // effet) : celui-ci ne rappelle que les matchs explicitement ajoutés à la watchlist, envoyé
   // par apps/worker/src/sync/kickoff-reminders.ts.

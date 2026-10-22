@@ -3,6 +3,7 @@
 import { Suspense, use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import type { Match, League } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
@@ -49,6 +50,9 @@ export default function LeagueDetailPage({ params }: PageProps<'/leagues/[id]'>)
 }
 
 function LeagueDetailPageInner({ params }: { params: PageProps<'/leagues/[id]'>['params'] }) {
+  const t = useTranslations('LeagueDetailPage');
+  const tNav = useTranslations('Nav');
+  const tHome = useTranslations('HomePage');
   const { id } = use(params);
   const { user } = useAuth();
   const searchParams = useSearchParams();
@@ -81,7 +85,7 @@ function LeagueDetailPageInner({ params }: { params: PageProps<'/leagues/[id]'>[
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 80px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <Link href="/" className="fb-label" style={{ fontSize: 12, color: 'var(--fb-text-2)' }}>
-        ← Accueil
+        ← {tNav('home')}
       </Link>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
@@ -113,7 +117,7 @@ function LeagueDetailPageInner({ params }: { params: PageProps<'/leagues/[id]'>[
               color: isFavorite ? 'var(--fb-rating)' : 'var(--fb-text-2)',
             }}
           >
-            {isFavorite ? '★ Favori' : '☆ Ajouter'}
+            {isFavorite ? `★ ${t('favorite')}` : `☆ ${t('add')}`}
           </button>
         )}
       </div>
@@ -121,7 +125,7 @@ function LeagueDetailPageInner({ params }: { params: PageProps<'/leagues/[id]'>[
       <DateSelector selected={selectedDate} onSelect={setSelectedDate} />
 
       {matches === null && <SkeletonList />}
-      {matches?.length === 0 && <EmptyContent title="Aucun match ce jour-là" subtitle="Essaie un autre jour du sélecteur." />}
+      {matches?.length === 0 && <EmptyContent title={tHome('noMatchesToday')} subtitle={tHome('tryAnotherDay')} />}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {matches?.map((match) => (

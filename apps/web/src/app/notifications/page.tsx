@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Notification } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -11,19 +12,19 @@ import { Button } from '../../components/ui/button';
 import { SkeletonList } from '../../components/ui/skeleton';
 import { ClientDate } from '../../components/client-date';
 
-const LABELS: Record<Notification['type'], string> = {
-  comment: 'a commenté ta review',
-  like: 'a aimé ta review',
-  follow: 'a commencé à te suivre',
-  kickoff_reminder: '',
-  mention: "t'a mentionné dans un commentaire",
-  comment_reply: 'a répondu à ton commentaire',
-  comment_like: 'a aimé ton commentaire',
-  follow_request: 'souhaite s’abonner à toi',
-  follow_accepted: 'a accepté ta demande d’abonnement',
-};
-
 export default function NotificationsPage() {
+  const t = useTranslations('NotificationsPage');
+  const LABELS: Record<Notification['type'], string> = {
+    comment: t('labelComment'),
+    like: t('labelLike'),
+    follow: t('labelFollow'),
+    kickoff_reminder: '',
+    mention: t('labelMention'),
+    comment_reply: t('labelCommentReply'),
+    comment_like: t('labelCommentLike'),
+    follow_request: t('labelFollowRequest'),
+    follow_accepted: t('labelFollowAccepted'),
+  };
   const { user, loading: authLoading } = useAuth();
   const [notifications, setNotifications] = useState<Notification[] | null>(null);
   // follow_request n'a pas de flag "déjà traitée" côté API (pas de liste dédiée, voir issue
@@ -39,11 +40,11 @@ export default function NotificationsPage() {
     return (
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 24px 80px' }}>
         <EmptySocial
-          title="Connecte-toi pour voir tes notifications"
-          subtitle="Les likes, commentaires et nouveaux abonnés apparaissent ici."
+          title={t('loginToSeeNotifications')}
+          subtitle={t('loginHint')}
           action={
             <Link href="/login">
-              <Button size="sm">Connexion</Button>
+              <Button size="sm">{t('login')}</Button>
             </Link>
           }
         />
@@ -85,7 +86,7 @@ export default function NotificationsPage() {
     <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 24px 80px', display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="fb-display" style={{ fontSize: 34, margin: 0 }}>
-          Notifications
+          {t('title')}
         </h1>
         {hasUnread && (
           <button
@@ -93,13 +94,13 @@ export default function NotificationsPage() {
             className="fb-label"
             style={{ fontSize: 12, color: 'var(--fb-nav)', background: 'none', border: 'none' }}
           >
-            Tout marquer comme lu
+            {t('markAllRead')}
           </button>
         )}
       </div>
 
       {notifications === null && <SkeletonList />}
-      {notifications?.length === 0 && <EmptyContent title="Aucune notification" />}
+      {notifications?.length === 0 && <EmptyContent title={t('noNotifications')} />}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {notifications?.map((n) => (
@@ -141,7 +142,11 @@ export default function NotificationsPage() {
                       fontWeight: n.isRead ? 400 : 700,
                     }}
                   >
-                    Coup d&rsquo;envoi dans 30 min : <strong>{n.match.homeTeam.name} — {n.match.awayTeam.name}</strong>
+                    {t.rich('kickoffIn30', {
+                      home: n.match.homeTeam.name,
+                      away: n.match.awayTeam.name,
+                      strong: (chunks) => <strong>{chunks}</strong>,
+                    })}
                   </Link>
                 </div>
               </>
@@ -179,16 +184,16 @@ export default function NotificationsPage() {
                   followBack(n.actorId, n.id);
                 }}
               >
-                Suivre
+                {t('follow')}
               </Button>
             )}
             {n.type === 'follow_request' && !resolvedRequests.has(n.id) && (
               <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
                 <Button size="sm" onClick={() => respondToFollowRequest(n, true)}>
-                  Accepter
+                  {t('accept')}
                 </Button>
                 <Button size="sm" variant="secondary" onClick={() => respondToFollowRequest(n, false)}>
-                  Refuser
+                  {t('decline')}
                 </Button>
               </div>
             )}

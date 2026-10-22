@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Tag, TagSelection } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { TagChip } from './tag-chip';
@@ -11,6 +12,7 @@ import { TAG_PALETTE, tagBackground } from '../../lib/tag-colors';
 // créés par n'importe quel user (nom unique global), sinon proposition de créer un nouveau tag
 // avec sa propre couleur/dégradé — voir matches/[id]/page.tsx et developed-review-card.tsx.
 export function TagInput({ value, onChange }: { value: TagSelection[]; onChange: (tags: TagSelection[]) => void }) {
+  const t = useTranslations('TagInput');
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -98,7 +100,7 @@ export function TagInput({ value, onChange }: { value: TagSelection[]; onChange:
             if (matches.length > 0) selectExisting(matches[0]);
             else createNew();
           }}
-          placeholder="Tag… (ambiance, avec qui, où)"
+          placeholder={t('placeholder')}
           style={{
             flex: 1,
             minWidth: 140,
@@ -189,7 +191,7 @@ export function TagInput({ value, onChange }: { value: TagSelection[]; onChange:
                 }}
               >
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>« {trimmedQuery} »</span>
-                <span style={{ color: 'var(--fb-text-2)', fontSize: 12.5, whiteSpace: 'nowrap' }}>(créer le tag)</span>
+                <span style={{ color: 'var(--fb-text-2)', fontSize: 12.5, whiteSpace: 'nowrap' }}>{t('createTag')}</span>
               </button>
               <TagColorPicker
                 color={pickerColor}

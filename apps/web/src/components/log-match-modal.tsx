@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Match, Review, TagSelection } from '@football-app/shared-types';
 import * as api from '../lib/api';
 import { useAuth } from '../lib/auth-context';
@@ -31,6 +32,8 @@ export function LogMatchModal({
   onClose: () => void;
   onSaved?: () => void;
 }) {
+  const t = useTranslations('LogMatchModal');
+  const tCommon = useTranslations('Common');
   const { user } = useAuth();
   const [step, setStep] = useState<Step>('loading');
   const [existing, setExisting] = useState<Review | null>(null);
@@ -87,7 +90,7 @@ export function LogMatchModal({
       onSaved?.();
       onClose();
     } catch (err) {
-      setError(err instanceof api.ApiError ? err.message : 'Erreur inconnue');
+      setError(err instanceof api.ApiError ? err.message : tCommon('unknownError'));
     } finally {
       setSubmitting(false);
     }
@@ -106,7 +109,7 @@ export function LogMatchModal({
       onSaved?.();
       onClose();
     } catch (err) {
-      setError(err instanceof api.ApiError ? err.message : 'Erreur inconnue');
+      setError(err instanceof api.ApiError ? err.message : tCommon('unknownError'));
     } finally {
       setSubmitting(false);
     }
@@ -148,20 +151,19 @@ export function LogMatchModal({
           </span>
         </div>
 
-        {step === 'loading' && <p className="fb-meta" style={{ margin: 0 }}>Chargement…</p>}
+        {step === 'loading' && <p className="fb-meta" style={{ margin: 0 }}>{t('loading')}</p>}
 
         {step === 'choice' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <p className="fb-body" style={{ margin: 0, fontSize: 14 }}>
-              Tu as déjà noté ce match rapidement. Tu veux compléter cette note avec un commentaire, ou logger un
-              nouveau visionnage à part ?
+              {t('alreadyQuickRated')}
             </p>
-            <Button onClick={startCompleting}>Compléter cette note</Button>
+            <Button onClick={startCompleting}>{t('completeThisRating')}</Button>
             <Button variant="secondary" onClick={startNewWatch}>
-              Logger un nouveau visionnage
+              {t('logNewWatch')}
             </Button>
             <Button variant="tertiary" onClick={onClose}>
-              Annuler
+              {t('cancel')}
             </Button>
           </div>
         )}
@@ -169,16 +171,16 @@ export function LogMatchModal({
         {step === 'form' && mode === 'quick' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <h2 className="fb-card-title" style={{ margin: 0, fontSize: 18 }}>
-              Noter ce match
+              {t('rateThisMatch')}
             </h2>
             <StarsSelector value={rating} onChange={setRating} size={34} />
             {error && <p style={{ color: 'var(--fb-live-text)', fontSize: 13, margin: 0 }}>{error}</p>}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <Button variant="tertiary" onClick={onClose}>
-                Annuler
+                {t('cancel')}
               </Button>
               <Button loading={submitting} onClick={submitQuick}>
-                Enregistrer
+                {t('save')}
               </Button>
             </div>
           </div>
@@ -187,11 +189,11 @@ export function LogMatchModal({
         {step === 'form' && mode === 'full' && (
           <form onSubmit={submitFull} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <h2 className="fb-card-title" style={{ margin: 0, fontSize: 18 }}>
-              {completing ? 'Compléter ma note' : existing ? 'Reloguer ce match' : 'Logger le match'}
+              {completing ? t('completeMyRating') : existing ? t('rewatchThisMatch') : t('logTheMatch')}
             </h2>
             <StarsSelector value={rating} onChange={setRating} size={34} />
             <textarea
-              placeholder="Ton commentaire (optionnel)"
+              placeholder={t('commentPlaceholder')}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               style={{
@@ -213,10 +215,10 @@ export function LogMatchModal({
             {error && <p style={{ color: 'var(--fb-live-text)', fontSize: 13, margin: 0 }}>{error}</p>}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <Button type="button" variant="tertiary" onClick={onClose}>
-                Annuler
+                {t('cancel')}
               </Button>
               <Button type="submit" loading={submitting}>
-                {completing ? 'Enregistrer' : 'Logger'}
+                {completing ? t('save') : t('logAction')}
               </Button>
             </div>
           </form>

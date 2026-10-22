@@ -3,12 +3,14 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 import { Field } from '../../components/ui/field';
 import { Button, OAuthButton } from '../../components/ui/button';
 
 export default function LoginPage() {
+  const t = useTranslations('LoginPage');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export default function LoginPage() {
     } catch {
       // Message générique volontaire (handoff design) : ne pas indiquer si c'est l'email ou
       // le mot de passe qui est faux, pour ne pas confirmer l'existence d'un compte.
-      setError('Email ou mot de passe incorrect.');
+      setError(t('invalidCredentials'));
     } finally {
       setSubmitting(false);
     }
@@ -36,12 +38,12 @@ export default function LoginPage() {
   return (
     <div style={{ maxWidth: 420, margin: '64px auto', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <h1 className="fb-display" style={{ fontSize: 34, margin: 0 }}>
-        Connexion
+        {t('title')}
       </h1>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <Field label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <Field label={t('email')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <Field
-          label="Mot de passe"
+          label={t('password')}
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -49,28 +51,28 @@ export default function LoginPage() {
           required
         />
         <Link href="/forgot-password" style={{ color: 'var(--fb-nav)', fontSize: 13, alignSelf: 'flex-end' }}>
-          Mot de passe oublié ?
+          {t('forgotPassword')}
         </Link>
         <Button type="submit" loading={submitting} style={{ width: '100%' }}>
-          Se connecter
+          {t('submit')}
         </Button>
       </form>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ flex: 1, height: 1, background: 'var(--fb-border)' }} />
-        <span className="fb-meta">ou</span>
+        <span className="fb-meta">{t('or')}</span>
         <span style={{ flex: 1, height: 1, background: 'var(--fb-border)' }} />
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <OAuthButton href={api.googleLoginUrl()} label="Continuer avec Google" />
+        <OAuthButton href={api.googleLoginUrl()} label={t('continueWithGoogle')} />
         {/* <OAuthButton href={api.appleLoginUrl()} label="Continuer avec Apple" /> */}
       </div>
 
       <p style={{ fontSize: 14, color: 'var(--fb-text-2)' }}>
-        Pas de compte ?{' '}
+        {t('noAccount')}{' '}
         <Link href="/register" style={{ color: 'var(--fb-nav)' }}>
-          S'inscrire
+          {t('signUp')}
         </Link>
       </p>
     </div>

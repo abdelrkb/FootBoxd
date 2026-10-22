@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { League } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -14,6 +15,7 @@ import { leagueAccentColor } from '../../components/ui/card-shell';
 import { todayString as today } from '../../lib/calendar-days';
 
 export default function AllLeaguesPage() {
+  const t = useTranslations('AllLeaguesPage');
   const { user, loading: authLoading } = useAuth();
   const [leagues, setLeagues] = useState<League[] | null>(null);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -107,7 +109,7 @@ export default function AllLeaguesPage() {
                 color: favoriteIds.has(league.id) ? 'var(--fb-rating)' : 'var(--fb-text-2)',
               }}
             >
-              {favoriteIds.has(league.id) ? '★ Favori' : '☆ Ajouter'}
+              {favoriteIds.has(league.id) ? `★ ${t('favorite')}` : `☆ ${t('add')}`}
             </button>
           )}
         </div>
@@ -118,13 +120,13 @@ export default function AllLeaguesPage() {
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 80px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <h1 className="fb-display" style={{ fontSize: 34, margin: 0 }}>
-        Toutes les ligues
+        {t('title')}
       </h1>
 
       <input
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        placeholder="Filtrer par nom ou pays…"
+        placeholder={t('filterPlaceholder')}
         className="fb-label"
         style={{
           height: 46,
@@ -141,11 +143,11 @@ export default function AllLeaguesPage() {
 
       {!authLoading && !user && (
         <EmptySocial
-          title="Connecte-toi pour ajouter des favoris"
-          subtitle="Retrouve tes ligues préférées en un coup d'œil sur l'accueil."
+          title={t('loginToAddFavorites')}
+          subtitle={t('findFavoritesHint')}
           action={
             <Link href="/login">
-              <Button size="sm">Connexion</Button>
+              <Button size="sm">{t('login')}</Button>
             </Link>
           }
         />
@@ -156,7 +158,7 @@ export default function AllLeaguesPage() {
       {leagues && user && filtered.favorites.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <h2 className="fb-section" style={{ margin: 0, fontSize: 13 }}>
-            Tes favoris
+            {t('yourFavorites')}
           </h2>
           {filtered.favorites.map((l) => (
             <LeagueRow key={l.id} league={l} />
@@ -168,7 +170,7 @@ export default function AllLeaguesPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {user && (
             <h2 className="fb-section" style={{ margin: 0, fontSize: 13 }}>
-              Tout le reste
+              {t('everythingElse')}
             </h2>
           )}
           {filtered.rest.map((l) => (

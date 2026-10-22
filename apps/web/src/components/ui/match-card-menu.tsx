@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Match } from '@football-app/shared-types';
 import { useAuth } from '../../lib/auth-context';
 import { useWatchlist } from '../../lib/watchlist-context';
@@ -14,6 +15,7 @@ import { LogMatchModal } from '../log-match-modal';
 // n'avaient pas ce toggle avant l'issue #15 — on ne l'ajoute pas en douce là où il n'existait pas.
 // stopPropagation + preventDefault car ces cartes sont presque toujours un <Link> englobant.
 export function MatchCardMenu({ match, showWatchlist = false }: { match: Match; showWatchlist?: boolean }) {
+  const t = useTranslations('Common');
   const { user } = useAuth();
   const { isInWatchlist, toggle } = useWatchlist();
   const [open, setOpen] = useState(false);
@@ -57,7 +59,7 @@ export function MatchCardMenu({ match, showWatchlist = false }: { match: Match; 
       >
         <button
           onClick={() => setOpen((o) => !o)}
-          aria-label="Options du match"
+          aria-label={t('matchOptions')}
           aria-haspopup="menu"
           aria-expanded={open}
           style={{
@@ -117,7 +119,7 @@ export function MatchCardMenu({ match, showWatchlist = false }: { match: Match; 
                     cursor: 'pointer',
                   }}
                 >
-                  Noter
+                  {t('rate')}
                 </button>
                 <button
                   role="menuitem"
@@ -138,7 +140,7 @@ export function MatchCardMenu({ match, showWatchlist = false }: { match: Match; 
                     cursor: 'pointer',
                   }}
                 >
-                  Logger
+                  {t('log')}
                 </button>
               </>
             )}
@@ -160,7 +162,7 @@ export function MatchCardMenu({ match, showWatchlist = false }: { match: Match; 
                   cursor: pending ? 'progress' : 'pointer',
                 }}
               >
-                {inWatchlist ? 'Retirer de la watchlist' : 'Ajouter à la watchlist'}
+                {inWatchlist ? t('removeFromWatchlist') : t('addToWatchlist')}
               </button>
             )}
           </div>

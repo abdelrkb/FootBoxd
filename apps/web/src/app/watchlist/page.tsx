@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { WatchlistEntry } from '@football-app/shared-types';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -16,6 +17,7 @@ import { Button } from '../../components/ui/button';
 import { MatchCardMenu } from '../../components/ui/match-card-menu';
 
 export default function WatchlistPage() {
+  const t = useTranslations('WatchlistPage');
   const { user, loading: authLoading } = useAuth();
   const { toggle } = useWatchlist();
   const [entries, setEntries] = useState<WatchlistEntry[] | null>(null);
@@ -47,11 +49,11 @@ export default function WatchlistPage() {
     return (
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 80px' }}>
         <EmptySocial
-          title="Connecte-toi pour voir ta watchlist"
-          subtitle="Ajoute des matchs à regarder plus tard depuis leur fiche."
+          title={t('loginToSeeWatchlist')}
+          subtitle={t('addMatchesHint')}
           action={
             <Link href="/login">
-              <Button size="sm">Connexion</Button>
+              <Button size="sm">{t('login')}</Button>
             </Link>
           }
         />
@@ -63,17 +65,17 @@ export default function WatchlistPage() {
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 80px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <h1 className="fb-display" style={{ fontSize: 32, margin: 0 }}>
-          Watchlist
+          {t('title')}
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 15 }}>Rendre privée</span>
+          <span style={{ fontSize: 15 }}>{t('makePrivate')}</span>
           <Switch checked={!isPublic} onChange={togglePrivacy} />
         </div>
       </div>
 
       {entries === null && <SkeletonList />}
       {entries?.length === 0 && (
-        <EmptyContent title="Ta watchlist est vide" subtitle="Ajoute un match depuis sa fiche ou une carte, via le bouton ⋮." />
+        <EmptyContent title={t('emptyTitle')} subtitle={t('emptySubtitle')} />
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -114,7 +116,7 @@ export default function WatchlistPage() {
               <MatchCardMenu match={match} />
               <button
                 onClick={() => handleRemove(match.id)}
-                aria-label="Retirer de la watchlist"
+                aria-label={t('removeAria')}
                 className="fb-label"
                 style={{
                   height: 32,
@@ -126,7 +128,7 @@ export default function WatchlistPage() {
                   color: 'var(--fb-text-2)',
                 }}
               >
-                Retirer
+                {t('remove')}
               </button>
             </div>
           </div>
