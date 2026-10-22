@@ -138,6 +138,8 @@
     "password": "Password",
     "passwordHint": "8 characters minimum",
     "submit": "Create my account",
+    "or": "or",
+    "continueWithGoogle": "Continue with Google",
     "alreadyHaveAccount": "Already have an account?",
     "login": "Log in"
   },

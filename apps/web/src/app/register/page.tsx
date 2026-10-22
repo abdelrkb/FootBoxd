@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import * as api from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 import { Field } from '../../components/ui/field';
-import { Button } from '../../components/ui/button';
+import { Button, OAuthButton } from '../../components/ui/button';
 
 export default function RegisterPage() {
   const t = useTranslations('RegisterPage');
@@ -75,6 +75,17 @@ export default function RegisterPage() {
           {t('submit')}
         </Button>
       </form>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ flex: 1, height: 1, background: 'var(--fb-border)' }} />
+        <span className="fb-meta">{t('or')}</span>
+        <span style={{ flex: 1, height: 1, background: 'var(--fb-border)' }} />
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <OAuthButton href={api.googleLoginUrl()} label={t('continueWithGoogle')} />
+      </div>
+
       <p style={{ fontSize: 14, color: 'var(--fb-text-2)' }}>
         {t('alreadyHaveAccount')}{' '}
         <Link href="/login" style={{ color: 'var(--fb-nav)' }}>
