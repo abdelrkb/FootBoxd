@@ -57,12 +57,17 @@ export function NotificationBadge({ count }: { count: number }) {
 }
 
 // Afficheur de score façon "3—1". En direct, passe en --fb-action (seul endroit où un score
-// est coloré).
+// est coloré). Largeur minimale fixe : sans elle, "3—1" et "10—0" n'ont pas la même largeur et
+// les scores ne s'alignent plus d'une ligne de match à l'autre (issue #52).
 export function ScoreChip({ home, away, live }: { home: number | null; away: number | null; live?: boolean }) {
   return (
     <span
       className="fb-num"
       style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 54,
         fontWeight: 600,
         fontSize: 14,
         background: 'var(--fb-surface-2)',
