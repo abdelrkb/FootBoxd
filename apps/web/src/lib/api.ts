@@ -276,6 +276,15 @@ export const createReport = (input: CreateReportInput) =>
 
 export const searchTeams = (query: string) => apiFetch<Team[]>(`/teams/search?q=${encodeURIComponent(query)}`);
 
+// Équipes suivies (issue #53), distinct du club de cœur unique de `setFavoriteTeam`.
+export const getFavoriteTeams = (userId: string) => apiFetch<Team[]>(`/users/${userId}/favorite-teams`);
+
+export const favoriteTeam = (teamId: string) =>
+  apiFetch<{ success: boolean }>(`/teams/${teamId}/favorite`, { method: 'POST' });
+
+export const unfavoriteTeam = (teamId: string) =>
+  apiFetch<{ success: boolean }>(`/teams/${teamId}/favorite`, { method: 'DELETE' });
+
 export const getTeamOverview = (teamId: string) => apiFetch<TeamOverview>(`/teams/${teamId}`);
 
 export const getTeamStandings = (teamId: string) => apiFetch<Standing[]>(`/teams/${teamId}/standings`);

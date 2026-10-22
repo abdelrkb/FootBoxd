@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@football-app/database';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 const matchInclude = { league: true, homeTeam: true, awayTeam: true } as const;
+const PRISMA_UNIQUE_VIOLATION = 'P2002';
 
 @Injectable()
 export class TeamsService {
@@ -156,5 +158,29 @@ export class TeamsService {
       : null;
 
     return { averageRating, totalReviews, bestRatedMatch };
+  }
+
+  // Équipes suivies (issue #53) — distinct du club de cœur (User.favoriteTeamId), qui reste
+  // unique. Même pattern idempotent que les ligues favorites (LeaguesService.addFavorite).
+  findFavoritesForUser(userId: string) {
+    return this.prisma.client.favoriteTeam
+      .findMany({ where: { userId }, include: { team: true }, orderBy: { createdAt: 'asc' } })
+      .then((rows) => rows.map((r) => r.team));
+  }
+
+  async addFavorite(userId: string, teamId: string) {
+    await this.findById(teamId);
+    try {
+      await this.prisma.client.favoriteTeam.create({ data: { userId, teamId } });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === PRISMA_UNIQUE_VIOLATION) {
+        return; // déjà suivie, idempotent
+      }
+      throw err;
+    }
+  }
+
+  async removeFavorite(userId: string, teamId: string) {
+    await this.prisma.client.favoriteTeam.deleteMany({ where: { userId, teamId } });
   }
 }

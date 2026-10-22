@@ -212,6 +212,9 @@ export interface Profile {
   reviewsThisSeasonCount: number;
   lastReviews: ReviewWithMatch[];
   favoriteMatches: ReviewWithMatch[];
+  // Club de cœur (unique) et autres équipes suivies, affichés sur le profil (issue #53).
+  favoriteTeam: Team | null;
+  favoriteTeams: Team[];
   followersCount: number;
   followingCount: number;
   isWatchlistPublic: boolean;

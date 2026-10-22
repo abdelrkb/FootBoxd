@@ -133,6 +133,7 @@ model User {
   notificationsReceived  Notification[] @relation("Recipient")
   notificationsTriggered Notification[] @relation("Actor")
   favoriteLeagues        FavoriteLeague[]
+  favoriteTeams          FavoriteTeam[]
   watchlist              WatchlistEntry[]
   verificationCodes      VerificationCode[]
   blocksMade             Block[]          @relation("Blocker")
@@ -226,6 +227,21 @@ model FavoriteLeague {
   @@map("favorite_leagues")
 }
 
+// Équipes suivies (issue #53) — distinct du "club de cœur" (User.favoriteTeamId) : celui-ci
+// reste unique et épinglé en haut de l'accueil, alors qu'on peut suivre plusieurs autres
+// équipes pour les afficher sur son profil.
+model FavoriteTeam {
+  userId    String   @map("user_id") @db.Uuid
+  teamId    String   @map("team_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
+  @@map("favorite_teams")
+}
+
 model Team {
   id         String  @id @default(uuid()) @db.Uuid
   externalId String  @unique @map("external_id")
@@ -251,6 +267,7 @@ model Team {
   awayMatches Match[] @relation("AwayTeam")
   matchEvents MatchEvent[]
   favoritedByUsers User[] @relation("FavoriteTeam")
+  followedByUsers  FavoriteTeam[]
   players     Player[]
   standings   Standing[]
 

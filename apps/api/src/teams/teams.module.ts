@@ -5,5 +5,6 @@ import { TeamsController } from './teams.controller.js';
 @Module({
   providers: [TeamsService],
   controllers: [TeamsController],
+  exports: [TeamsService],
 })
 export class TeamsModule {}

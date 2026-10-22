@@ -111,7 +111,9 @@
     "seasonStartsHereSubtitle": "Log a match to see your favorites appear.",
     "viewTodayMatches": "See today's matches",
     "lastLoggedMatches": "Last logged matches",
-    "noMatchLoggedThisSeason": "No match logged this season"
+    "noMatchLoggedThisSeason": "No match logged this season",
+    "favoriteClubSection": "Favorite club",
+    "followedTeamsSection": "Followed teams"
   },
   "LoginPage": {
     "title": "Log in",
@@ -388,7 +390,11 @@
     "password": "Password",
     "passwordHint": "Leave empty if you signed up with Google/Apple only",
     "confirmDeletion": "Confirm deletion",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "followedTeams": "Followed teams",
+    "followedTeamsHint": "On top of your favorite club — they show up on your profile.",
+    "followedTeamsSearchPlaceholder": "Search for a team to follow…",
+    "removeFollowedTeam": "Unfollow"
   },
   "TeamPage": {
     "resultWin": "W",

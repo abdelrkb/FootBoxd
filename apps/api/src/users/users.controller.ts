@@ -22,6 +22,7 @@ import { LeaguesService } from '../leagues/leagues.service.js';
 import { WatchlistService } from '../watchlist/watchlist.service.js';
 import { BlocksService } from '../blocks/blocks.service.js';
 import { FollowsService } from '../follows/follows.service.js';
+import { TeamsService } from '../teams/teams.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { PublicUser } from '../auth/auth.service.js';
@@ -52,6 +53,7 @@ export class UsersController {
     private readonly watchlistService: WatchlistService,
     private readonly blocksService: BlocksService,
     private readonly followsService: FollowsService,
+    private readonly teamsService: TeamsService,
   ) {}
 
   @Get('search')
@@ -81,6 +83,11 @@ export class UsersController {
   @Get(':id/favorite-leagues')
   favoriteLeagues(@Param('id', ParseUUIDPipe) id: string) {
     return this.leaguesService.findFavoritesForUser(id);
+  }
+
+  @Get(':id/favorite-teams')
+  favoriteTeams(@Param('id', ParseUUIDPipe) id: string) {
+    return this.teamsService.findFavoritesForUser(id);
   }
 
   // Watchlist d'un autre utilisateur — 403 si elle n'est pas publique (voir WatchlistService).

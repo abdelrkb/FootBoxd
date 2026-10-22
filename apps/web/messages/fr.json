@@ -111,7 +111,9 @@
     "seasonStartsHereSubtitle": "Logge un match pour voir apparaître tes préférés.",
     "viewTodayMatches": "Voir les matchs du jour",
     "lastLoggedMatches": "Derniers matchs loggés",
-    "noMatchLoggedThisSeason": "Aucun match loggé cette saison"
+    "noMatchLoggedThisSeason": "Aucun match loggé cette saison",
+    "favoriteClubSection": "Club de cœur",
+    "followedTeamsSection": "Équipes suivies"
   },
   "LoginPage": {
     "title": "Connexion",
@@ -388,7 +390,11 @@
     "password": "Mot de passe",
     "passwordHint": "Laisse vide si tu t'es inscrit uniquement avec Google/Apple",
     "confirmDeletion": "Confirmer la suppression",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "followedTeams": "Équipes suivies",
+    "followedTeamsHint": "En plus de ton club de cœur — elles s'affichent sur ton profil.",
+    "followedTeamsSearchPlaceholder": "Chercher une équipe à suivre…",
+    "removeFollowedTeam": "Ne plus suivre"
   },
   "TeamPage": {
     "resultWin": "V",

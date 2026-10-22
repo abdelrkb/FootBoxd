@@ -37,6 +37,11 @@ export default function SettingsPage() {
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [favoriteTeamId, setFavoriteTeamId] = useState<string | null>(null);
+  // Équipes suivies (issue #53) : appliquées immédiatement (une requête par ajout/retrait),
+  // pas groupées avec le bouton "Enregistrer" comme le club de cœur.
+  const [followedTeams, setFollowedTeams] = useState<Team[]>([]);
+  const [teamQuery, setTeamQuery] = useState('');
+  const [teamResults, setTeamResults] = useState<Team[]>([]);
   const [prefs, setPrefs] = useState({
     notifyOnLike: true,
     notifyOnComment: true,
@@ -96,7 +101,32 @@ export default function SettingsPage() {
       setTeams(Array.from(byId.values()).sort((a, b) => a.name.localeCompare(b.name)));
     });
     api.getBlockedAccounts().then(setBlockedAccounts);
+    api.getFavoriteTeams(user.id).then(setFollowedTeams);
   }, [user]);
+
+  useEffect(() => {
+    const q = teamQuery.trim();
+    if (q.length < 2) {
+      setTeamResults([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      api.searchTeams(q).then(setTeamResults);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [teamQuery]);
+
+  async function addFollowedTeam(team: Team) {
+    await api.favoriteTeam(team.id);
+    setFollowedTeams((prev) => (prev.some((t) => t.id === team.id) ? prev : [...prev, team]));
+    setTeamQuery('');
+    setTeamResults([]);
+  }
+
+  async function removeFollowedTeam(teamId: string) {
+    await api.unfavoriteTeam(teamId);
+    setFollowedTeams((prev) => prev.filter((t) => t.id !== teamId));
+  }
 
   async function save() {
     await Promise.all([api.setFavoriteTeam(favoriteTeamId), api.updatePreferences(prefs)]);
@@ -387,6 +417,88 @@ export default function SettingsPage() {
                 </button>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      <div style={sectionStyle()}>
+        <span className="fb-section" style={{ fontSize: 13 }}>
+          {t('followedTeams')}
+        </span>
+        <p style={{ fontSize: 13, color: 'var(--fb-text-2)', margin: 0 }}>{t('followedTeamsHint')}</p>
+
+        {followedTeams.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {followedTeams.map((team) => (
+              <button
+                key={team.id}
+                onClick={() => removeFollowedTeam(team.id)}
+                className="fb-label"
+                title={t('removeFollowedTeam')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '8px 14px',
+                  borderRadius: 999,
+                  fontSize: 12,
+                  border: '1px solid var(--fb-border)',
+                  background: 'var(--fb-surface)',
+                  color: 'var(--fb-text-2)',
+                }}
+              >
+                <Crest src={team.logoUrl} alt={team.name} size={18} />
+                {team.name}
+                <span style={{ color: 'var(--fb-text-3)' }}>✕</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <input
+          value={teamQuery}
+          onChange={(e) => setTeamQuery(e.target.value)}
+          placeholder={t('followedTeamsSearchPlaceholder')}
+          className="fb-label"
+          style={{
+            height: 42,
+            padding: '0 16px',
+            borderRadius: 999,
+            border: '1px solid var(--fb-border)',
+            background: 'var(--fb-bg)',
+            color: 'var(--fb-text)',
+            fontSize: 13,
+            textTransform: 'none',
+            letterSpacing: 'normal',
+          }}
+        />
+
+        {teamResults.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {teamResults
+              .filter((team) => !followedTeams.some((t) => t.id === team.id))
+              .map((team) => (
+                <button
+                  key={team.id}
+                  onClick={() => addFollowedTeam(team)}
+                  className="fb-label"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '8px 14px',
+                    borderRadius: 999,
+                    fontSize: 12,
+                    border: '1px dashed var(--fb-border-strong)',
+                    background: 'transparent',
+                    color: 'var(--fb-text-2)',
+                  }}
+                >
+                  <Crest src={team.logoUrl} alt={team.name} size={18} />
+                  {team.name}
+                  <span style={{ color: 'var(--fb-action)' }}>+</span>
+                </button>
+              ))}
           </div>
         )}
       </div>
