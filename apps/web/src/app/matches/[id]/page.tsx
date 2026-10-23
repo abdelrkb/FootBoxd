@@ -1,9 +1,9 @@
 'use client';
 
-import { use, useEffect, useState, type FormEvent } from 'react';
+import { use, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import type { Match, Review, MatchEvent, RatingDistribution, TagSelection } from '@football-app/shared-types';
+import type { Match, Review, ReviewWithLike, MatchReviewFeed, MatchEvent, RatingDistribution, TagSelection } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import { DevelopedReviewCard } from '../../../components/developed-review-card';
@@ -18,10 +18,49 @@ import { StarsDisplay, StarsSelector } from '../../../components/ui/stars';
 import { TagInput } from '../../../components/ui/tag-input';
 import { LockIcon } from '../../../components/ui/lock-icon';
 import { Button } from '../../../components/ui/button';
+import { Pill } from '../../../components/ui/pill';
 import { EmptyContent } from '../../../components/ui/empty-state';
 import { SpoilerScore } from '../../../components/ui/spoiler-score';
 import { WatchlistMenuButton } from '../../../components/ui/watchlist-menu-button';
 import { leagueAccentColor } from '../../../components/ui/card-shell';
+
+// Nombre de reviews d'amis affichées avant "voir plus".
+const FRIENDS_PREVIEW_COUNT = 5;
+
+function ReviewGroup({
+  title,
+  reviews,
+  userId,
+  onChange,
+  footer,
+}: {
+  title: string;
+  reviews: ReviewWithLike[];
+  userId: string | undefined;
+  onChange: () => void;
+  footer?: ReactNode;
+}) {
+  if (reviews.length === 0) return null;
+  return (
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <h3 className="fb-label" style={{ fontSize: 12, margin: 0, color: 'var(--fb-text-2)' }}>
+        {title}
+      </h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {reviews.map((review) => (
+          <DevelopedReviewCard
+            key={review.id}
+            review={review}
+            isMine={userId === review.userId}
+            onChange={onChange}
+            initialLiked={review.likedByMe}
+          />
+        ))}
+      </div>
+      {footer}
+    </section>
+  );
+}
 
 export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) {
   const t = useTranslations('MatchDetailPage');
@@ -30,7 +69,10 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
   const { id } = use(params);
   const { user } = useAuth();
   const [match, setMatch] = useState<Match | null>(null);
-  const [reviews, setReviews] = useState<Review[] | null>(null);
+  const [feed, setFeed] = useState<MatchReviewFeed | null>(null);
+  const [tab, setTab] = useState<'reviews' | 'lineups'>('reviews');
+  const [showAllFriends, setShowAllFriends] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const [events, setEvents] = useState<MatchEvent[]>([]);
   const [distribution, setDistribution] = useState<RatingDistribution | null>(null);
   const [rating, setRating] = useState(3);
@@ -45,7 +87,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
   // pour la même logique côté modal, dupliquée ici car le formulaire de cette page est inline.
   const [completingQuick, setCompletingQuick] = useState(false);
 
-  const loadReviews = () => api.getReviewsForMatch(id).then(setReviews);
+  const loadReviews = () => api.getMatchReviewFeed(id).then(setFeed);
 
   useEffect(() => {
     api.getMatch(id).then(setMatch);
@@ -94,10 +136,10 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
   if (!match) return null; // squelette omis pour cette passe — voir handoff pour la géométrie exacte
 
   // Plusieurs reviews actives possibles pour le même utilisateur depuis l'issue #14 (rewatch) —
-  // `reviews` est trié du plus récent au plus ancien (reviews.service.ts `findForMatch`), donc
-  // le premier élément après filtrage est la plus récente, utilisée comme aperçu du bandeau
-  // "déjà loggé".
-  const myReviews = user ? (reviews?.filter((r) => r.userId === user.id) ?? []) : [];
+  // `feed.mine` est trié du plus récent au plus ancien (reviews.service.ts `findMatchFeed`), donc
+  // le premier élément est la plus récente, utilisée comme aperçu du bandeau "déjà loggé".
+  const myReviews = user ? (feed?.mine ?? []) : [];
+  const friendReviews = feed?.friends ?? [];
   const latestMyReview = myReviews[0];
 
   return (
@@ -196,7 +238,7 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
           )}
           <span style={{ width: 4, height: 4, borderRadius: 999, background: 'var(--fb-border-strong)' }} />
           <span className="fb-num" style={{ color: 'var(--fb-text-2)' }}>
-            {t('reviewsCount', { count: reviews?.length ?? 0 })}
+            {t('reviewsCount', { count: feed?.all.length ?? 0 })}
           </span>
           {match.highlightUrl && (
             <a
@@ -219,231 +261,276 @@ export default function MatchDetailPage({ params }: PageProps<'/matches/[id]'>) 
         </div>
       </div>
 
-      <div className="fb-split" style={{ gap: 32, alignItems: 'start' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32, minWidth: 0 }}>
-          {!user && (
-            <div
-              style={{
-                padding: 24,
-                border: '1px dashed var(--fb-border-strong)',
-                borderRadius: 16,
-                background: 'var(--fb-hatch)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16,
-                flexWrap: 'wrap',
-              }}
-            >
-              <span className="fb-card-title" style={{ fontSize: 18 }}>
-                {t('loginToRate')}
-              </span>
-              <Link href="/login">
-                <Button>{t('login')}</Button>
-              </Link>
-            </div>
-          )}
+      <div role="tablist" style={{ display: 'flex', gap: 8 }}>
+        <Pill selected={tab === 'reviews'} onClick={() => setTab('reviews')}>
+          {t('tabReviews')}
+        </Pill>
+        <Pill selected={tab === 'lineups'} onClick={() => setTab('lineups')}>
+          {t('tabLineups')}
+        </Pill>
+      </div>
 
-          {user && latestMyReview && !showLogForm && (
-            <div
-              style={{
-                border: '1px solid var(--fb-border)',
-                borderRadius: 16,
-                background: 'var(--fb-surface)',
-                padding: 20,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 14,
-                flexWrap: 'wrap',
-              }}
-            >
-              <StarsDisplay rating={Number(latestMyReview.rating)} size={22} />
-              <span className="fb-num" style={{ fontSize: 16, color: 'var(--fb-rating)' }}>
-                {Number(latestMyReview.rating).toFixed(1)}
-              </span>
-              <span style={{ fontSize: 15, color: 'var(--fb-text-2)' }}>
-                {latestMyReview.quickRating ? t('alreadyQuickRated') : t('alreadyLogged', { count: myReviews.length })}
-              </span>
-              <div style={{ display: 'flex', gap: 10, marginLeft: 'auto' }}>
-                {latestMyReview.quickRating && (
-                  <Button variant="secondary" size="sm" onClick={() => openCompleteQuickRating(latestMyReview)}>
-                    {t('completeThisRating')}
-                  </Button>
-                )}
-                <Button variant="secondary" size="sm" onClick={openNewLog}>
-                  {latestMyReview.quickRating ? t('logNewWatch') : t('rewatchThisMatch')}
-                </Button>
-              </div>
-            </div>
-          )}
+      {tab === 'lineups' && (
+        <div className="fb-split" style={{ gap: 32, alignItems: 'start' }}>
+          <Lineups match={match} />
+          <MatchEvents events={events} />
+        </div>
+      )}
 
-          {user && myReviews.length === 0 && match.status !== 'finished' && (
-            <div
-              style={{
-                position: 'relative',
-                border: '1px solid var(--fb-border)',
-                borderRadius: 16,
-                background: 'var(--fb-surface)',
-                overflow: 'hidden',
-              }}
-            >
+      {tab === 'reviews' && (
+        <div className="fb-split" style={{ gap: 32, alignItems: 'start' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32, minWidth: 0 }}>
+            {!user && (
               <div
-                aria-hidden
                 style={{
+                  padding: 24,
+                  border: '1px dashed var(--fb-border-strong)',
+                  borderRadius: 16,
+                  background: 'var(--fb-hatch)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <span className="fb-card-title" style={{ fontSize: 18 }}>
+                  {t('loginToRate')}
+                </span>
+                <Link href="/login">
+                  <Button>{t('login')}</Button>
+                </Link>
+              </div>
+            )}
+
+            {user && latestMyReview && !showLogForm && (
+              <div
+                style={{
+                  border: '1px solid var(--fb-border)',
+                  borderRadius: 16,
+                  background: 'var(--fb-surface)',
+                  padding: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 14,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <StarsDisplay rating={Number(latestMyReview.rating)} size={22} />
+                <span className="fb-num" style={{ fontSize: 16, color: 'var(--fb-rating)' }}>
+                  {Number(latestMyReview.rating).toFixed(1)}
+                </span>
+                <span style={{ fontSize: 15, color: 'var(--fb-text-2)' }}>
+                  {latestMyReview.quickRating ? t('alreadyQuickRated') : t('alreadyLogged', { count: myReviews.length })}
+                </span>
+                <div style={{ display: 'flex', gap: 10, marginLeft: 'auto' }}>
+                  {latestMyReview.quickRating && (
+                    <Button variant="secondary" size="sm" onClick={() => openCompleteQuickRating(latestMyReview)}>
+                      {t('completeThisRating')}
+                    </Button>
+                  )}
+                  <Button variant="secondary" size="sm" onClick={openNewLog}>
+                    {latestMyReview.quickRating ? t('logNewWatch') : t('rewatchThisMatch')}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {user && myReviews.length === 0 && match.status !== 'finished' && (
+              <div
+                style={{
+                  position: 'relative',
+                  border: '1px solid var(--fb-border)',
+                  borderRadius: 16,
+                  background: 'var(--fb-surface)',
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  aria-hidden
+                  style={{
+                    padding: 24,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 18,
+                    opacity: 0.4,
+                    filter: 'blur(1.5px)',
+                    pointerEvents: 'none',
+                    userSelect: 'none',
+                  }}
+                >
+                  <h2 className="fb-card-title" style={{ fontSize: 20, margin: 0 }}>
+                    {t('logTheMatch')}
+                  </h2>
+                  <StarsSelector value={3} onChange={() => {}} size={38} />
+                  <div
+                    style={{
+                      width: '100%',
+                      minHeight: 110,
+                      boxSizing: 'border-box',
+                      border: '1px solid var(--fb-border)',
+                      borderRadius: 12,
+                      background: 'var(--fb-bg)',
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: '100%',
+                      minHeight: 46,
+                      boxSizing: 'border-box',
+                      border: '1px solid var(--fb-border)',
+                      borderRadius: 12,
+                      background: 'var(--fb-bg)',
+                    }}
+                  />
+                </div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 12,
+                    textAlign: 'center',
+                    padding: 24,
+                    background: 'var(--fb-curtain)',
+                  }}
+                >
+                  <LockIcon size={26} color="var(--fb-text)" />
+                  <p className="fb-card-title" style={{ fontSize: 15, margin: 0, maxWidth: 260 }}>
+                    {t('watchUntilEndToLog')}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {user && (myReviews.length === 0 || showLogForm) && match.status === 'finished' && (
+              <form
+                onSubmit={handleLogMatch}
+                style={{
+                  border: '1px solid var(--fb-border)',
+                  borderRadius: 16,
+                  background: 'var(--fb-surface)',
                   padding: 24,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 18,
-                  opacity: 0.4,
-                  filter: 'blur(1.5px)',
-                  pointerEvents: 'none',
-                  userSelect: 'none',
                 }}
               >
-                <h2 className="fb-card-title" style={{ fontSize: 20, margin: 0 }}>
-                  {t('logTheMatch')}
-                </h2>
-                <StarsSelector value={3} onChange={() => {}} size={38} />
-                <div
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                  <h2 className="fb-card-title" style={{ fontSize: 20, margin: 0 }}>
+                    {completingQuick ? t('completeMyRating') : myReviews.length > 0 ? t('rewatchThisMatch') : t('logTheMatch')}
+                  </h2>
+                  {myReviews.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="tertiary"
+                      size="sm"
+                      onClick={() => {
+                        setCompletingQuick(false);
+                        setShowLogForm(false);
+                      }}
+                    >
+                      {t('cancel')}
+                    </Button>
+                  )}
+                </div>
+                <StarsSelector value={rating} onChange={setRating} size={38} />
+                <textarea
+                  placeholder={t('commentPlaceholder')}
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
                   style={{
                     width: '100%',
                     minHeight: 110,
                     boxSizing: 'border-box',
+                    padding: 14,
                     border: '1px solid var(--fb-border)',
                     borderRadius: 12,
                     background: 'var(--fb-bg)',
+                    color: 'var(--fb-text)',
+                    fontFamily: 'var(--fb-font-sans)',
+                    fontSize: 15,
+                    lineHeight: 1.55,
+                    resize: 'vertical',
                   }}
                 />
-                <div
-                  style={{
-                    width: '100%',
-                    minHeight: 46,
-                    boxSizing: 'border-box',
-                    border: '1px solid var(--fb-border)',
-                    borderRadius: 12,
-                    background: 'var(--fb-bg)',
-                  }}
-                />
-              </div>
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 12,
-                  textAlign: 'center',
-                  padding: 24,
-                  background: 'var(--fb-curtain)',
-                }}
-              >
-                <LockIcon size={26} color="var(--fb-text)" />
-                <p className="fb-card-title" style={{ fontSize: 15, margin: 0, maxWidth: 260 }}>
-                  {t('watchUntilEndToLog')}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {user && (myReviews.length === 0 || showLogForm) && match.status === 'finished' && (
-            <form
-              onSubmit={handleLogMatch}
-              style={{
-                border: '1px solid var(--fb-border)',
-                borderRadius: 16,
-                background: 'var(--fb-surface)',
-                padding: 24,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 18,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                <h2 className="fb-card-title" style={{ fontSize: 20, margin: 0 }}>
-                  {completingQuick ? t('completeMyRating') : myReviews.length > 0 ? t('rewatchThisMatch') : t('logTheMatch')}
-                </h2>
-                {myReviews.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="tertiary"
-                    size="sm"
-                    onClick={() => {
-                      setCompletingQuick(false);
-                      setShowLogForm(false);
-                    }}
-                  >
-                    {t('cancel')}
-                  </Button>
-                )}
-              </div>
-              <StarsSelector value={rating} onChange={setRating} size={38} />
-              <textarea
-                placeholder={t('commentPlaceholder')}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                style={{
-                  width: '100%',
-                  minHeight: 110,
-                  boxSizing: 'border-box',
-                  padding: 14,
-                  border: '1px solid var(--fb-border)',
-                  borderRadius: 12,
-                  background: 'var(--fb-bg)',
-                  color: 'var(--fb-text)',
-                  fontFamily: 'var(--fb-font-sans)',
-                  fontSize: 15,
-                  lineHeight: 1.55,
-                  resize: 'vertical',
-                }}
-              />
-              <TagInput value={tags} onChange={setTags} />
-              {error && <p style={{ color: 'var(--fb-live-text)', fontSize: 13 }}>{error}</p>}
-              <Button type="submit" style={{ width: 'fit-content' }}>
-                {tCommon('log')}
-              </Button>
-            </form>
-          )}
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'baseline',
-                gap: 12,
-                borderBottom: '2px solid var(--fb-text)',
-                paddingBottom: 9,
-              }}
-            >
-              <h2 className="fb-section" style={{ fontSize: 14, margin: 0 }}>
-                {t('reviews')}
-              </h2>
-              <span className="fb-meta">{reviews?.length ?? 0}</span>
-            </div>
-
-            {reviews?.length === 0 && (
-              <EmptyContent title={t('nobodyLoggedYet')} subtitle={t('beTheFirst')} />
+                <TagInput value={tags} onChange={setTags} />
+                {error && <p style={{ color: 'var(--fb-live-text)', fontSize: 13 }}>{error}</p>}
+                <Button type="submit" style={{ width: 'fit-content' }}>
+                  {tCommon('log')}
+                </Button>
+              </form>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {reviews?.map((review) => (
-                <DevelopedReviewCard
-                  key={review.id}
-                  review={review}
-                  isMine={user?.id === review.userId}
-                  onChange={loadReviews}
-                />
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: 12,
+                  borderBottom: '2px solid var(--fb-text)',
+                  paddingBottom: 9,
+                }}
+              >
+                <h2 className="fb-section" style={{ fontSize: 14, margin: 0 }}>
+                  {t('reviews')}
+                </h2>
+                <span className="fb-meta">{feed?.all.length ?? 0}</span>
+              </div>
+
+              {feed?.all.length === 0 && (
+                <EmptyContent title={t('nobodyLoggedYet')} subtitle={t('beTheFirst')} />
+              )}
+
+              {feed && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+                  <ReviewGroup
+                    title={t('myReviews', { count: myReviews.length })}
+                    reviews={myReviews}
+                    userId={user?.id}
+                    onChange={loadReviews}
+                  />
+                  <ReviewGroup
+                    title={t('friendsReviews')}
+                    reviews={showAllFriends ? friendReviews : friendReviews.slice(0, FRIENDS_PREVIEW_COUNT)}
+                    userId={user?.id}
+                    onChange={loadReviews}
+                    footer={
+                      friendReviews.length > FRIENDS_PREVIEW_COUNT && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          style={{ width: 'fit-content' }}
+                          onClick={() => setShowAllFriends((prev) => !prev)}
+                        >
+                          {showAllFriends
+                            ? t('showLess')
+                            : t('seeMoreFriends', { count: friendReviews.length - FRIENDS_PREVIEW_COUNT })}
+                        </Button>
+                      )
+                    }
+                  />
+                  <ReviewGroup title={t('popularReviews')} reviews={feed.popular} userId={user?.id} onChange={loadReviews} />
+                  {showAllReviews && (
+                    <ReviewGroup title={t('allReviews')} reviews={feed.all} userId={user?.id} onChange={loadReviews} />
+                  )}
+                  {feed.all.length > 0 && (
+                    <Button variant="secondary" style={{ width: 'fit-content' }} onClick={() => setShowAllReviews((prev) => !prev)}>
+                      {showAllReviews ? t('showLess') : t('seeAllReviews', { count: feed.all.length })}
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
-          <MatchEvents events={events} />
-          <Lineups match={match} />
-          {distribution && <RatingHistogram distribution={distribution} />}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
+            {distribution && <RatingHistogram distribution={distribution} />}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
