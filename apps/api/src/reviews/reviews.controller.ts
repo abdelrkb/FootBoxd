@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { PublicUser } from '../auth/auth.service.js';
 import { ReviewsService } from './reviews.service.js';
@@ -29,9 +30,12 @@ export class ReviewsController {
     return this.reviewsService.findFromFollowing(user.id);
   }
 
+  // Auth facultative : un visiteur connecté reçoit en plus `likedByMe` (cœur rouge sur la
+  // page de la review), un anonyme la même review avec `likedByMe: false`.
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':id')
-  detail(@Param('id', ParseUUIDPipe) id: string) {
-    return this.reviewsService.findActiveById(id);
+  detail(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() viewer?: PublicUser) {
+    return this.reviewsService.findDetail(id, viewer?.id ?? null);
   }
 
   @UseGuards(JwtAuthGuard)

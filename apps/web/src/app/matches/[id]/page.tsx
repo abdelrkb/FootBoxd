@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import type { Match, Review, MatchEvent, RatingDistribution, TagSelection } from '@football-app/shared-types';
 import * as api from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
-import { DevelopedReviewCard } from './developed-review-card';
+import { DevelopedReviewCard } from '../../../components/developed-review-card';
 import { MatchEvents } from './match-events';
 import { RatingHistogram } from './rating-histogram';
 import { Lineups } from './lineups';

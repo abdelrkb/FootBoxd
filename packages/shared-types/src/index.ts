@@ -154,6 +154,11 @@ export interface ReviewWithMatch extends Review {
   match: Match;
 }
 
+// Réponse de GET /reviews/:id (page d'une review) : `likedByMe` vaut false pour un visiteur anonyme.
+export interface ReviewDetail extends ReviewWithMatch {
+  likedByMe: boolean;
+}
+
 export interface Comment {
   id: string;
   reviewId: string;

@@ -457,5 +457,10 @@
     "points": "Pts",
     "standingsUnavailable": "Standings unavailable",
     "standingsUnavailableHint": "Not synced yet for this competition."
+  },
+  "ReviewPage": {
+    "notFound": "Review not found",
+    "notFoundHint": "Its author may have deleted it.",
+    "seeMatch": "See match details"
   }
 }

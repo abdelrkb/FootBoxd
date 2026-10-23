@@ -4,9 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { Comment } from '@football-app/shared-types';
-import * as api from '../../../lib/api';
-import { useAuth } from '../../../lib/auth-context';
-import { Crest } from '../../../components/ui/crest';
+import * as api from '../lib/api';
+import { useAuth } from '../lib/auth-context';
+import { Crest } from './ui/crest';
 
 const MENTION_TOKEN = /(@[a-z0-9_]{3,20})/gi;
 const IS_MENTION = /^@[a-z0-9_]{3,20}$/i;

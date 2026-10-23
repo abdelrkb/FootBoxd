@@ -457,5 +457,10 @@
     "points": "Pts",
     "standingsUnavailable": "Classement indisponible",
     "standingsUnavailableHint": "Pas encore synchronisé pour cette compétition."
+  },
+  "ReviewPage": {
+    "notFound": "Review introuvable",
+    "notFoundHint": "Elle a peut-être été supprimée par son auteur.",
+    "seeMatch": "Voir la fiche du match"
   }
 }

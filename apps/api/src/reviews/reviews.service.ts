@@ -136,10 +136,19 @@ export class ReviewsService {
     return reviews.map(serializeReview);
   }
 
+  // Inclut le match : la page d'une review (web `/reviews/[id]`) affiche son en-tête.
   async findActiveById(id: string) {
-    const review = await this.prisma.client.review.findUnique({ where: { id }, include: reviewInclude });
+    const review = await this.prisma.client.review.findUnique({ where: { id }, include: reviewWithMatchInclude });
     if (!review || review.deletedAt) throw new NotFoundException('Review introuvable');
     return serializeReview(review);
+  }
+
+  async findDetail(id: string, viewerId: string | null) {
+    const review = await this.findActiveById(id);
+    const likedByMe = viewerId
+      ? (await this.prisma.client.reviewLike.count({ where: { reviewId: id, userId: viewerId } })) > 0
+      : false;
+    return { ...review, likedByMe };
   }
 
   async softDelete(id: string, userId: string) {
