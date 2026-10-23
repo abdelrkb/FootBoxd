@@ -10,6 +10,7 @@ import type {
   PopularReview,
   PopularMatch,
   ReviewWithMatch,
+  ReviewDetail,
   MatchEvent,
   RatingDistribution,
   Team,
@@ -83,7 +84,7 @@ export const getRatingDistribution = (matchId: string) =>
 // --- Reviews ---
 export const getReviewsForMatch = (matchId: string) => apiFetch<Review[]>(`/reviews?matchId=${matchId}`);
 
-export const getReview = (id: string) => apiFetch<Review>(`/reviews/${id}`);
+export const getReview = (id: string) => apiFetch<ReviewDetail>(`/reviews/${id}`);
 
 export const createReview = (
   matchId: string,

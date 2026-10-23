@@ -27,7 +27,7 @@ export function ProfileMatchCard({ review }: { review: ReviewWithMatch }) {
   }
 
   return (
-    <Link href={`/matches/${match.id}`} style={{ ...cardShellStyle(16), flexDirection: 'column' }} className="fb-card">
+    <Link href={`/reviews/${review.id}`} style={{ ...cardShellStyle(16), flexDirection: 'column' }} className="fb-card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <LeagueStripe league={match.league} />
         <MatchCardMenu match={match} showWatchlist />

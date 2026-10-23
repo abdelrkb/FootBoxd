@@ -1,33 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { Comment, Review, TagSelection } from '@football-app/shared-types';
-import * as api from '../../../lib/api';
-import { useAuth } from '../../../lib/auth-context';
-import { Crest } from '../../../components/ui/crest';
-import { StarsDisplay, StarsSelector } from '../../../components/ui/stars';
-import { OwnRatingPill, RewatchBadge } from '../../../components/ui/badges';
-import { Button } from '../../../components/ui/button';
-import { ClientDate } from '../../../components/client-date';
-import { TagInput } from '../../../components/ui/tag-input';
-import { TagChip } from '../../../components/ui/tag-chip';
-import { ReportDialog } from '../../../components/report-dialog';
+import * as api from '../lib/api';
+import { useAuth } from '../lib/auth-context';
+import { Crest } from './ui/crest';
+import { StarsDisplay, StarsSelector } from './ui/stars';
+import { OwnRatingPill, RewatchBadge } from './ui/badges';
+import { Button } from './ui/button';
+import { ClientDate } from './client-date';
+import { TagInput } from './ui/tag-input';
+import { TagChip } from './ui/tag-chip';
+import { ReportDialog } from './report-dialog';
 import { CommentRow } from './comment-row';
 
 export function DevelopedReviewCard({
   review,
   isMine,
   onChange,
+  initialThreadOpen = false,
+  initialLiked = false,
 }: {
   review: Review;
   isMine: boolean;
   onChange: () => void;
+  // Page d'une review : le fil de commentaires est ouvert d'office (c'est ce qu'on vient voir).
+  initialThreadOpen?: boolean;
+  // Page d'une review : l'API renvoie `likedByMe`, le cœur s'affiche rouge d'entrée.
+  initialLiked?: boolean;
 }) {
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(review._count.likes);
-  const [threadOpen, setThreadOpen] = useState(false);
+  const [threadOpen, setThreadOpen] = useState(initialThreadOpen);
   const [comments, setComments] = useState<Comment[] | null>(null);
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState<Comment | null>(null);
@@ -41,6 +47,10 @@ export function DevelopedReviewCard({
   const { user } = useAuth();
   const [report, setReport] = useState<{ targetType: 'review' | 'comment'; targetId: string } | null>(null);
   const t = useTranslations('DevelopedReviewCard');
+
+  useEffect(() => {
+    if (initialThreadOpen) api.getComments(review.id).then(setComments);
+  }, [initialThreadOpen, review.id]);
 
   async function toggleLike() {
     setLiked((prev) => !prev);

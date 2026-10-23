@@ -13,7 +13,7 @@ export function ReviewMiniCard({ review }: { review: ReviewWithMatch }) {
   const { match } = review;
   const router = useRouter();
   return (
-    <Link href={`/matches/${match.id}`} style={{ ...cardShellStyle(), position: 'relative' }} className="fb-card">
+    <Link href={`/reviews/${review.id}`} style={{ ...cardShellStyle(), position: 'relative' }} className="fb-card">
       <CrestPair home={match.homeTeam} away={match.awayTeam} size={36} />
       {/* Menu ancré en haut à droite de la carte (issue #57) : dans le flux, il se retrouvait au
           milieu de la ligne du score, à une position qui bougeait avec le nom des équipes. */}
