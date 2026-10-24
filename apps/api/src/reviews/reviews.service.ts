@@ -143,6 +143,45 @@ export class ReviewsService {
     return serializeReview(review);
   }
 
+  // Page match, onglet Reviews : 1) mes reviews, 2) celles des utilisateurs que je suis, du plus
+  // récent au plus ancien (le front n'en montre que 5 avant "voir plus"), 3) les 3 plus populaires
+  // du match — même score que findPopular, sans fenêtre de 48h puisqu'on reste sur un seul match.
+  // Pas de dédoublonnage : une review d'ami populaire apparaît dans les deux sections (choix
+  // produit du 2026-10-23). `all` sert au bouton "voir toutes les reviews".
+  async findMatchFeed(matchId: string, viewerId: string | null) {
+    const reviews = await this.prisma.client.review.findMany({
+      where: { matchId, deletedAt: null },
+      include: reviewInclude,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const [followedIds, likedIds] = viewerId
+      ? await Promise.all([
+          this.prisma.client.follow
+            .findMany({ where: { followerId: viewerId }, select: { followingId: true } })
+            .then((rows) => new Set(rows.map((r) => r.followingId))),
+          this.prisma.client.reviewLike
+            .findMany({ where: { userId: viewerId, reviewId: { in: reviews.map((r) => r.id) } }, select: { reviewId: true } })
+            .then((rows) => new Set(rows.map((r) => r.reviewId))),
+        ])
+      : [new Set<string>(), new Set<string>()];
+
+    const withLike = (review: (typeof reviews)[number]) => ({ ...serializeReview(review), likedByMe: likedIds.has(review.id) });
+
+    const mine = reviews.filter((r) => r.userId === viewerId);
+    const friends = reviews.filter((r) => r.userId !== viewerId && followedIds.has(r.userId));
+    const popular = [...reviews]
+      .sort((a, b) => popularityScore(b._count) - popularityScore(a._count))
+      .slice(0, 3);
+
+    return {
+      mine: mine.map(withLike),
+      friends: friends.map(withLike),
+      popular: popular.map(withLike),
+      all: reviews.map(withLike),
+    };
+  }
+
   async findDetail(id: string, viewerId: string | null) {
     const review = await this.findActiveById(id);
     const likedByMe = viewerId

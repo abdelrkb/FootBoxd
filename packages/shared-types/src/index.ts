@@ -159,6 +159,20 @@ export interface ReviewDetail extends ReviewWithMatch {
   likedByMe: boolean;
 }
 
+// Réponse de GET /reviews/match-feed (page match, onglet Reviews). Chaque section est triée du
+// plus récent au plus ancien, sauf `popular` (score décroissant, 3 max, mes reviews et celles
+// de mes amis comprises). `all` = toutes les reviews du match.
+export interface ReviewWithLike extends Review {
+  likedByMe: boolean;
+}
+
+export interface MatchReviewFeed {
+  mine: ReviewWithLike[];
+  friends: ReviewWithLike[];
+  popular: ReviewWithLike[];
+  all: ReviewWithLike[];
+}
+
 export interface Comment {
   id: string;
   reviewId: string;

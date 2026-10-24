@@ -355,7 +355,16 @@
     "commentPlaceholder": "Your comment (optional)",
     "reviews": "Reviews",
     "nobodyLoggedYet": "Nobody has logged this match yet",
-    "beTheFirst": "Be the first to rate it."
+    "beTheFirst": "Be the first to rate it.",
+    "tabReviews": "Reviews",
+    "tabLineups": "Lineups",
+    "myReviews": "{count, plural, one {My review} other {My reviews}}",
+    "friendsReviews": "Friends",
+    "seeMoreFriends": "See more ({count})",
+    "popularReviews": "Most popular",
+    "allReviews": "All reviews",
+    "seeAllReviews": "See all reviews ({count})",
+    "showLess": "Show less"
   },
   "RatingHistogram": {
     "title": "Match ratings",
@@ -462,5 +471,12 @@
     "notFound": "Review not found",
     "notFoundHint": "Its author may have deleted it.",
     "seeMatch": "See match details"
+  },
+  "LoginRequiredDialog": {
+    "title": "Log in required",
+    "message": "You need to be logged in to like or comment on a review.",
+    "cancel": "Cancel",
+    "register": "Sign up",
+    "login": "Log in"
   }
 }

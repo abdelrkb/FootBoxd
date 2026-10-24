@@ -17,8 +17,16 @@ export class ReviewsController {
     return this.reviewsService.findForMatch(query.matchId);
   }
 
-  // Routes littérales AVANT ':id' — sinon NestJS matche "popular"/"following" comme un id
+  // Routes littérales AVANT ':id' — sinon NestJS matche "popular"/"following"/"match-feed" comme un id
   // (ParseUUIDPipe les rejetterait avec un 400 avant même d'atteindre les bonnes routes).
+  // Reviews d'un match rangées pour la page match : les miennes, celles de mes amis, puis les
+  // plus populaires. Auth facultative — un anonyme ne reçoit que les populaires.
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get('match-feed')
+  matchFeed(@Query() query: ListReviewsDto, @CurrentUser() viewer?: PublicUser) {
+    return this.reviewsService.findMatchFeed(query.matchId, viewer?.id ?? null);
+  }
+
   @Get('popular')
   popular() {
     return this.reviewsService.findPopular();

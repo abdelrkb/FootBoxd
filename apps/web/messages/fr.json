@@ -355,7 +355,16 @@
     "commentPlaceholder": "Ton commentaire (optionnel)",
     "reviews": "Reviews",
     "nobodyLoggedYet": "Personne n'a encore loggé ce match",
-    "beTheFirst": "Sois le premier à donner ta note."
+    "beTheFirst": "Sois le premier à donner ta note.",
+    "tabReviews": "Reviews",
+    "tabLineups": "Compo",
+    "myReviews": "{count, plural, one {Ma review} other {Mes reviews}}",
+    "friendsReviews": "Mes amis",
+    "seeMoreFriends": "Voir plus ({count})",
+    "popularReviews": "Les plus populaires",
+    "allReviews": "Toutes les reviews",
+    "seeAllReviews": "Voir toutes les reviews ({count})",
+    "showLess": "Réduire"
   },
   "RatingHistogram": {
     "title": "Notes du match",
@@ -462,5 +471,12 @@
     "notFound": "Review introuvable",
     "notFoundHint": "Elle a peut-être été supprimée par son auteur.",
     "seeMatch": "Voir la fiche du match"
+  },
+  "LoginRequiredDialog": {
+    "title": "Connexion requise",
+    "message": "Tu dois être connecté pour liker ou commenter une review.",
+    "cancel": "Annuler",
+    "register": "Créer un compte",
+    "login": "Se connecter"
   }
 }
