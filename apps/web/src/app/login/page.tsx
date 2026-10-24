@@ -9,6 +9,13 @@ import { useAuth } from '../../lib/auth-context';
 import { Field } from '../../components/ui/field';
 import { Button, OAuthButton } from '../../components/ui/button';
 
+// Retour sur la page d'origine après connexion (modale "connexion requise"). Seuls les chemins
+// internes sont acceptés : "//evil.com" ou une URL absolue enverraient vers un autre site.
+function safeNextPath(next: string | null): string {
+  if (!next || !next.startsWith('/') || next.startsWith('//') || next.startsWith('/\\')) return '/';
+  return next;
+}
+
 export default function LoginPage() {
   const t = useTranslations('LoginPage');
   const [email, setEmail] = useState('');
@@ -25,7 +32,7 @@ export default function LoginPage() {
     try {
       await api.login(email, password);
       await refresh();
-      router.push('/');
+      router.push(safeNextPath(new URLSearchParams(window.location.search).get('next')));
     } catch {
       // Message générique volontaire (handoff design) : ne pas indiquer si c'est l'email ou
       // le mot de passe qui est faux, pour ne pas confirmer l'existence d'un compte.

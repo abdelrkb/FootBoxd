@@ -14,6 +14,7 @@ import { ClientDate } from './client-date';
 import { TagInput } from './ui/tag-input';
 import { TagChip } from './ui/tag-chip';
 import { ReportDialog } from './report-dialog';
+import { LoginRequiredDialog } from './login-required-dialog';
 import { CommentRow } from './comment-row';
 
 export function DevelopedReviewCard({
@@ -46,6 +47,7 @@ export function DevelopedReviewCard({
   );
   const { user } = useAuth();
   const [report, setReport] = useState<{ targetType: 'review' | 'comment'; targetId: string } | null>(null);
+  const [loginPrompt, setLoginPrompt] = useState(false);
   const t = useTranslations('DevelopedReviewCard');
 
   useEffect(() => {
@@ -53,6 +55,10 @@ export function DevelopedReviewCard({
   }, [initialThreadOpen, review.id]);
 
   async function toggleLike() {
+    if (!user) {
+      setLoginPrompt(true);
+      return;
+    }
     setLiked((prev) => !prev);
     setLikeCount((prev) => prev + (liked ? -1 : 1));
     if (liked) await api.unlikeReview(review.id);
@@ -65,6 +71,10 @@ export function DevelopedReviewCard({
   }
 
   async function sendComment() {
+    if (!user) {
+      setLoginPrompt(true);
+      return;
+    }
     if (!newComment.trim()) return;
     await api.createComment(review.id, newComment, replyTo?.id);
     setNewComment('');
@@ -394,6 +404,12 @@ export function DevelopedReviewCard({
             <input
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
+              // Non connecté : on prévient dès le clic dans le champ plutôt qu'après avoir tapé.
+              onFocus={(e) => {
+                if (user) return;
+                e.currentTarget.blur();
+                setLoginPrompt(true);
+              }}
               placeholder={t('addCommentPlaceholder')}
               style={{
                 flex: 1,
@@ -432,6 +448,7 @@ export function DevelopedReviewCard({
       {report && (
         <ReportDialog targetType={report.targetType} targetId={report.targetId} onClose={() => setReport(null)} />
       )}
+      {loginPrompt && <LoginRequiredDialog onClose={() => setLoginPrompt(false)} />}
     </div>
   );
 }

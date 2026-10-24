@@ -7,6 +7,7 @@ import type { Comment } from '@football-app/shared-types';
 import * as api from '../lib/api';
 import { useAuth } from '../lib/auth-context';
 import { Crest } from './ui/crest';
+import { LoginRequiredDialog } from './login-required-dialog';
 
 const MENTION_TOKEN = /(@[a-z0-9_]{3,20})/gi;
 const IS_MENTION = /^@[a-z0-9_]{3,20}$/i;
@@ -28,10 +29,16 @@ function renderContent(content: string) {
 // Pas de fetch de l'état initial "déjà liké" — même limite déjà acceptée pour ReviewLike
 // (optimiste uniquement), gardée cohérente ici plutôt que de la corriger juste pour les commentaires.
 function CommentLikeButton({ comment }: { comment: Comment }) {
+  const { user } = useAuth();
   const [liked, setLiked] = useState(false);
   const [count, setCount] = useState(comment._count.likes);
+  const [loginPrompt, setLoginPrompt] = useState(false);
 
   async function toggle() {
+    if (!user) {
+      setLoginPrompt(true);
+      return;
+    }
     const next = !liked;
     setLiked(next);
     setCount((prev) => prev + (next ? 1 : -1));
@@ -40,13 +47,16 @@ function CommentLikeButton({ comment }: { comment: Comment }) {
   }
 
   return (
-    <button
-      onClick={toggle}
-      className="fb-num"
-      style={{ background: 'none', border: 'none', fontSize: 12, color: liked ? 'var(--fb-social)' : 'var(--fb-text-3)', padding: 0 }}
-    >
-      {liked ? '♥' : '♡'} {count > 0 ? count : ''}
-    </button>
+    <>
+      <button
+        onClick={toggle}
+        className="fb-num"
+        style={{ background: 'none', border: 'none', fontSize: 12, color: liked ? 'var(--fb-social)' : 'var(--fb-text-3)', padding: 0 }}
+      >
+        {liked ? '♥' : '♡'} {count > 0 ? count : ''}
+      </button>
+      {loginPrompt && <LoginRequiredDialog onClose={() => setLoginPrompt(false)} />}
+    </>
   );
 }
 
